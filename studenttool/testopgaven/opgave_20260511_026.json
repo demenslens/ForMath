@@ -1,0 +1,174 @@
+{
+  "metadata": {
+    "id": "opgave_20260511_026",
+    "auteur": "H.N.Lensing",
+    "expressie": {
+      "tekst": "1/2+1/3",
+      "latex_display": "\\frac12+\\frac13",
+      "mathml": "",
+      "ast": {
+        "tree": [
+          "Add",
+          [
+            "Rational",
+            1,
+            2
+          ],
+          [
+            "Rational",
+            1,
+            3
+          ]
+        ],
+        "node_map": [
+          {
+            "path": [
+              0
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "1/2"
+          },
+          {
+            "path": [
+              1
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "1/3"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A1",
+            "type": "operation"
+          }
+        ]
+      }
+    },
+    "aantal_mathblocks": 1,
+    "bewerkingen": {
+      "optelling": 1,
+      "vermenigvuldiging": 0,
+      "deling": 0,
+      "machtsverheffen": 0,
+      "worteltrekken": 0,
+      "optel_manifold": 0,
+      "vermenigvuldig_manifold": 0,
+      "matroesjka_manifold": 0,
+      "vereenvoudigen": 0,
+      "gemengd_getal": 0
+    },
+    "aantal_steps": 1,
+    "niveau": "Hoog",
+    "randvoorwaarden": {
+      "vereenvoudig_uitkomst": false,
+      "antwoord_in_breuken": true,
+      "antwoord_in_decimalen": false,
+      "decimalen_afronden": 2,
+      "pi_decimalen": 2,
+      "uitkomst_als_gemengd_getal": true,
+      "hints_aan": true,
+      "feedback_aan": true
+    },
+    "opdracht": "reken_uit",
+    "soort_opgave": "rekenen_getallen",
+    "productie": "enkelvoudig",
+    "onderwijstype": "vmbo",
+    "onderwijsniveau": "onderbouw",
+    "notitie": ""
+  },
+  "mathblocks": [
+    {
+      "id": "A1",
+      "step": 1,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "1/2"
+        },
+        {
+          "type": "extern",
+          "waarde": "1/3"
+        }
+      ],
+      "output": "5/6",
+      "gelijknamig_maken": {
+        "nodig": true,
+        "kgv": 6,
+        "noemers": [
+          2,
+          3
+        ],
+        "breuken_origineel": [
+          "1/2",
+          "1/3"
+        ],
+        "breuken_gelijknamig": [
+          "3/6",
+          "2/6"
+        ],
+        "efficientie": {
+          "aanbevolen_methode": "KGV",
+          "reden": "Gebruik KGV (6) als gemeenschappelijke noemer; geeft kleinere getallen dan productnoemer.",
+          "alternatief": "Productnoemer (vermenigvuldig alle noemers) — werkt ook, maar geeft grotere tussenwaarden die nog vereenvoudigd moeten worden."
+        }
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
+          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+        },
+        "feedback": {
+          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    }
+  ],
+  "externe_inputs": [
+    {
+      "waarde": "1/2",
+      "mathblock_ids": [
+        "A1"
+      ]
+    },
+    {
+      "waarde": "1/3",
+      "mathblock_ids": [
+        "A1"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "mathblocks": [
+        "A1"
+      ]
+    }
+  ],
+  "duo_verzameling": [
+    {
+      "step": 1,
+      "input_expressie": "1/2+1/3",
+      "hoog": [
+        {
+          "mathblock": "A1",
+          "output_expressie": "5/6"
+        }
+      ],
+      "laag": []
+    }
+  ]
+}

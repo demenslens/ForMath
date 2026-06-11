@@ -1,0 +1,186 @@
+{
+  "opgaven": [
+    {
+      "bestand": "opgave_20260511_026.json",
+      "id": "opgave_20260511_026",
+      "titel": "\\frac12+\\frac13",
+      "niveau": "basis",
+      "stappen": 1
+    },
+    {
+      "bestand": "opgave_20260511_014.json",
+      "id": "opgave_20260511_014",
+      "titel": "\\frac16+\\frac{2}{15}",
+      "niveau": "basis",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260511_015.json",
+      "id": "opgave_20260511_015",
+      "titel": "\\frac{4}{9}+\\frac12-\\frac14",
+      "niveau": "basis",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260511_016.json",
+      "id": "opgave_20260511_016",
+      "titel": "\\frac{31}{32}-\\frac38",
+      "niveau": "basis",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260513_002.json",
+      "id": "opgave_20260513_002",
+      "titel": "\\left(\\frac{12}{13}+\\frac{2}{15}\\right)",
+      "niveau": "basis",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260514_001.json",
+      "id": "opgave_20260514_001",
+      "titel": "\\frac{1}{100}\\cdot\\left(\\frac34+\\frac35\\right)",
+      "niveau": "basis",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260523_001.json",
+      "id": "opgave_20260523_001",
+      "titel": "\\sqrt4+\\frac{34}{17}",
+      "niveau": "basis",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260511_024.json",
+      "id": "opgave_20260511_024",
+      "titel": "\\left(\\frac13+\\frac15\\right):50",
+      "niveau": "basis",
+      "stappen": 3
+    },
+    {
+      "bestand": "opgave_20260510_002.json",
+      "id": "opgave_20260510_002",
+      "titel": "2\\times\\left(3+4\\cdot5\\right)+-\\left(6:2\\right)+7",
+      "niveau": "breuken",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_20260528_001.json",
+      "id": "opgave_20260528_001",
+      "titel": "2\\times\\left(3+4\\cdot5\\right)+-\\left(6:2\\right)+7",
+      "niveau": "breuken",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_20260511_018.json",
+      "id": "opgave_20260511_018",
+      "titel": "\\frac34:\\frac{18}{20}+\\frac23",
+      "niveau": "breuken",
+      "stappen": 5
+    },
+    {
+      "bestand": "opgave_20260511_021.json",
+      "id": "opgave_20260511_021",
+      "titel": "2+\\left(1-\\left(\\frac12-\\frac{2}{3}+2\\right)-\\frac{1}{2}\\...",
+      "niveau": "breuken",
+      "stappen": 5
+    },
+    {
+      "bestand": "opgave_20260511_027.json",
+      "id": "opgave_20260511_027",
+      "titel": "-\\frac19+\\frac{2}{3}^2\\times\\frac{13}{6}+\\left(\\left(\\sqr...",
+      "niveau": "gemengd",
+      "stappen": 5
+    },
+    {
+      "bestand": "opgave_20260513_001.json",
+      "id": "opgave_20260513_001",
+      "titel": "\\left(50-90\\right)^2",
+      "niveau": "machten",
+      "stappen": 2
+    },
+    {
+      "bestand": "opgave_20260511_017.json",
+      "id": "opgave_20260511_017",
+      "titel": "9\\times\\left(\\sqrt{16}+3^2\\right)+2",
+      "niveau": "machten",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_20260511_019.json",
+      "id": "opgave_20260511_019",
+      "titel": "1+\\frac{2^3}{5}",
+      "niveau": "machten",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_20260511_009.json",
+      "id": "opgave_20260511_009",
+      "titel": "\\frac{1+2^2}{3-\\left(25:5\\right)}",
+      "niveau": "machten",
+      "stappen": 5
+    },
+    {
+      "bestand": "opgave_20260511_020.json",
+      "id": "opgave_20260511_020",
+      "titel": "\\left({\\frac12}\\right)^2-\\left(\\left(-\\frac18+-\\frac{5}{8...",
+      "niveau": "machten",
+      "stappen": 5
+    },
+    {
+      "bestand": "opgave_20260510_001.json",
+      "id": "opgave_20260510_001",
+      "titel": "\\frac19+-\\left(\\frac{3}{2}+\\frac{5}{6}\\right)+\\frac{2}{3}...",
+      "niveau": "gevorderd",
+      "stappen": 6
+    },
+    {
+      "bestand": "opgave_20260520_001.json",
+      "id": "opgave_20260520_001",
+      "titel": "\\left(2-\\frac{3}{5}-\\frac{33}{15}\\right)+\\left(1+\\frac{4}...",
+      "niveau": "gevorderd",
+      "stappen": 6
+    },
+    {
+      "bestand": "opgave_20260511_005.json",
+      "id": "opgave_20260511_005",
+      "titel": "\\left(2-\\frac{3}{5}-\\frac{33}{15}\\right)+\\left(1+\\frac{4}...",
+      "niveau": "gevorderd",
+      "stappen": 7
+    },
+    {
+      "bestand": "opgave_20260511_022.json",
+      "id": "opgave_20260511_022",
+      "titel": "\\frac{\\frac{25}{4}-\\frac{31}{8}}{\\frac{29}{6}-\\frac{11}{3...",
+      "niveau": "gevorderd",
+      "stappen": 7
+    },
+    {
+      "bestand": "opgave_20260514_002.json",
+      "id": "opgave_20260514_002",
+      "titel": "\\frac19+-\\left(\\frac{3}{2}+\\frac{5}{6}\\right)+\\frac{2}{3}...",
+      "niveau": "gevorderd",
+      "stappen": 7
+    },
+    {
+      "bestand": "opgave_20260511_004.json",
+      "id": "opgave_20260511_004",
+      "titel": "\\frac{\\left(2-\\frac{3}{5}-\\frac{33}{15}\\right)+\\left(1+\\f...",
+      "niveau": "gevorderd",
+      "stappen": 8
+    },
+    {
+      "bestand": "opgave_20260511_023.json",
+      "id": "opgave_20260511_023",
+      "titel": "\\left(\\frac{\\frac{7}{6}-\\frac{3}{4}}{2-\\sqrt{\\frac{1}{64}...",
+      "niveau": "gevorderd",
+      "stappen": 8
+    },
+    {
+      "bestand": "opgave_20260511_010.json",
+      "id": "opgave_20260511_010",
+      "titel": "\\left(3^2\\times\\left(12-9\\right)^3\\right):\\left(9-6\\right...",
+      "niveau": "gevorderd",
+      "stappen": 9
+    }
+  ]
+}

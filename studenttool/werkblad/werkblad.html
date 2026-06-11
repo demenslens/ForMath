@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForMath Studenttool — Werkblad</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=STIX+Two+Text:wght@400;600&display=swap">
+
+<!-- Vroege thema-toepassing: voorkomt flash of unstyled content bij donker thema -->
+<script>
+  (function() {
+    try {
+      var t = localStorage.getItem('werkblad.theme');
+      if (t === 'dark' || t === 'light') {
+        document.documentElement.setAttribute('data-theme', t);
+      }
+    } catch (e) { /* localStorage geblokkeerd; default = licht */ }
+  })();
+</script>
+
+<link rel="stylesheet" href="werkblad.css?v=215">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 44 40" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor">
+          <!-- Wortelteken -->
+          <path d="M 2 24 L 7 22 L 12 36 L 17 8 L 42 8"
+                stroke-width="1.75" stroke-linejoin="miter" stroke-linecap="round"/>
+          <!-- Breuk onder de wortel -->
+          <rect x="22" y="15.5" width="13" height="8" rx="1"
+                stroke-width="1" stroke-dasharray="2 1.5"/>
+          <line x1="21" y1="26.5" x2="36" y2="26.5" stroke-width="1.25"/>
+          <rect x="22" y="29.5" width="13" height="8" rx="1"
+                stroke-width="1" stroke-dasharray="2 1.5"/>
+        </svg>
+      </span>
+      <h1>ForMath <span class="brand-sub">Studenttool: werkblad</span></h1>
+    </div>
+    <button type="button"
+            class="header-settings-btn"
+            id="btn-header-settings"
+            aria-label="Instellingen"
+            title="Instellingen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
+  </header>
+
+  <!-- ═══ APP BODY ═══ -->
+  <div class="app-body">
+
+    <!-- Sidebar 1: Batches (links) -->
+    <aside class="side side-wide" id="batches-side" aria-label="Batches">
+      <div class="side-head">
+        <h2>Batches</h2>
+        <p>Reeksen opgaven</p>
+      </div>
+      <div class="batch-list">
+        <div class="batch-item">Batch 01</div>
+        <div class="batch-item">Batch 02</div>
+        <div class="batch-item">Batch 03</div>
+      </div>
+    </aside>
+
+    <!-- Sidebar 2: Opgaven (bestaand) -->
+    <aside class="side">
+      <div class="side-head"><h2>Opgaven</h2><p>Wiskunde werkblad</p></div>
+      <div class="opg-list" id="opg-list">
+        <div class="side-loading" id="opg-loading">Opgaven laden...</div>
+      </div>
+      <div class="side-foot" id="side-foot">—</div>
+      <div style="padding:8px 12px;">
+        <button id="refresh-btn"
+                style="width:100%;padding:6px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:rgba(255,255,255,0.04);font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;color:inherit;opacity:0.75;">
+          🔄 Herlaad opgavenlijst
+        </button>
+      </div>
+    </aside>
+
+    <div class="main">
+      <div class="scroll">
+        <div class="page">
+          <div class="holes"><span></span><span></span><span></span></div>
+          <div class="naam-bar">Naam: ________________</div>
+
+          <!-- Quick-buttons: snelle invoer voor wortels, machten en breuken.
+               Werkt op de mathfield met de huidige focus. -->
+          <div id="quick-buttons" class="quick-buttons" hidden>
+            <!-- Vierkantswortel met geheel getal als radicand -->
+            <button type="button" class="qb" data-insert="\sqrt{#0}" title="Vierkantswortel met geheel getal (vul radicand in)">
+              <span class="qb-icon">√</span><span class="qb-sub">▢</span>
+            </button>
+            <!-- Vierkantswortel met breuk als radicand -->
+            <button type="button" class="qb" data-insert="\sqrt{\frac{#0}{#?}}" title="Vierkantswortel met breuk als radicand">
+              <span class="qb-icon">√</span><span class="qb-frac">
+                <span class="qb-frac-top">▢</span>
+                <span class="qb-frac-bot">▢</span>
+              </span>
+            </button>
+            <span class="qb-sep"></span>
+            <!-- Macht: kwadraat -->
+            <button type="button" class="qb" data-insert="{#0}^{2}" title="Kwadraat (vul grondtal in)">
+              <span class="qb-base">▢</span><span class="qb-sup">²</span>
+            </button>
+            <!-- Macht: algemene exponent -->
+            <button type="button" class="qb" data-insert="{#0}^{#?}" title="Macht (vul grondtal en exponent in)">
+              <span class="qb-base">▢</span><span class="qb-sup">▢</span>
+            </button>
+            <span class="qb-sep"></span>
+            <!-- Breuk -->
+            <button type="button" class="qb" data-insert="\frac{#0}{#?}" title="Breuk">
+              <span class="qb-frac">
+                <span class="qb-frac-top">▢</span>
+                <span class="qb-frac-bot">▢</span>
+              </span>
+            </button>
+            <span class="qb-sep"></span>
+            <!-- π met afgeronde decimalen -->
+            <button type="button" class="qb" data-insert="\pi_{2}" title="π met afgeronde decimalen">
+              <span class="qb-pi">π</span>
+            </button>
+          </div>
+
+          <div class="green-bar"></div>
+
+          <div class="rules" id="rules">
+            <div class="empty-state" id="empty-state">
+              <div class="icon">📐</div>
+              Kies een opgave uit de lijst
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="kb-panel" id="kb-panel">
+        <div class="kb-grid">
+          <div class="kb-key" data-v="+">+</div>
+          <div class="kb-key" data-v="−">−</div>
+          <div class="kb-key" data-v="x">𝑥</div>
+          <div class="kb-key" data-v="·">·</div>
+          <div class="kb-key" data-v="÷">÷</div>
+          <div class="kb-key" data-v=":">:</div>
+          <div class="kb-key" data-v="^">𝑥ⁿ</div>
+          <div class="kb-key" data-v="²">𝑥²</div>
+          <div class="kb-key" data-v="³">𝑥³</div>
+          <div class="kb-key" data-v="√">√</div>
+          <div class="kb-key" data-v="/" title="breuk">
+            <span style="font-size:11px;line-height:1;display:flex;flex-direction:column;align-items:center">
+              <span style="border-bottom:1px solid currentColor;padding:0 4px">𝑎</span>
+              <span style="padding:0 4px">𝑏</span>
+            </span>
+          </div>
+          <div class="kb-key" data-v="(">(</div>
+          <div class="kb-key" data-v=")">)</div>
+        </div>
+      </div>
+
+      <div class="bar">
+        <div class="bar-l">
+          <div style="display:flex;align-items:center"><span class="dot ok" id="dot"></span><span id="stxt">Gereed</span></div>
+          <span id="line-info">—</span>
+          <span id="block-info" style="font-weight:600;color:var(--accent);"></span>
+        </div>
+        <div class="bar-r">
+          <button class="bar-btn" id="svg-btn">📊 Schema</button>
+          <button class="bar-btn" id="kb-btn">⌨ Toetsenbord</button>
+          <button class="bar-btn" id="hints-btn">💡 Hints</button>
+          <button class="bar-btn" id="kaders-btn">🔲 Mathblocks</button>
+          <button class="bar-btn" id="check-btn">✓ Check</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar 3: Resultaat (rechts) -->
+    <aside class="side side-wide side-right" id="resultaat-side" aria-label="Resultaat">
+      <div class="side-head">
+        <h2>Resultaat</h2>
+        <p>Voortgang &amp; uitkomst</p>
+      </div>
+      <div class="side-empty">Nog leeg</div>
+    </aside>
+
+  </div><!-- /.app-body -->
+
+</div><!-- /.app -->
+
+<!-- Hints popup -->
+<div class="hints-overlay" id="hints-overlay">
+  <div class="hints-popup">
+    <div class="hints-header">
+      <h3>💡 Hints</h3>
+      <span class="step-badge" id="hints-step-badge">Step 1</span>
+      <button class="hints-close" id="hints-close">✕</button>
+    </div>
+    <div class="hints-body" id="hints-body">
+    </div>
+  </div>
+</div>
+
+<!-- Pinpoint error popup -->
+<div class="pinpoint-overlay" id="pinpoint-overlay">
+  <div class="pinpoint-popup">
+    <div class="pinpoint-header">
+      <h3>⚠ Niet-herleidbare bewerking</h3>
+    </div>
+    <div class="pinpoint-body" id="pinpoint-body">
+      <p>De bewerking die je hebt gedaan kan niet herleid worden tot een bekende stap.</p>
+      <p>Ga terug naar de vorige correcte regel en maak kleinere stappen.</p>
+      <button class="pinpoint-btn" id="pinpoint-ok">Terug naar vorige regel</button>
+    </div>
+  </div>
+</div>
+
+<!-- SVG Schema overlay -->
+<div class="svg-overlay" id="svg-overlay">
+  <div class="svg-popup">
+    <div class="svg-header">
+      <h3>📊 Schema</h3>
+      <button class="svg-close" id="svg-close">✕</button>
+    </div>
+    <div class="svg-body" id="svg-body">
+    </div>
+  </div>
+</div>
+
+<!-- Settings dialog -->
+<div id="settings-dialog" class="dialog-overlay" hidden>
+  <div class="dialog" role="dialog" aria-labelledby="settings-title" aria-modal="true">
+    <header class="dialog-head">
+      <h2 id="settings-title">Instellingen</h2>
+      <button class="dialog-close" id="settings-close" aria-label="Sluiten" type="button">×</button>
+    </header>
+    <div class="dialog-body">
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Weergave</div>
+          <div class="setting-help">Kies een lichte of donkere uitvoering.</div>
+        </div>
+        <div class="theme-toggle" role="group" aria-label="Weergave">
+          <button type="button" data-theme-value="light" id="theme-btn-light">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="4"/>
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+            </svg>
+            Licht
+          </button>
+          <button type="button" data-theme-value="dark" id="theme-btn-dark">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            Donker
+          </button>
+        </div>
+      </div>
+    </div>
+    <footer class="dialog-foot">
+      <button class="btn btn-primary" id="settings-done" type="button">Klaar</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Libraries -->
+<script src="https://unpkg.com/mathjs@12.4.1/lib/browser/math.js"></script>
+<script defer src="https://unpkg.com/mathlive"></script>
+
+<!-- Matcher + verankering (bewezen mechaniek, herbruikbaar) -->
+<script src="matcher.browser.js?v=3"></script>
+<script src="verankering.js?v=2"></script>
+
+<!-- Application -->
+<script src="werkblad.js?v=143"></script>
+
+<!-- Settings + thema (klein blokje, geen interferentie met werkblad.js) -->
+<script>
+(function() {
+  var THEME_KEY = 'werkblad.theme';
+
+  function getTheme() {
+    var t = document.documentElement.getAttribute('data-theme');
+    return (t === 'dark') ? 'dark' : 'light';
+  }
+  function setTheme(t) {
+    if (t === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    try { localStorage.setItem(THEME_KEY, t); } catch (e) {}
+    updateThemeButtons();
+  }
+  function updateThemeButtons() {
+    var current = getTheme();
+    document.querySelectorAll('.theme-toggle button[data-theme-value]').forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-theme-value') === current);
+    });
+  }
+
+  function openSettings() {
+    var dlg = document.getElementById('settings-dialog');
+    if (!dlg) return;
+    updateThemeButtons();
+    dlg.removeAttribute('hidden');
+  }
+  function closeSettings() {
+    var dlg = document.getElementById('settings-dialog');
+    if (dlg) dlg.setAttribute('hidden', '');
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    updateThemeButtons();
+
+    var openBtn = document.getElementById('btn-header-settings');
+    if (openBtn) openBtn.addEventListener('click', openSettings);
+
+    var closeBtn = document.getElementById('settings-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeSettings);
+
+    var doneBtn = document.getElementById('settings-done');
+    if (doneBtn) doneBtn.addEventListener('click', closeSettings);
+
+    // Klik op overlay (buiten dialog) sluit
+    var overlay = document.getElementById('settings-dialog');
+    if (overlay) {
+      overlay.addEventListener('click', function(ev) {
+        if (ev.target === overlay) closeSettings();
+      });
+    }
+
+    // ESC sluit
+    document.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') {
+        var dlg = document.getElementById('settings-dialog');
+        if (dlg && !dlg.hasAttribute('hidden')) closeSettings();
+      }
+    });
+
+    // Thema-knoppen
+    document.querySelectorAll('.theme-toggle button[data-theme-value]').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        setTheme(btn.getAttribute('data-theme-value'));
+      });
+    });
+  });
+})();
+</script>
+
+</body>
+</html>

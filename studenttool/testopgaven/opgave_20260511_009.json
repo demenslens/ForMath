@@ -1,0 +1,600 @@
+{
+  "metadata": {
+    "id": "opgave_20260511_009",
+    "auteur": "H.N.Lensing",
+    "expressie": {
+      "tekst": "(1+2^2)/(3-(25:5))",
+      "latex_display": "\\frac{1+2^2}{3-\\left(25:5\\right)}",
+      "mathml": "",
+      "ast": {
+        "tree": [
+          "MixedNumber",
+          [
+            "Simplify",
+            [
+              "Divide",
+              [
+                "Add",
+                1,
+                [
+                  "Power",
+                  2,
+                  2
+                ]
+              ],
+              [
+                "Add",
+                3,
+                [
+                  "Negate",
+                  [
+                    "Divide",
+                    25,
+                    5
+                  ]
+                ]
+              ]
+            ]
+          ]
+        ],
+        "node_map": [
+          {
+            "path": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A2",
+            "type": "input",
+            "waarde": "1"
+          },
+          {
+            "path": [
+              0,
+              0,
+              0,
+              1,
+              0
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              0,
+              0,
+              0,
+              1
+            ],
+            "mathblock_id": "A1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              0,
+              1,
+              0
+            ],
+            "mathblock_id": "B2",
+            "type": "input",
+            "waarde": "3"
+          },
+          {
+            "path": [
+              0,
+              0,
+              1,
+              1,
+              0,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "25"
+          },
+          {
+            "path": [
+              0,
+              0,
+              1,
+              1,
+              0,
+              1
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "5"
+          },
+          {
+            "path": [
+              0,
+              0,
+              1,
+              1,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              0,
+              1
+            ],
+            "mathblock_id": "B2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              0
+            ],
+            "mathblock_id": "A3",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0
+            ],
+            "mathblock_id": "A4",
+            "type": "operation"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A5",
+            "type": "operation"
+          }
+        ]
+      }
+    },
+    "aantal_mathblocks": 7,
+    "bewerkingen": {
+      "optelling": 2,
+      "vermenigvuldiging": 0,
+      "deling": 2,
+      "machtsverheffen": 1,
+      "worteltrekken": 0,
+      "optel_manifold": 0,
+      "vermenigvuldig_manifold": 0,
+      "matroesjka_manifold": 0,
+      "vereenvoudigen": 1,
+      "gemengd_getal": 1
+    },
+    "aantal_steps": 5,
+    "niveau": "Hoog",
+    "randvoorwaarden": {
+      "vereenvoudig_uitkomst": false,
+      "antwoord_in_breuken": true,
+      "antwoord_in_decimalen": false,
+      "decimalen_afronden": 2,
+      "pi_decimalen": 2,
+      "uitkomst_als_gemengd_getal": true,
+      "hints_aan": true,
+      "feedback_aan": true
+    },
+    "opdracht": "reken_uit",
+    "soort_opgave": "rekenen_getallen",
+    "productie": "enkelvoudig",
+    "onderwijstype": "havo",
+    "onderwijsniveau": "onderbouw",
+    "notitie": ""
+  },
+  "mathblocks": [
+    {
+      "id": "A1",
+      "step": 1,
+      "operatie": {
+        "symbool": "^2",
+        "beschrijving": "machtsverheffen",
+        "exponent": 2
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2"
+        }
+      ],
+      "output": "4",
+      "hints": {
+        "structureel": {
+          "wat": "Verhef het grondtal tot de macht 2.",
+          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B1",
+      "step": 1,
+      "operatie": {
+        "symbool": "-(:)",
+        "beschrijving": "deling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "25"
+        },
+        {
+          "type": "extern",
+          "waarde": "5"
+        }
+      ],
+      "output": "-5",
+      "is_negative": true,
+      "hints": {
+        "structureel": {
+          "wat": "Deel het eerste getal door het tweede.",
+          "hoe": "Deel de teller door de noemer.",
+          "let_op": "Het minteken vóór deze bewerking werkt op het hele resultaat."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A2",
+      "step": 2,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "1"
+        },
+        {
+          "type": "mathblock",
+          "id": "A1"
+        }
+      ],
+      "output": "5",
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Voeg de twee getallen samen tot één som.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B2",
+      "step": 2,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "3"
+        },
+        {
+          "type": "mathblock",
+          "id": "B1",
+          "is_negative": true
+        }
+      ],
+      "output": "-2",
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Voeg de twee getallen samen tot één som.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "step": 3,
+      "operatie": {
+        "symbool": ":",
+        "beschrijving": "deling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A2"
+        },
+        {
+          "type": "mathblock",
+          "id": "B2"
+        }
+      ],
+      "output": "-25/10",
+      "hints": {
+        "structureel": {
+          "wat": "Deel het eerste getal door het tweede.",
+          "hoe": "Deel de teller door de noemer.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A4",
+      "step": 4,
+      "operatie": {
+        "symbool": "÷GGD",
+        "beschrijving": "vereenvoudigen",
+        "ggd": 5
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A3"
+        }
+      ],
+      "output": "-5/2",
+      "vereenvoudiging": {
+        "van": "-25/10",
+        "naar": "-5/2",
+        "ggd": 5
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Vereenvoudig de breuk.",
+          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 5.",
+          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
+          "voorbeeld": "-25/10 = (-25÷5)/(10÷5) = -5/2."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A5",
+      "step": 5,
+      "operatie": {
+        "symbool": "GG",
+        "beschrijving": "gemengd getal",
+        "geheel": -2,
+        "teller": 1,
+        "noemer": 2
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A4"
+        }
+      ],
+      "output": "-(2+1/2)",
+      "gemengd_getal": {
+        "van": "-5/2",
+        "naar": "-2+1/2",
+        "geheel": -2,
+        "teller": 1,
+        "noemer": 2
+      },
+      "efficientie": {
+        "aanbevolen": true,
+        "reden": "einduitkomst: altijd vereenvoudigen",
+        "score": 1.0
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Schrijf de oneigenlijke breuk als gemengd getal.",
+          "hoe": "Deel teller door noemer: het quotiënt is het hele getal, de rest is de teller van de overgebleven breuk. De noemer blijft hetzelfde.",
+          "let_op": "Een gemengd getal heeft de vorm \"geheel teller/noemer\" en is alleen zinvol als de teller groter of gelijk is aan de noemer.",
+          "voorbeeld": "-5/2: 5 ÷ 2 = -2 rest 1, dus -5/2 = -2 1/2."
+        },
+        "feedback": {
+          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      },
+      "eindverwerking": {
+        "oneigenlijk": true,
+        "gemengd_getal": "-2 1/2",
+        "vereenvoudigbaar": false,
+        "ggd": 1
+      }
+    }
+  ],
+  "externe_inputs": [
+    {
+      "waarde": "1",
+      "mathblock_ids": [
+        "A2"
+      ]
+    },
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "A1"
+      ]
+    },
+    {
+      "waarde": "3",
+      "mathblock_ids": [
+        "B2"
+      ]
+    },
+    {
+      "waarde": "25",
+      "mathblock_ids": [
+        "B1"
+      ]
+    },
+    {
+      "waarde": "5",
+      "mathblock_ids": [
+        "B1"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "mathblocks": [
+        "A1",
+        "B1"
+      ]
+    },
+    {
+      "step": 2,
+      "mathblocks": [
+        "A2",
+        "B2"
+      ]
+    },
+    {
+      "step": 3,
+      "mathblocks": [
+        "A3"
+      ]
+    },
+    {
+      "step": 4,
+      "mathblocks": [
+        "A4"
+      ]
+    },
+    {
+      "step": 5,
+      "mathblocks": [
+        "A5"
+      ]
+    }
+  ],
+  "duo_verzameling": [
+    {
+      "step": 1,
+      "input_expressie": "((1+2^2):(3-(25:5)))",
+      "hoog": [
+        {
+          "mathblock": "A1",
+          "output_expressie": "((1+4):(3-(25:5)))"
+        },
+        {
+          "mathblock": "B1",
+          "output_expressie": "((1+2^2):(3+-5))"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 2,
+      "input_expressie": "((1+4):(3+-5))",
+      "hoog": [
+        {
+          "mathblock": "A2",
+          "output_expressie": "(5:(3+-5))"
+        },
+        {
+          "mathblock": "B2",
+          "output_expressie": "((1+4):-2)"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 3,
+      "input_expressie": "(5:-2)",
+      "hoog": [
+        {
+          "mathblock": "A3",
+          "output_expressie": "-25/10"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 4,
+      "input_expressie": "-25/10",
+      "hoog": [
+        {
+          "mathblock": "A4",
+          "output_expressie": "-5/2"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 5,
+      "input_expressie": "-5/2",
+      "hoog": [
+        {
+          "mathblock": "A5",
+          "output_expressie": "-(2+1/2)"
+        }
+      ],
+      "laag": []
+    }
+  ]
+}

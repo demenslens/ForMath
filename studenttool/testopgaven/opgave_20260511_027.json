@@ -1,0 +1,915 @@
+{
+  "metadata": {
+    "id": "opgave_20260511_027",
+    "auteur": "H.N.Lensing",
+    "expressie": {
+      "tekst": "-1/9+2/3^2×13/6+((root(3,1)-1/2)^3:(1+1/2)^3)+1/9",
+      "latex_display": "-\\frac19+\\frac{2}{3}^2\\times\\frac{13}{6}+\\left(\\left(\\sqrt[3]{1}-\\frac{1}{2}\\right)^3:\\left(1+\\frac{1}{2}\\right)^3\\right)+\\frac19",
+      "mathml": "",
+      "ast": {
+        "tree": [
+          "Add",
+          [
+            "Rational",
+            -1,
+            9
+          ],
+          [
+            "Simplify",
+            [
+              "Multiply",
+              [
+                "Power",
+                [
+                  "Rational",
+                  2,
+                  3
+                ],
+                2
+              ],
+              [
+                "Rational",
+                13,
+                6
+              ]
+            ]
+          ],
+          [
+            "Simplify",
+            [
+              "Divide",
+              [
+                "Power",
+                [
+                  "Add",
+                  [
+                    "Root",
+                    1,
+                    3
+                  ],
+                  [
+                    "Rational",
+                    -1,
+                    2
+                  ]
+                ],
+                3
+              ],
+              [
+                "Power",
+                [
+                  "Add",
+                  1,
+                  [
+                    "Rational",
+                    1,
+                    2
+                  ]
+                ],
+                3
+              ]
+            ]
+          ],
+          [
+            "Rational",
+            1,
+            9
+          ]
+        ],
+        "node_map": [
+          {
+            "path": [
+              0
+            ],
+            "mathblock_id": "A5",
+            "type": "input",
+            "waarde": "-1/9"
+          },
+          {
+            "path": [
+              1,
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A2",
+            "type": "input",
+            "waarde": "2/3"
+          },
+          {
+            "path": [
+              1,
+              0,
+              0
+            ],
+            "mathblock_id": "A2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              1,
+              0,
+              1
+            ],
+            "mathblock_id": "A3",
+            "type": "input",
+            "waarde": "13/6"
+          },
+          {
+            "path": [
+              1,
+              0
+            ],
+            "mathblock_id": "A3",
+            "type": "operation"
+          },
+          {
+            "path": [
+              1
+            ],
+            "mathblock_id": "A4",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A0",
+            "type": "input",
+            "waarde": "1"
+          },
+          {
+            "path": [
+              2,
+              0,
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A0",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0,
+              0,
+              0,
+              1
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "-1/2"
+          },
+          {
+            "path": [
+              2,
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0,
+              0
+            ],
+            "mathblock_id": "B2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0,
+              1,
+              0,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "1"
+          },
+          {
+            "path": [
+              2,
+              0,
+              1,
+              0,
+              1
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "1/2"
+          },
+          {
+            "path": [
+              2,
+              0,
+              1,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0,
+              1
+            ],
+            "mathblock_id": "C2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0
+            ],
+            "mathblock_id": "B3",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2
+            ],
+            "mathblock_id": "B4",
+            "type": "operation"
+          },
+          {
+            "path": [
+              3
+            ],
+            "mathblock_id": "A5",
+            "type": "input",
+            "waarde": "1/9"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A5",
+            "type": "operation"
+          }
+        ]
+      }
+    },
+    "aantal_mathblocks": 11,
+    "bewerkingen": {
+      "optelling": 2,
+      "vermenigvuldiging": 1,
+      "deling": 1,
+      "machtsverheffen": 3,
+      "worteltrekken": 1,
+      "optel_manifold": 1,
+      "vermenigvuldig_manifold": 0,
+      "matroesjka_manifold": 0,
+      "vereenvoudigen": 2,
+      "gemengd_getal": 0
+    },
+    "aantal_steps": 5,
+    "niveau": "Hoog",
+    "randvoorwaarden": {
+      "vereenvoudig_uitkomst": false,
+      "antwoord_in_breuken": true,
+      "antwoord_in_decimalen": false,
+      "decimalen_afronden": 2,
+      "pi_decimalen": 2,
+      "uitkomst_als_gemengd_getal": true,
+      "hints_aan": true,
+      "feedback_aan": true
+    },
+    "opdracht": "reken_uit",
+    "soort_opgave": "rekenen_getallen",
+    "productie": "enkelvoudig",
+    "onderwijstype": "havo",
+    "onderwijsniveau": "onderbouw",
+    "notitie": ""
+  },
+  "mathblocks": [
+    {
+      "id": "A0",
+      "step": 0,
+      "operatie": {
+        "symbool": "√3",
+        "beschrijving": "worteltrekken",
+        "index": 3
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "1"
+        }
+      ],
+      "output": "1",
+      "hints": {
+        "structureel": {
+          "wat": "Trek de 3-de machtswortel.",
+          "hoe": "Zoek het getal dat tot de macht 3 verheven het radicand geeft.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A1",
+      "step": 1,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A0"
+        },
+        {
+          "type": "extern",
+          "waarde": "-1/2"
+        }
+      ],
+      "output": "1/2",
+      "gelijknamig_maken": {
+        "nodig": false,
+        "reden": "Slechts één breuk; gelijknamig maken niet nodig."
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
+          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B1",
+      "step": 1,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "1"
+        },
+        {
+          "type": "extern",
+          "waarde": "1/2"
+        }
+      ],
+      "output": "3/2",
+      "gelijknamig_maken": {
+        "nodig": false,
+        "reden": "Slechts één breuk; gelijknamig maken niet nodig."
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
+          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      },
+      "gemengd_getal": {
+        "mogelijk": true,
+        "waarde": "1 1/2",
+        "efficientie": {
+          "aanbevolen": false,
+          "reden": "volgende stap is machtsverheffen; breuk-vorm is makkelijker te machten"
+        }
+      }
+    },
+    {
+      "id": "A2",
+      "step": 2,
+      "operatie": {
+        "symbool": "^2",
+        "beschrijving": "machtsverheffen",
+        "exponent": 2
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2/3"
+        }
+      ],
+      "output": "4/9",
+      "hints": {
+        "structureel": {
+          "wat": "Verhef het grondtal tot de macht 2.",
+          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
+          "let_op": "Bij een breuk: verhef zowel de teller als de noemer tot de macht 2."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B2",
+      "step": 2,
+      "operatie": {
+        "symbool": "^3",
+        "beschrijving": "machtsverheffen",
+        "exponent": 3
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A1"
+        }
+      ],
+      "output": "1/8",
+      "hints": {
+        "structureel": {
+          "wat": "Verhef het grondtal tot de macht 3.",
+          "hoe": "Vermenigvuldig het grondtal 3 keer met zichzelf.",
+          "let_op": "Bij een breuk: verhef zowel de teller als de noemer tot de macht 3."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "C2",
+      "step": 2,
+      "operatie": {
+        "symbool": "^3",
+        "beschrijving": "machtsverheffen",
+        "exponent": 3
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "B1"
+        }
+      ],
+      "output": "27/8",
+      "hints": {
+        "structureel": {
+          "wat": "Verhef het grondtal tot de macht 3.",
+          "hoe": "Vermenigvuldig het grondtal 3 keer met zichzelf.",
+          "let_op": "Bij een breuk: verhef zowel de teller als de noemer tot de macht 3."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      },
+      "gemengd_getal": {
+        "mogelijk": true,
+        "waarde": "3 3/8",
+        "efficientie": {
+          "aanbevolen": false,
+          "reden": "volgende stap is deling; breuk-vorm is makkelijker"
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "step": 3,
+      "operatie": {
+        "symbool": "×",
+        "beschrijving": "vermenigvuldiging"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A2"
+        },
+        {
+          "type": "extern",
+          "waarde": "13/6"
+        }
+      ],
+      "output": "52/54",
+      "hints": {
+        "structureel": {
+          "wat": "Vermenigvuldig de twee getallen met elkaar.",
+          "hoe": "Vermenigvuldig de tellers en de noemers afzonderlijk: a/b × c/d = (a×c)/(b×d).",
+          "let_op": "Het kan handig zijn om eerst kruiselings te vereenvoudigen voor kleinere getallen."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B3",
+      "step": 3,
+      "operatie": {
+        "symbool": ":",
+        "beschrijving": "deling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "B2"
+        },
+        {
+          "type": "mathblock",
+          "id": "C2"
+        }
+      ],
+      "output": "8/216",
+      "hints": {
+        "structureel": {
+          "wat": "Deel het eerste getal door het tweede.",
+          "hoe": "Delen door een breuk = vermenigvuldigen met het omgekeerde: a/b : c/d = a/b × d/c.",
+          "let_op": "De rechter breuk omkeren is alleen toegestaan bij delen, niet bij andere bewerkingen."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A4",
+      "step": 4,
+      "operatie": {
+        "symbool": "÷GGD",
+        "beschrijving": "vereenvoudigen",
+        "ggd": 2
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A3"
+        }
+      ],
+      "output": "26/27",
+      "vereenvoudiging": {
+        "van": "52/54",
+        "naar": "26/27",
+        "ggd": 2
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Vereenvoudig de breuk.",
+          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 2.",
+          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
+          "voorbeeld": "52/54 = (52÷2)/(54÷2) = 26/27."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B4",
+      "step": 4,
+      "operatie": {
+        "symbool": "÷GGD",
+        "beschrijving": "vereenvoudigen",
+        "ggd": 8
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "B3"
+        }
+      ],
+      "output": "1/27",
+      "vereenvoudiging": {
+        "van": "8/216",
+        "naar": "1/27",
+        "ggd": 8
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Vereenvoudig de breuk.",
+          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 8.",
+          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
+          "voorbeeld": "8/216 = (8÷8)/(216÷8) = 1/27."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A5",
+      "step": 5,
+      "operatie": {
+        "symbool": "M+(4)",
+        "beschrijving": "optel-manifold",
+        "aantal_operanden": 4
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "-1/9"
+        },
+        {
+          "type": "mathblock",
+          "id": "A4"
+        },
+        {
+          "type": "mathblock",
+          "id": "B4"
+        },
+        {
+          "type": "extern",
+          "waarde": "1/9"
+        }
+      ],
+      "output": "1",
+      "gelijknamig_maken": {
+        "nodig": true,
+        "kgv": 27,
+        "noemers": [
+          9,
+          27,
+          27,
+          9
+        ],
+        "breuken_origineel": [
+          "-1/9",
+          "26/27",
+          "1/27",
+          "1/9"
+        ],
+        "breuken_gelijknamig": [
+          "-3/27",
+          "26/27",
+          "1/27",
+          "3/27"
+        ],
+        "efficientie": {
+          "aanbevolen_methode": "KGV",
+          "reden": "Gebruik KGV (27) als gemeenschappelijke noemer; geeft kleinere getallen dan productnoemer.",
+          "alternatief": "Productnoemer (vermenigvuldig alle noemers) — werkt ook, maar geeft grotere tussenwaarden die nog vereenvoudigd moeten worden."
+        }
+      },
+      "hints": {
+        "structureel": {
+          "wat": "Tel deze 4 getallen bij elkaar op.",
+          "hoe": "Maak alle breuken gelijknamig met behulp van het KGV van alle noemers, tel daarna de tellers op.",
+          "let_op": "Bij meerdere breuken hoef je het KGV maar één keer te bepalen — daarna kun je alle tellers tegelijk omrekenen."
+        },
+        "feedback": {
+          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    }
+  ],
+  "externe_inputs": [
+    {
+      "waarde": "-1/9",
+      "mathblock_ids": [
+        "A5"
+      ]
+    },
+    {
+      "waarde": "2/3",
+      "mathblock_ids": [
+        "A2"
+      ]
+    },
+    {
+      "waarde": "13/6",
+      "mathblock_ids": [
+        "A3"
+      ]
+    },
+    {
+      "waarde": "1",
+      "mathblock_ids": [
+        "A0"
+      ]
+    },
+    {
+      "waarde": "-1/2",
+      "mathblock_ids": [
+        "A1"
+      ]
+    },
+    {
+      "waarde": "1",
+      "mathblock_ids": [
+        "B1"
+      ]
+    },
+    {
+      "waarde": "1/2",
+      "mathblock_ids": [
+        "B1"
+      ]
+    },
+    {
+      "waarde": "1/9",
+      "mathblock_ids": [
+        "A5"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "mathblocks": [
+        "A1",
+        "B1"
+      ]
+    },
+    {
+      "step": 2,
+      "mathblocks": [
+        "A2",
+        "B2",
+        "C2"
+      ]
+    },
+    {
+      "step": 3,
+      "mathblocks": [
+        "A3",
+        "B3"
+      ]
+    },
+    {
+      "step": 4,
+      "mathblocks": [
+        "A4",
+        "B4"
+      ]
+    },
+    {
+      "step": 5,
+      "mathblocks": [
+        "A5"
+      ]
+    }
+  ],
+  "duo_verzameling": [
+    {
+      "step": 1,
+      "input_expressie": "-1/9+(2/3^2×13/6)+((√3(1)-1/2)^3:(1+1/2)^3)+1/9",
+      "hoog": [
+        {
+          "mathblock": "A1",
+          "output_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:(1+1/2)^3)+1/9"
+        },
+        {
+          "mathblock": "B1",
+          "output_expressie": "-1/9+(2/3^2×13/6)+((√3(1)-1/2)^3:3/2^3)+1/9"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "A2",
+          "output_expressie": "-1/9+(4/9×13/6)+((√3(1)-1/2)^3:(1+1/2)^3)+1/9"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "input_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:3/2^3)+1/9",
+      "hoog": [
+        {
+          "mathblock": "A2",
+          "output_expressie": "-1/9+(4/9×13/6)+(1/2^3:3/2^3)+1/9"
+        },
+        {
+          "mathblock": "B2",
+          "output_expressie": "-1/9+(2/3^2×13/6)+(1/8:3/2^3)+1/9"
+        },
+        {
+          "mathblock": "C2",
+          "output_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:27/8)+1/9"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 3,
+      "input_expressie": "-1/9+(4/9×13/6)+(1/8:27/8)+1/9",
+      "hoog": [
+        {
+          "mathblock": "A3",
+          "output_expressie": "-1/9+52/54+(1/8:27/8)+1/9"
+        },
+        {
+          "mathblock": "B3",
+          "output_expressie": "-1/9+(4/9×13/6)+8/216+1/9"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 4,
+      "input_expressie": "-1/9+52/54+8/216+1/9",
+      "hoog": [
+        {
+          "mathblock": "A4",
+          "output_expressie": "-1/9+26/27+8/216+1/9"
+        },
+        {
+          "mathblock": "B4",
+          "output_expressie": "-1/9+52/54+1/27+1/9"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 5,
+      "input_expressie": "-1/9+26/27+1/27+1/9",
+      "hoog": [
+        {
+          "mathblock": "A5",
+          "output_expressie": "1"
+        }
+      ],
+      "laag": []
+    }
+  ]
+}
