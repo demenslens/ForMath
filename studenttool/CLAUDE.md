@@ -53,11 +53,12 @@ laadde. Regels:
 
 - De hint-omkadering (knop 🔲 Mathblocks) gebruikt nu de AST-aanpak
   (`genLatexTokens` op de originele AST); werkt correct op regel 1.
-- De matcher-gebaseerde hint voor latere regels is GEPARKEERD wegens een
-  browser-specifieke `treesEqual`-anomalie: `treesEqual(nI,nO)` geeft `false` op
-  identieke bomen in Chrome/Safari, maar `true` in Node — bij bewezen identieke
-  broncode en data. Startpunt bij hervatten: test `treesEqual` in Firefox; werkt
-  het daar wél, dan is het engine-specifiek op deze Mac.
+- De matcher-lokalisatie (node_map ↔ matcher-boom) is OPGELOST: `locateBoundary`
+  valt bij een implausibel node_map-pad terug op de input-vs-output-diff.
+  Geverifieerd met het browserloze Node-testharnas (`test_harnas/`, 451 checks /
+  26 opgaven / 0 fail; zie `matcher_node_map_probleem.md`). De eerder vermoede
+  `treesEqual`-anomalie was geen engine-bug. RESTEREND: de matcher inhaken in de
+  LF-flow (zie volgend punt) en die integratie in de browser verifiëren.
 - `applyCorrectChanges` bestaat maar wordt niet aangeroepen in `doLF`;
   `currentTree` evolueert daardoor nog niet na reducties. De volledige
   LF-evaluatie is in drie fasen ontworpen (zie `ONTWERP_lf_evaluatie.md`).

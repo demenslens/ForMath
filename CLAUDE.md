@@ -17,6 +17,12 @@ buiten deze map en erft deze instructies NIET.)
 
 De voertaal in dit project is Nederlands. Gebruik "parameter", niet "variabele".
 
+## Planning
+
+De actuele takenlijst en voortgang staan in `planning.md` (in deze map). Raadpleeg
+dat bestand voor wat er nog moet gebeuren, welke fasen lopen en wat geparkeerd is.
+Werk het bij na een werksessie wanneer de status of voortgang verandert.
+
 ## Kernbegrippen (gedeeld)
 
 - **mathblock** = één deelbewerking (A1, B1, A2…), met eigen id.
