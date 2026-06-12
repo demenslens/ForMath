@@ -4,6 +4,20 @@
   var OPGAVEN_BASE = '../testopgaven/';
   var INDEX_URL = OPGAVEN_BASE + 'index.json';
 
+  // ── LF-PINPOINT-ENGINE ────────────────────────────────────────────
+  // De LF-flow lokaliseert fouten/voortgang via de matcher (window.MATCHER,
+  // checkStep) i.p.v. de oudere tekstmatching (pinpointFromPatterns). De
+  // matcher-lokalisatie is geverifieerd via studenttool/test_harnas/
+  // (451 checks / 26 opgaven / 0 fail). Valt terug op pinpointFromPatterns als
+  // de matcher niet geladen is of null teruggeeft. In de browser om te schakelen
+  // zonder herladen:  window.FORMATH_MATCHER_PINPOINT = false  (= oude engine).
+  function _matcherPinpointOn(){
+    try {
+      if(typeof window !== 'undefined' && window.FORMATH_MATCHER_PINPOINT === false) return false;
+    } catch(e){}
+    return true;
+  }
+
   // ── DEBUG-LOGGING ─────────────────────────────────────────────────
   // De studenttool draait een 250ms cursor-poll en heeft veel diagnostiek.
   // Standaard staat alle [atomMap]/[doLF]/[stepTracking]/… logging UIT,
@@ -1429,6 +1443,60 @@
     return {type: 0, resolved: resolved};
   }
 
+  // ── PINPOINTING via de matcher (window.MATCHER.checkStep) ──
+  // Spiegelt het pinResult-contract van pinpointFromPatterns:
+  //   {type:0, resolved}              — niets fout (evt. blokken opgelost)
+  //   {type:1, errors[], resolved}    — herleidbare fout(en) op mathblock(s)
+  //   {type:2}                        — wijziging niet aan een mathblock te koppelen
+  //   null                            — matcher niet beschikbaar → laat doLF terugvallen
+  // checkStep vergelijkt de HELE student-tekst van de huidige step tegen de
+  // step-input + per-mathblock output_expressie (absoluut, niet incrementeel);
+  // currentStep houdt bij welke step in de editor staat.
+  function pinpointFromMatcher(currLatex){
+    if(!_matcherPinpointOn()) return null;
+    if(!window.MATCHER || typeof window.MATCHER.checkStep !== 'function') return null;
+    if(!currentOpgave || !currentOpgave.duo_verzameling) return null;
+
+    var duoText = latexToDuo(currLatex);
+    var res;
+    try { res = window.MATCHER.checkStep(currentOpgave, currentStep, duoText); }
+    catch(e){ dbg('[pinpointMatcher] checkStep wierp:', e.message); return null; }
+    if(!res || res.error){ dbg('[pinpointMatcher] geen resultaat:', res && res.error); return null; }
+
+    var errors = [];
+    var resolved = [];
+    (res.resultaten || []).forEach(function(r){
+      if(r.toestand === 'AFWIJKEND'){
+        // Format de foute student-waarde als breuk (5/4-stijl) zodat
+        // markErrorsInEditor hem in de LaTeX terugvindt. NIET r.student
+        // gebruiken: de matcher-fmt valt terug op decimalen (BigInt-quirk).
+        var got = '?';
+        try {
+          if(r.studentValue != null) got = math.format(r.studentValue, {fraction:'ratio'});
+        } catch(e){}
+        var mb = findMathblock(r.mathblock);
+        var exprStr = mb ? formatMathblockExpr(mb) : r.mathblock;
+        var verwacht = mb ? mb.output : r.verwacht;
+        errors.push({
+          mathblockId: r.mathblock,
+          expected: verwacht,
+          got: got,
+          description: exprStr + ' = ' + verwacht + (got && got !== '?' ? ', niet ' + got : '')
+        });
+      } else if(r.toestand === 'CANONIEK'){
+        resolved.push(r.mathblock);
+      }
+    });
+
+    dbg('[pinpointMatcher] step', currentStep, '→ errors:', errors.length,
+        'resolved:', resolved, 'alleHoogKlaar:', res.alleHoogKlaar);
+
+    if(errors.length > 0) return {type:1, errors:errors, resolved:resolved};
+    // Geen fout én niets opgelost = wijziging niet aan een mathblock te koppelen.
+    if(resolved.length === 0) return {type:2};
+    return {type:0, resolved:resolved};
+  }
+
   // Find what replaced a pattern in the normalized expression
   function _findReplacement(prevNorm, currNorm, patterns){
     for(var i = 0; i < patterns.length; i++){
@@ -1922,6 +1990,51 @@
       window.__dumpNodeMap       = function(){ return nodeMap; };
       window.__dumpAtomMap       = function(){ return atomToMathblock; };
       window.__dumpOpgave        = function(){ return currentOpgave; };
+
+      // FASE 1 — geïsoleerde test van de matcher (window.MATCHER.checkStep).
+      // Verandert NIETS aan de LF-flow; puur om in de console te verifiëren
+      // dat de matcher op elke step het juiste mathblock en de juiste toestand
+      // vindt. Aanroep:
+      //   window.__formathCheck()            -> huidige step, huidige editor-invoer
+      //   window.__formathCheck(2)           -> step 2, huidige editor-invoer
+      //   window.__formathCheck(2, '...')    -> step 2, opgegeven DUO-tekst
+      // Geef je LaTeX op? Zet eerst zelf om met latexToDuo. Geef je niets op,
+      // dan wordt de editor-LaTeX automatisch via latexToDuo omgezet.
+      window.__formathCheck = function(stepNr, duoText){
+        if(!window.MATCHER || typeof window.MATCHER.checkStep !== 'function'){
+          console.warn('[formathCheck] MATCHER.checkStep niet beschikbaar'); return null;
+        }
+        if(!currentOpgave){ console.warn('[formathCheck] geen opgave geladen'); return null; }
+        var step = (stepNr != null) ? stepNr : currentStep;
+        var tekst = duoText;
+        if(tekst == null){
+          var lx = getEditorLatex();
+          tekst = latexToDuo(lx);
+          console.log('[formathCheck] editor-LaTeX → DUO:', JSON.stringify(lx), '→', JSON.stringify(tekst));
+        }
+        var res = window.MATCHER.checkStep(currentOpgave, step, tekst);
+        console.log('[formathCheck] step', step, '| alleHoogKlaar:', res.alleHoogKlaar,
+                    '| fouten:', (res.fouten || []).map(function(f){ return f.mathblock; }));
+        if(res.resultaten){
+          res.resultaten.forEach(function(r){
+            console.log('   ', r.mathblock, '(' + r.tak + '):', r.toestand,
+                        '| verwacht', r.verwacht, '| student', r.student);
+          });
+        }
+        return res;
+      };
+
+      // Handige variant: laat de matcher op ELKE step de input_expressie tegen
+      // zichzelf checken (sanity-test op de referentie-opgave, zonder editor).
+      window.__formathCheckAllSteps = function(){
+        if(!currentOpgave || !currentOpgave.duo_verzameling){ console.warn('geen opgave'); return; }
+        currentOpgave.duo_verzameling.forEach(function(s){
+          var inp = s.input_expressie;
+          var res = window.MATCHER.checkStep(currentOpgave, s.step, inp);
+          var toestand = (res.resultaten || []).map(function(r){ return r.mathblock + '=' + r.toestand; }).join(', ');
+          console.log('step', s.step, '| input onbewerkt →', toestand);
+        });
+      };
     }
   } catch(e){}
 
@@ -3237,7 +3350,10 @@
     // Strategy: for each unresolved mathblock, check if its input pattern
     // disappeared from the LaTeX. If so, the student worked on that block.
     // Then evaluate what replaced it and compare with expected output.
-    var pinResult = pinpointFromPatterns(previousLatex, latexVal);
+    // Matcher-lokalisatie (geverifieerd via test_harnas/); valt terug op de
+    // oudere tekstmatching als de matcher niet geladen is of null teruggeeft.
+    var pinResult = pinpointFromMatcher(latexVal);
+    if(pinResult == null) pinResult = pinpointFromPatterns(previousLatex, latexVal);
     dbg('[doLF] pinResult:', pinResult ? ('type=' + pinResult.type + ' errors=' + (pinResult.errors?pinResult.errors.length:0) + ' resolved=' + (pinResult.resolved?pinResult.resolved.length:0)) : 'null');
 
     if(!isCorrect){

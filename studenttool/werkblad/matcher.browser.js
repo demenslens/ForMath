@@ -478,6 +478,11 @@ function diffPath(a, b) {
   return [diffIdx, ...deeper];
 }
 
+// LET OP: 'grp' (group-id) is een administratief hulpveld dat per parse-aanroep
+// oploopt (_nextGrp). Het is GEEN onderdeel van de wiskundige identiteit van een
+// boom en mag de gelijkheid NOOIT beïnvloeden. treesEqual vergelijkt daarom
+// uitsluitend op 'op', 'raw' en 'args' — nooit op 'grp'. (Manifold-herkenning
+// die grp wél nodig heeft, gebruikt findGroupInTree/byGrp apart, niet treesEqual.)
 function treesEqual(a, b) {
   if (a == null || b == null) return a === b;
   if (a.op !== b.op) return false;
