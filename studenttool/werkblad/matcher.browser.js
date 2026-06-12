@@ -146,6 +146,19 @@ function parseDuo(text) {
 let _grpCounter = 0;
 function _nextGrp() { return ++_grpCounter; }
 
+// grp (group-id) is een ADMINISTRATIEF veld dat per parse-aanroep oploopt; het
+// mag NOOIT meetellen in een boomvergelijking. We zetten het als NIET-enumerable
+// property: dan is het onzichtbaar voor JSON.stringify, object-spreads en
+// Object.keys, en kan geen enkele structuur-vergelijking (nu of in de toekomst,
+// ook in de browser-bundle) er ooit nog op struikelen. Lezen via `node.grp`
+// (findGroupInTree/reconstructGroup) blijft gewoon werken.
+function setGrp(node, g) {
+  if (node == null) return;
+  Object.defineProperty(node, 'grp', {
+    value: g, writable: true, enumerable: false, configurable: true,
+  });
+}
+
 function normalize(node) {
   if (node == null) return null;
 
@@ -158,8 +171,8 @@ function normalize(node) {
       // lokaliseren van een geneste manifold zoals B3).
       if (inner && (inner.op === 'Add' || inner.op === 'Multiply')) {
         const g = _nextGrp();
-        inner.grp = g;
-        for (const a of inner.args) if (a && a.grp == null) a.grp = g;
+        setGrp(inner, g);
+        for (const a of inner.args) if (a && a.grp == null) setGrp(a, g);
       }
       return inner;
     }
@@ -209,7 +222,7 @@ function flatten(op, args) {
       // Als de in te vlakken subgroep zelf een grp heeft, propageer die naar
       // z'n leden die er nog geen hebben (de groepsgrens van DIT niveau).
       if (c.grp != null) {
-        for (const cc of c.args) if (cc && cc.grp == null) cc.grp = c.grp;
+        for (const cc of c.args) if (cc && cc.grp == null) setGrp(cc, c.grp);
       }
       out.push(...c.args);
     } else {
