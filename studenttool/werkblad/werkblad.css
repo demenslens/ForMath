@@ -340,6 +340,31 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
     repeat-y;
 }
 
+/* ── PROBEERSEL: liniaallijnen laten MEEGROEIEN met de rijhoogte ──────────
+   Terug te draaien in één stap: verwijder de class "lines-per-row" op
+   <div class="page"> in werkblad.html (dan vallen de regels hieronder weg en
+   keert de vaste-periode liniatuur terug). Probleem: de repeating-gradient
+   hierboven heeft een VASTE periode (--line-h), maar de .rl-rijen groeien mee
+   met hoge expressies → cumulatieve drift t.o.v. de lijnen. Oplossing: teken
+   de grijze liniaallijn als onderrand PER .rl-rij (groeit mee), en laat
+   .page::after alleen nog de groene kopstreep tekenen. De rode kantlijn
+   (.page::before), de gaatjes (.holes) en de actieve-regel-highlight
+   (.rl.active, mustard gradient) blijven ongemoeid. */
+.page.lines-per-row::after {
+  background-image: linear-gradient(var(--margin-green), var(--margin-green));
+  background-position: 0 calc(var(--line-h) - 2px);
+  background-size: 100% 2px;
+  background-repeat: no-repeat;
+}
+.page.lines-per-row .rl {
+  border-bottom: 1px solid var(--rule-line);
+}
+/* Eerste regel (knoppenbalk): geen grijze onderrand — daar ligt de groene
+   kopstreep van ::after al. */
+.page.lines-per-row .rl:first-child {
+  border-bottom: none;
+}
+
 /* Rode kantlijn: 2px vóór de linkerkant van de knoppenbalk (die op 92px
    t.o.v. de pagerand staat) → op 90px. Loopt mee vanaf de eerste regel. */
 .page::before {
