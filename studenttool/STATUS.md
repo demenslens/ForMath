@@ -73,16 +73,56 @@ Geverifieerd: geen drift meer bij gemengde/hoge rijhoogtes; box-meting 511_022 n
 strak; `.rl.active` mustard-highlight, groene kopstreep, rode kantlijn
 (`.page::before`), gaatjes (`.holes`) en lege onder-regels intact.
 
-## OPENSTAAND — direct oppakken
+## OPENSTAAND — vier sporen na de sessie van 14-06 (elk eigen overdrachtsdoc)
 
-1. **`2/5`-natest van 511_026** (regressie, nog NIET met eigen ogen gezien): voer
-   een fóute `2/5` in zodat de rode box verschijnt; box strak om `2/5`, maar niet té
-   krap (de fudge die simpele breuken eerder ruimer maakte vervalt zodra een
-   structuur-offset meekomt). Subtielste check. Box-fix zelf is op 511_022 bevestigd,
-   dus dit is "waarschijnlijk goed" maar onbevestigd.
-2. **511_027** (wortel): `\sqrt` moet via dezelfde structuur-regex meelopen. Nog niet
-   getest.
-3. **De 16 goede gevallen**: geen regressie na v150 + v216.
+De box-plaatsing bleek na de hoogte-fix nog drie verdere problemen te hebben, plus
+een matcher-probleem. Vier ONAFHANKELIJKE sporen, elk met eigen .md voor Code:
+
+### Spoor 1 — box-hoogte: KLAAR, wacht op natest + commit
+Geschiedenis: 2/5 puilde uit (te hoog) → eerste fix clampte symmetrisch op de
+structuuroffset → die schoot door en sneed de NOEMER af (struct-offset is 4–6px
+korter dan de glyphs). Eindfix is ASYMMETRISCH: `top=max(unie.top, struct.top)`,
+`bottom=max(unie.bottom, struct.bottom)`, breedte uit unie. Headless geverifieerd
+door Code (verankering `?v=6`): 2/5 → 321…358, 13/12 → 312…338, wortel
+top=overstreep/bottom=radicand. Doc: `box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md`
+(corrigeert `box_structuuroffset_moet_hoogte_begrenzen.md`). NB: geverifieerd op
+delta.y=0-gevallen, dus niet verstoord door spoor 2. ACTIE: Henk natesten
+(2/5 + 13/12 geen afsnijden) → committen.
+
+### Spoor 2 — delta.y: box ~20px te laag (511_016)
+Box staat om de noemer i.p.v. de hele breuk. Bounds KLOPPEN (viaStructuur=true,
+rect y=321…357 correct), maar `drawBox` telt een `delta.y=20.23` op → box-top
+342 i.p.v. 321. scrollY=0, juiste mathfield gemeten. Vermoedelijk timing/render
+(de `renderOpgave`-TypeError, werkblad.js:693, wijst die kant op). TREFT HINT ÉN
+FOUT (gedeelde drawBox). Doc: `box_delta_y_verschuiving.md`.
+
+### Spoor 3 — delta.x: box in de marge (511_010, mogelijk ook 511_024)
+GEVOLG van spoor 4 bij 511_010 (verkeerd mathblock → incoherente offsets →
+delta.x=-288, box naar links de marge in). 511_024 kantlijn-observatie (rode box
+links) lijkt verwant maar is NOG NIET GEMETEN. Apart meten of het een eigen
+delta.x-bug is of telkens een gevolg van verkeerde offsets.
+
+### Spoor 4 — matcher koppelt verkeerd mathblock-label (511_010)
+DIEPSTE, eigen laag (matcher, niet box). Meting meldt `B8 (student=-3/1)` maar
+B8 = `(-2)^3` → hoort -8 te zijn; -3 hoort bij A8 (`-243:81`). A8/B8 verwisseld.
+Oorzaak vermoedelijk: meerdere mathblocks met gelijke uitkomst (A1,C2=3; A5,A8=-3)
+→ matcher kiest verkeerd label. Doc: `matcher_mathblock_identiteit_ambigue_waarden.md`.
+
+### Geparkeerd — wortelvorm-foutafhandeling (apart, later)
+Bij wortels (511_027: `∛1→1`) kan GEEN fout-met-wortel geproduceerd worden: de
+opgavestructuur reduceert wortels meteen, er is geen stap-toestand waarin de
+`\sqrt` zichtbaar is én als AFWIJKEND markeerbaar. Eigen sessie waard (raakt
+authortool-opgavegeneratie én/of matcher-herkenning van wortel-tussenstappen).
+Visuele wortel-box-check hangt hieraan; voorlopig op Code's headless-cijfers.
+
+### Volgorde-advies
+4 vóór 3 (spoor 3 is bij 511_010 een gevolg van 4 — eerst label goed, dan kijken
+of de marge-afdwaling vanzelf weg is). Spoor 1 los committen wanneer Henk wil.
+Spoor 2 onafhankelijk.
+
+### Restjes van de box-natest (na de fixes)
+- De 16 goede gevallen: geen regressie na alle box-fixes.
+- 8/14:50 (511_024): strak + kantlijn — samen met spoor 3 meten.
 
 Verificatie-helpers in de console: `window.__meetFoutBox()` (toont box-rect; evt.
 nu ook `viaStructuur`), `window.__meetStructuur()` (getElementInfo per offset),
@@ -100,8 +140,9 @@ curl -s "http://localhost:8000/werkblad/<bestand>" | wc -c
 
 ## DAARNA — onderwerpenlijst (volgorde 4→1→2→3→5)
 
-4. **Box-plaatsing testen** — grotendeels afgerond (511_022 ✓, liniatuur ✓); rest:
-   2/5-regressie + wortel + de 16 goede gevallen.
+4. **Box-plaatsing testen** — grotendeels gevorderd (511_022 ✓, liniatuur ✓), maar
+   NIET af: 2/5 puilt uit (fix in `box_structuuroffset_moet_hoogte_begrenzen.md`),
+   daarna wortel (511_027) + de 16 goede gevallen opnieuw verifiëren.
 1. Meerdere fouten in één regel (matcher levert al meerdere fout-mathblocks;
    `markFoutKaders` tekent al meerdere boxen — vooral verifiëren).
 2. Meerdere hints, onderscheid hoog/lage prioriteit.
@@ -147,5 +188,12 @@ curl -s "http://localhost:8000/werkblad/<bestand>" | wc -c
 - `box_fix_vervolg.md` — teller-breuk-geval
 - `box_structuur_offset_niet_doorgegeven.md` — 511_022: fix vuurt al, GEEN bug
   (herzien; corrigeert de eerdere filter-bug-conclusie)
+- `box_structuuroffset_moet_hoogte_begrenzen.md` — 511_026 2/5: eerste hoogte-fix
+  (schoot door — gecorrigeerd door het volgende doc)
+- `box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md` — definitieve hoogte-fix
+  (top van structuur, bottom van cijfers); spoor 1
+- `box_delta_y_verschuiving.md` — 511_016: box 20px te laag (delta.y); spoor 2
+- `matcher_mathblock_identiteit_ambigue_waarden.md` — 511_010: verkeerd
+  mathblock-label bij gelijke uitkomsten; spoor 4 (spoor 3 delta.x volgt hieruit)
 - `liniatuur_meegroeien_met_rijhoogte.md` — liniatuur per rij (v216)
 - `STATUS.md` — dit document
