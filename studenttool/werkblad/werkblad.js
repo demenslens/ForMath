@@ -733,6 +733,8 @@
     // Clear error overlay on any input
     _cnt.clearErrorOverlay++;
     clearErrorOverlay();
+    // Ook de structurele fout-kaders opruimen: de student herwerkt de regel.
+    clearFoutKaders();
     parseTimer = setTimeout(function(){
       _cnt.parseTimerFire++;
       var latexVal = getEditorLatex();
@@ -1491,7 +1493,9 @@
     dbg('[pinpointMatcher] step', currentStep, '→ errors:', errors.length,
         'resolved:', resolved, 'alleHoogKlaar:', res.alleHoogKlaar);
 
-    if(errors.length > 0) return {type:1, errors:errors, resolved:resolved};
+    // matcherRes meegeven: de fout-markering (markFoutKaders) verankert de
+    // studentSubtree's structureel via de matcher-boom, net als de hint-omkadering.
+    if(errors.length > 0) return {type:1, errors:errors, resolved:resolved, matcherRes:res};
     // Geen fout én niets opgelost = wijziging niet aan een mathblock te koppelen.
     if(resolved.length === 0) return {type:2};
     return {type:0, resolved:resolved};
@@ -2034,6 +2038,172 @@
           var toestand = (res.resultaten || []).map(function(r){ return r.mathblock + '=' + r.toestand; }).join(', ');
           console.log('step', s.step, '| input onbewerkt →', toestand);
         });
+      };
+
+      // MEETINSTRUMENT — legt de fout-box-verankering bloot (read-only, tekent
+      // niets). Voor het box-plaatsingsonderzoek (box_plaatsing_analyse.md):
+      // dumpt per AFWIJKEND-mathblock elke verzamelde offset met z'n MathLive-
+      // bounds, de spanBounds-unie, de gemeten delta + fontScale, en de
+      // uiteindelijke box-rect (exact zoals drawBox die zou berekenen). Zo is
+      // zichtbaar of de box de VOLLE token-bounding-box omvat of op een
+      // baseline/vaste-hoogte blijft hangen.
+      //   __meetFoutBox()           -> huidige step + editor-invoer
+      //   __meetFoutBox(1, '...')   -> step 1, opgegeven DUO-tekst
+      window.__meetFoutBox = function(stepNr, duoText){
+        var V = window.VERANKERING, M = window.MATCHER;
+        if(!V || !M){ console.warn('[meetFoutBox] VERANKERING/MATCHER ontbreekt'); return null; }
+        if(!currentOpgave){ console.warn('[meetFoutBox] geen opgave'); return null; }
+        var step = (stepNr != null) ? stepNr : currentStep;
+        var tekst = duoText;
+        if(tekst == null) tekst = latexToDuo(getEditorLatex());
+        var res = M.checkStep(currentOpgave, step, tekst);
+        if(!res || res.error){ console.warn('[meetFoutBox] checkStep:', res && res.error); return null; }
+
+        var mf = document.querySelector('.rl.active .editor')
+              || document.querySelector('.rl.active math-field')
+              || mfRef || document.querySelector('math-field');
+        if(!mf){ console.warn('[meetFoutBox] geen invoerveld'); return null; }
+
+        var tokens  = V.genStudentTokens(res.studentTree, res.resultaten);
+        var offsets = V.collectOffsets(mf, 300);
+        var perOff  = V.anchorStudentOffsets(offsets, tokens);
+        var delta   = V.computeDelta(mf, offsets);
+        var scale   = V.fontScale(mf);
+        var DEPTH_SIZE_CORR = { 0:{dw:3,dh:4}, 1:{dw:2,dh:6}, 2:{dw:5,dh:0}, 3:{dw:6,dh:-3}, 4:{dw:2,dh:-4} };
+        var HM = V.HINT_MARGE;
+        var mfRect = mf.getBoundingClientRect();
+
+        console.log('%c[meetFoutBox] step ' + step + '  editor=' + JSON.stringify(getEditorLatex()),
+                    'font-weight:bold');
+        console.log('  delta=', delta, ' fontScale=', scale.toFixed(3),
+                    ' mathfield-rect={x:' + Math.round(mfRect.x) + ',y:' + Math.round(mfRect.y) +
+                    ',w:' + Math.round(mfRect.width) + ',h:' + Math.round(mfRect.height) + '}');
+
+        var uit = {};
+        var fout = res.resultaten.filter(function(r){ return r.toestand === 'AFWIJKEND' && r.studentSubtree; });
+        if(!fout.length){ console.log('  (geen AFWIJKEND-mathblocks — niets te markeren)'); return res; }
+
+        fout.forEach(function(r){
+          var rows = [], depths = [];
+          offsets.forEach(function(o, idx){
+            var lab = perOff[idx];
+            if(lab && lab.mb === r.mathblock && lab.toestand === 'AFWIJKEND'){
+              var b = o.bounds || {};
+              rows.push({ offset:o.offset, latex:o.latex, depth:o.depth,
+                          x:Math.round(b.x), y:Math.round(b.y),
+                          w:Math.round(b.width), h:Math.round(b.height),
+                          telt: !!(o.bounds && o.bounds.width > 0) });
+              if(o.bounds && o.bounds.width > 0){ depths.push(o.depth); }
+            }
+          });
+          // Bounds nu via mathblockBounds (bladeren + omvattende structuren),
+          // identiek aan wat markFoutKaders/drawBox gebruiken.
+          var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
+          var bounds = mbB.bounds;
+          var span = V.spanBounds(bounds);
+          // Zelfde regel als markFoutKaders: omvattende structuur → geen fudge.
+          var d = mbB.viaStructuur ? null : (depths.length ? Math.min.apply(null, depths) : 0);
+          var box = null;
+          if(span){
+            var sz = (d == null) ? {dw:0,dh:0} : (DEPTH_SIZE_CORR[Math.min(d,4)] || {dw:0,dh:0});
+            var links=HM.links*scale, rechts=HM.rechts*scale, boven=HM.boven*scale, onder=HM.onder*scale;
+            var szDw=sz.dw*scale, szDh=sz.dh*scale;
+            box = {
+              left:   Math.round(span.x + delta.x - szDw/2 - links),
+              top:    Math.round(span.y + delta.y - szDh/2 - boven),
+              width:  Math.round(span.width + szDw + links + rechts),
+              height: Math.round(span.height + szDh + boven + onder)
+            };
+          }
+          console.log('%c  ── ' + r.mathblock + ' (AFWIJKEND, student=' + r.student + ') ──',
+                      'color:#983018;font-weight:bold');
+          console.log('     verzamelde offsets:'); console.table(rows);
+          console.log('     spanBounds (unie van tellende bounds):',
+                      span ? {x:Math.round(span.x),y:Math.round(span.y),w:Math.round(span.width),h:Math.round(span.height)} : null,
+                      ' depth=', d, ' viaStructuur=', mbB.viaStructuur);
+          console.log('     → box-rect (zoals drawBox):', box);
+          uit[r.mathblock] = { offsets:rows, span:span, depth:d, viaStructuur:mbB.viaStructuur, box:box };
+        });
+        console.log('  TIP: vergelijk box.top/height met waar de teller/wortel visueel staat ' +
+                    '(klik een breuk-token aan en lees in de DOM .ML__frac/.ML__sqrt getBoundingClientRect).');
+        return { step:step, delta:delta, fontScale:scale, perMathblock:uit, res:res };
+      };
+
+      // MEETINSTRUMENT 2 — STRUCTUURHOOGTE (read-only). Onderzoekt of de echte
+      // (omvattende) structuurhoogte van een breuk/wortel te meten is via (a) de
+      // MathLive getElementInfo-API (atoom-id / extra velden) of (b) de shadow
+      // root (.ML__frac/.ML__sqrt-containers). Doel: bepalen wélke bron de volle
+      // structuurhoogte geeft, vóór we collectOffsets/spanBounds aanpassen
+      // (zie box_meetresultaten.md). Tekent niets.
+      //   __meetStructuur()         -> huidige step + editor-invoer
+      //   __meetStructuur(1, '...') -> step 1, opgegeven DUO-tekst
+      window.__meetStructuur = function(stepNr, duoText){
+        var V = window.VERANKERING, M = window.MATCHER;
+        if(!V || !M || !currentOpgave){ console.warn('[meetStructuur] VERANKERING/MATCHER/opgave ontbreekt'); return null; }
+        var step = (stepNr != null) ? stepNr : currentStep;
+        var tekst = (duoText != null) ? duoText : latexToDuo(getEditorLatex());
+        var res = M.checkStep(currentOpgave, step, tekst);
+        if(!res || res.error){ console.warn('[meetStructuur] checkStep:', res && res.error); return null; }
+        var mf = document.querySelector('.rl.active .editor')
+              || document.querySelector('.rl.active math-field')
+              || mfRef || document.querySelector('math-field');
+        if(!mf){ console.warn('[meetStructuur] geen invoerveld'); return null; }
+
+        function rectOf(el){ var r = el.getBoundingClientRect(); return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)}; }
+
+        // (0) Omgeving: MathLive-versie + shadow-root-inventaris.
+        var sr = mf.shadowRoot;
+        var ver = (window.MathfieldElement && window.MathfieldElement.version)
+               || (window.MathLive && window.MathLive.version) || '(onbekend)';
+        console.log('%c[meetStructuur] MathLive ' + ver + ' | shadowRoot=' + !!sr, 'font-weight:bold');
+        if(sr){
+          ['.ML__frac', '.ML__sqrt', '.ML__cmr', '[data-atom-id]', '[part]'].forEach(function(sel){
+            console.log('   shadow ' + sel + ' →', sr.querySelectorAll(sel).length);
+          });
+        }
+
+        // (1) Volledige getElementInfo-dump voor de eerste paar offsets — welke
+        //     velden levert de API (m.n. een atoom-id om naar de DOM te mappen)?
+        var probe = [];
+        for(var o = 0; o <= 14; o++){
+          var info = null; try { info = mf.getElementInfo(o); } catch(e){}
+          if(!info) continue;
+          var b = info.bounds || {};
+          probe.push({ offset:o, keys:Object.keys(info).join(','), latex:info.latex,
+                       depth:info.depth, id:(info.id != null ? String(info.id) : ''),
+                       bx:Math.round(b.x), by:Math.round(b.y), bw:Math.round(b.width), bh:Math.round(b.height) });
+        }
+        console.log('   getElementInfo-velden per offset:'); console.table(probe);
+
+        // (2) Kan een atoom-id naar een shadow-element gemapt worden? En geeft de
+        //     OMVATTENDE .ML__frac/.ML__sqrt-ancestor de volle structuurhoogte?
+        if(sr){
+          probe.forEach(function(p){
+            if(!p.id) return;
+            var el = sr.querySelector('[data-atom-id="' + p.id + '"]');
+            if(!el) return;
+            var fracAnc = el.closest('.ML__frac'), sqrtAnc = el.closest('.ML__sqrt');
+            console.log('   offset ' + p.offset + ' (latex ' + JSON.stringify(p.latex) + ') id=' + p.id,
+                        '→ atoom-rect', rectOf(el),
+                        fracAnc ? ('| omvattende .ML__frac' + JSON.stringify(rectOf(fracAnc))) : '',
+                        sqrtAnc ? ('| omvattende .ML__sqrt' + JSON.stringify(rectOf(sqrtAnc))) : '');
+          });
+
+          // (3) Inventaris van alle breuk/wortel-containers met rect + tekst —
+          //     zo is de ECHTE structuurhoogte (max-h) direct af te lezen en te
+          //     vergelijken met de cijfer-span uit __meetFoutBox.
+          console.log('   alle .ML__frac/.ML__sqrt in shadow (rect + tekst):');
+          var structs = [];
+          sr.querySelectorAll('.ML__frac, .ML__sqrt').forEach(function(el){
+            var r = rectOf(el);
+            structs.push({ klasse: el.classList.contains('ML__frac') ? 'frac' : 'sqrt',
+                           x:r.x, y:r.y, w:r.w, h:r.h, tekst:(el.textContent||'').slice(0,24) });
+          });
+          console.table(structs);
+        }
+        console.log('   VERGELIJK: de cijfer-span uit __meetFoutBox (bv. h=27 bij 511_022) ' +
+                    'vs de omvattende .ML__frac-hoogte hierboven — dat verschil is wat de box mist.');
+        return { mathliveVersie: ver, shadow: !!sr, probe: probe };
       };
     }
   } catch(e){}
@@ -3362,7 +3532,11 @@
         addMarginMark(currentLine, false);
         var errMsgs = pinResult.errors.map(function(e){ return e.description; });
         st('er', '✗ Rekenfout: ' + errMsgs.join(' | '));
-        markErrorsInEditor(null, pinResult.errors);
+        // Structurele fout-markering (rode box op de foute subexpressie) via de
+        // matcher-boom; valt terug op de oudere tekst-markering als er niets te
+        // verankeren is (bv. pattern-pinpoint zonder matcher-resultaat).
+        var nFout = markFoutKaders(pinResult.matcherRes);
+        if(nFout === 0) markErrorsInEditor(null, pinResult.errors);
         lfBlocked = true;
         dbg('[doLF] Type 1 errors:', errMsgs);
         return;
@@ -3380,6 +3554,7 @@
     // ── CORRECT ──
     lfBlocked = false;
     clearErrorOverlay();
+    clearFoutKaders();
 
     // Add resolved blocks from pattern detection and update nodeMap
     if(pinResult && pinResult.resolved){
@@ -3585,6 +3760,69 @@
   window.__toonHint = function(){ toonHintKaders('hoog'); };
   window.__toonHintLaag = function(){ toonHintKaders('laag'); };
   window.__wisHint = function(){ if (window.VERANKERING) window.VERANKERING.clearBoxes(); };
+
+  // FASE 1b — FOUT-MARKERING via student-verankering (window.VERANKERING)
+  // ══════════════════════════════════════
+  // Tekent een RODE box rond elke foute subexpressie die de matcher aanwees
+  // (studentSubtree van een AFWIJKEND-mathblock), structureel verankerd via de
+  // matcher-boom — hetzelfde mechaniek als de hint-omkadering, maar dan op de
+  // student-invoer en in de foutkleur (--err #983018, te onderscheiden van de
+  // mustard hint-omkadering). De boxen krijgen een eigen klasse (__foutbox)
+  // zodat ze los van de hint-boxen op te ruimen zijn.
+  var FOUT_KLEUR = { bg: 'rgba(152,48,24,0.28)', border: 'rgba(152,48,24,0.95)' };
+  function clearFoutKaders(){
+    document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
+  }
+  // Geeft het aantal getekende fout-kaders terug (0 = niets te ankeren).
+  function markFoutKaders(matcherRes){
+    clearFoutKaders();
+    if (!window.VERANKERING) { dbg('[fout] VERANKERING-module niet geladen'); return 0; }
+    if (!matcherRes || !matcherRes.studentTree || !matcherRes.resultaten) return 0;
+    var V = window.VERANKERING;
+    var fout = matcherRes.resultaten.filter(function(r){
+      return r.toestand === 'AFWIJKEND' && r.studentSubtree;
+    });
+    if (!fout.length) return 0;
+
+    // Dezelfde actieve invoer-mathfield als de hint-flow gebruikt.
+    var mf = document.querySelector('.rl.active .editor')
+          || document.querySelector('.rl.active math-field')
+          || mfRef
+          || document.querySelector('math-field');
+    if (!mf) { dbg('[fout] geen invoerveld actief'); return 0; }
+
+    var tokens  = V.genStudentTokens(matcherRes.studentTree, matcherRes.resultaten);
+    var offsets = V.collectOffsets(mf);
+    var perOff  = V.anchorStudentOffsets(offsets, tokens);
+    var delta   = V.computeDelta(mf, offsets);
+
+    var getekend = 0;
+    fout.forEach(function(r){
+      // Diepte uit de BLAD-offsets (voor de DEPTH_SIZE_CORR-fudge in drawBox);
+      // de omvattende structuur-offsets zijn ondieper en zouden de fudge anders
+      // verschuiven.
+      var depths = [];
+      offsets.forEach(function(o, idx){
+        var lab = perOff[idx];
+        if (lab && lab.mb === r.mathblock && o.bounds && o.bounds.width > 0) depths.push(o.depth);
+      });
+      // Bounds = bladeren + kleinste omvattende structuren (volle hoogte).
+      var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
+      var span = V.spanBounds(mbB.bounds);
+      if (span){
+        // Kwam de span van een omvattende structuur-offset? Dan geeft die al de
+        // echte breedte+hoogte → geen digit-fudge (depth=null). Anders de
+        // diepte-gebaseerde fudge zoals voorheen.
+        var d = mbB.viaStructuur ? null : (depths.length ? Math.min.apply(null, depths) : 0);
+        var box = V.drawBox(mf, span, FOUT_KLEUR, delta, d, V.HINT_MARGE);
+        if (box) box.classList.add('__foutbox');
+        getekend++;
+      }
+    });
+    dbg('[fout] ' + getekend + ' fout-kader(s) getekend voor', fout.map(function(r){return r.mathblock;}));
+    return getekend;
+  }
+  window.__wisFout = clearFoutKaders;
 
   function addLFButton(line){
     var btn = document.createElement('button');

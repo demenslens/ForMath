@@ -113,7 +113,11 @@
   // overlay-laag hangen i.p.v. globaal aan de body.
   function drawBox(mf, localRect, color, delta, depth, extraMarge, container) {
     if (!localRect || !delta) return;
-    var sz = DEPTH_SIZE_CORR[Math.min(depth || 0, 4)] || { dw: 0, dh: 0 };
+    // depth === null: de localRect komt al van een OMVATTENDE structuur-offset
+    // (volle breuk/wortel-bounds), dus de empirische per-diepte digit-fudge zou
+    // dubbel compenseren → geen fudge, alleen de marge. Anders de gemeten fudge.
+    var sz = (depth == null) ? { dw: 0, dh: 0 }
+           : (DEPTH_SIZE_CORR[Math.min(depth, 4)] || { dw: 0, dh: 0 });
     var em = extraMarge || {};
     var s = fontScale(mf);
 
@@ -332,8 +336,64 @@
     return result;
   }
 
+  // ── Volle bounds van een mathblock: bladeren + omvattende structuren ────
+  // Het center-punt van `inner` ligt binnen `outer` (met marge).
+  function _centerInside(inner, outer, tol) {
+    tol = (tol == null) ? 2 : tol;
+    var cx = inner.x + inner.width / 2, cy = inner.y + inner.height / 2;
+    return cx >= outer.x - tol && cx <= outer.x + outer.width + tol
+        && cy >= outer.y - tol && cy <= outer.y + outer.height + tol;
+  }
+
+  // Geeft alle bounds die de box voor mathblock `mb` moet omvatten:
+  //   1. de BLAD-tokens (cijfers/operatoren) die aan mb gekoppeld zijn, plus
+  //   2. de KLEINSTE OMVATTENDE STRUCTUUR-offsets (\frac{...}, \sqrt{...},
+  //      machten) — die de volle visuele hoogte (breukstreep/stapeling/wortel)
+  //      kennen die losse cijfers missen.
+  // De structuur moet UITSLUITEND bladeren van mb bevatten: zo wordt een grotere
+  // container die ook andere mathblocks omvat geweerd (bv. de samengestelde breuk
+  // waarvan mb slechts de teller is, of een \left(...\right)-groep met haakjes).
+  // Caret/grens-offsets (width<=0) tellen nooit mee. Lost de te-lage/verschoven
+  // fout-boxen op bij samengestelde breuken en wortels (zie box_structuurmeting.md).
+  function mathblockBounds(offsets, perOff, mb) {
+    var bounds = [];
+    var viaStructuur = false;   // is er een omvattende structuur-offset bijgevoegd?
+    // (1) bladeren van mb
+    offsets.forEach(function (o, idx) {
+      var lab = perOff[idx];
+      if (lab && lab.mb === mb && o.bounds && o.bounds.width > 0) bounds.push(o.bounds);
+    });
+    if (!bounds.length) return { bounds: bounds, viaStructuur: false };
+
+    // Alle GELABELDE blad-tokens (niet-composite), voor de exclusiviteitscheck.
+    var bladeren = [];
+    offsets.forEach(function (o, idx) {
+      var lab = perOff[idx];
+      var lx = o.latex || '';
+      if (lab && lab.mb && o.bounds && o.bounds.width > 0
+          && !/\\frac|\\sqrt|\^/.test(lx)) {
+        bladeren.push({ mb: lab.mb, b: o.bounds });
+      }
+    });
+
+    // (2) omvattende structuren die uitsluitend mb's bladeren bevatten
+    offsets.forEach(function (o) {
+      var lx = o.latex || '';
+      if (!(o.bounds && o.bounds.width > 0)) return;            // caret/grens uit
+      if (!(/\\frac|\\sqrt|\^/.test(lx) && lx.length > 2)) return; // alleen structuren
+      if (/^\\left\(|^\(/.test(lx)) return;                     // delimiter-groep weren
+      var binnen = bladeren.filter(function (L) { return _centerInside(L.b, o.bounds); });
+      if (binnen.length && binnen.every(function (L) { return L.mb === mb; })) {
+        bounds.push(o.bounds);
+        viaStructuur = true;
+      }
+    });
+    return { bounds: bounds, viaStructuur: viaStructuur };
+  }
+
   window.VERANKERING = {
     COLORS: COLORS,
+    mathblockBounds: mathblockBounds,
     HINT_MARGE: HINT_MARGE,
     collectOffsets: collectOffsets,
     computeDelta: computeDelta,
