@@ -356,14 +356,13 @@
   // Caret/grens-offsets (width<=0) tellen nooit mee. Lost de te-lage/verschoven
   // fout-boxen op bij samengestelde breuken en wortels (zie box_structuurmeting.md).
   function mathblockBounds(offsets, perOff, mb) {
-    var bounds = [];
-    var viaStructuur = false;   // is er een omvattende structuur-offset bijgevoegd?
-    // (1) bladeren van mb
+    // (1) blad-tokens (cijfers/operatoren) van mb
+    var leafBounds = [];
     offsets.forEach(function (o, idx) {
       var lab = perOff[idx];
-      if (lab && lab.mb === mb && o.bounds && o.bounds.width > 0) bounds.push(o.bounds);
+      if (lab && lab.mb === mb && o.bounds && o.bounds.width > 0) leafBounds.push(o.bounds);
     });
-    if (!bounds.length) return { bounds: bounds, viaStructuur: false };
+    if (!leafBounds.length) return { bounds: [], rect: null, viaStructuur: false };
 
     // Alle GELABELDE blad-tokens (niet-composite), voor de exclusiviteitscheck.
     var bladeren = [];
@@ -377,6 +376,7 @@
     });
 
     // (2) omvattende structuren die uitsluitend mb's bladeren bevatten
+    var structBounds = [];
     offsets.forEach(function (o) {
       var lx = o.latex || '';
       if (!(o.bounds && o.bounds.width > 0)) return;            // caret/grens uit
@@ -384,11 +384,34 @@
       if (/^\\left\(|^\(/.test(lx)) return;                     // delimiter-groep weren
       var binnen = bladeren.filter(function (L) { return _centerInside(L.b, o.bounds); });
       if (binnen.length && binnen.every(function (L) { return L.mb === mb; })) {
-        bounds.push(o.bounds);
-        viaStructuur = true;
+        structBounds.push(o.bounds);
       }
     });
-    return { bounds: bounds, viaStructuur: viaStructuur };
+
+    var viaStructuur = structBounds.length > 0;
+    var rect;
+    if (viaStructuur) {
+      // ASYMMETRISCHE begrenzing (zie
+      // box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md):
+      //   - TOP komt van de structuuroffset: die snoeit de loze glyph-witruimte
+      //     BOVEN de teller weg (een \sqrt levert juist een hogere top: het
+      //     wortelteken/de overstreep).
+      //   - BOTTOM komt van de cijfer-unie: de \frac/\sqrt-offset is structureel
+      //     4–6px KORTER dan waar de noemer/radicand-glyphs echt ophouden, dus op
+      //     de structuur-bottom clampen sneed de noemer af.
+      //   - BREEDTE blijft de unie (smalle structuur mag door bredere cijfers/bar
+      //     verruimd worden).
+      var sSpan = spanBounds(structBounds);
+      var uSpan = spanBounds(leafBounds.concat(structBounds)); // ongelimiteerde unie
+      var top    = Math.max(uSpan.y, sSpan.y);
+      var bottom = Math.max(uSpan.y + uSpan.height, sSpan.y + sSpan.height);
+      rect = { x: uSpan.x, y: top, width: uSpan.width, height: bottom - top };
+    } else {
+      // Geen omvattende structuur (bv. samengestelde teller) → bladbounds zijn
+      // de waarheid.
+      rect = spanBounds(leafBounds);
+    }
+    return { bounds: leafBounds.concat(structBounds), rect: rect, viaStructuur: viaStructuur };
   }
 
   window.VERANKERING = {

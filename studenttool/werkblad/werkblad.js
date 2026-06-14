@@ -2100,7 +2100,8 @@
           // identiek aan wat markFoutKaders/drawBox gebruiken.
           var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
           var bounds = mbB.bounds;
-          var span = V.spanBounds(bounds);
+          var rawUnie = V.spanBounds(bounds);   // ongelimiteerde unie (diagnostisch)
+          var span = mbB.rect;                  // hoogte door structuur begrensd
           // Zelfde regel als markFoutKaders: omvattende structuur → geen fudge.
           var d = mbB.viaStructuur ? null : (depths.length ? Math.min.apply(null, depths) : 0);
           var box = null;
@@ -2118,11 +2119,12 @@
           console.log('%c  ── ' + r.mathblock + ' (AFWIJKEND, student=' + r.student + ') ──',
                       'color:#983018;font-weight:bold');
           console.log('     verzamelde offsets:'); console.table(rows);
-          console.log('     spanBounds (unie van tellende bounds):',
-                      span ? {x:Math.round(span.x),y:Math.round(span.y),w:Math.round(span.width),h:Math.round(span.height)} : null,
+          var fmtR = function(s){ return s ? {x:Math.round(s.x),y:Math.round(s.y),w:Math.round(s.width),h:Math.round(s.height)} : null; };
+          console.log('     ongelimiteerde unie (bladeren+structuur):', fmtR(rawUnie));
+          console.log('     → rect (hoogte door structuur begrensd):', fmtR(span),
                       ' depth=', d, ' viaStructuur=', mbB.viaStructuur);
           console.log('     → box-rect (zoals drawBox):', box);
-          uit[r.mathblock] = { offsets:rows, span:span, depth:d, viaStructuur:mbB.viaStructuur, box:box };
+          uit[r.mathblock] = { offsets:rows, rawUnie:rawUnie, rect:span, depth:d, viaStructuur:mbB.viaStructuur, box:box };
         });
         console.log('  TIP: vergelijk box.top/height met waar de teller/wortel visueel staat ' +
                     '(klik een breuk-token aan en lees in de DOM .ML__frac/.ML__sqrt getBoundingClientRect).');
@@ -3806,9 +3808,10 @@
         var lab = perOff[idx];
         if (lab && lab.mb === r.mathblock && o.bounds && o.bounds.width > 0) depths.push(o.depth);
       });
-      // Bounds = bladeren + kleinste omvattende structuren (volle hoogte).
+      // Box-rect: hoogte uit de omvattende structuur (indien aanwezig), breedte
+      // uit bladeren+structuur. mathblockBounds levert de juiste rect al.
       var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
-      var span = V.spanBounds(mbB.bounds);
+      var span = mbB.rect;
       if (span){
         // Kwam de span van een omvattende structuur-offset? Dan geeft die al de
         // echte breedte+hoogte → geen digit-fudge (depth=null). Anders de
