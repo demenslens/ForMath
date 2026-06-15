@@ -61,6 +61,14 @@
   }
 
   // ── Delta meten via een ML__cmr-glyph ───────────────────────────────────
+  // getElementInfo(offset).bounds ZIJN al viewport-coördinaten (gemeten: in de
+  // werkende gevallen is best.left - bounds.x ≈ 0, dus delta ≈ de cosmetische
+  // GLOBAL_DELTA_CORR-nudge). De delta is dus alleen een kleine correctie, geen
+  // echte transform. We meten hem aan de referentie-glyph die qua POSITIE het
+  // dichtst bij de bound ligt — NIET qua breedte. Breedte-matching brak met
+  // minFontScale: een gelijk-brede maar VERDER staande glyph (zelfde cijfer
+  // elders) werd gekozen → box ~20px te laag / te ver naar rechts. Positie-
+  // matching kiest gegarandeerd de juiste glyph (afstand ≈ 0) en negeert verre.
   function computeDelta(mf, offsets) {
     var sr = mf.shadowRoot;
     var candidates = offsets.filter(function (o) {
@@ -72,16 +80,19 @@
       for (var i = 0; i < candidates.length; i++) {
         var ref = candidates[i];
         var glyphs = sr.querySelectorAll('.ML__cmr');
-        var best = null, bestDiff = Infinity;
+        var best = null, bestDist = Infinity;
         glyphs.forEach(function (el) {
           if (el.textContent.trim() !== ref.latex) return;
           var rect = el.getBoundingClientRect();
           if (rect.width === 0) return;
-          var wd = Math.abs(rect.width - ref.bounds.width);
-          if (wd > 3) return;
-          if (wd < bestDiff) { bestDiff = wd; best = rect; }
+          // Afstand tussen glyph-positie en de (viewport-)bound; de JUISTE glyph
+          // ligt daar vrijwel bovenop, een verkeerde elders ver weg.
+          var dist = Math.abs(rect.left - ref.bounds.x) + Math.abs(rect.top - ref.bounds.y);
+          if (dist < bestDist) { bestDist = dist; best = rect; }
         });
-        if (best) {
+        // Alleen vertrouwen als de dichtstbijzijnde glyph ook ECHT dichtbij is
+        // (anders geen betrouwbare meting → val terug op de nudge).
+        if (best && bestDist < 8) {
           return {
             x: best.left - ref.bounds.x + GLOBAL_DELTA_CORR.x,
             y: best.top  - ref.bounds.y + GLOBAL_DELTA_CORR.y
@@ -89,13 +100,8 @@
         }
       }
     }
-    var content = sr ? sr.querySelector('.ML__content, .ML__mathlive, .ML__base') : null;
-    var origin = mf.__mlOrigin || { x: 0, y: 0 };
-    if (content) {
-      var cr = content.getBoundingClientRect();
-      return { x: cr.left - origin.x + GLOBAL_DELTA_CORR.x, y: cr.top - origin.y + GLOBAL_DELTA_CORR.y };
-    }
-    return { x: 0, y: 0 };
+    // Geen betrouwbare glyph-match: bounds zijn al viewport, dus alleen de nudge.
+    return { x: GLOBAL_DELTA_CORR.x, y: GLOBAL_DELTA_CORR.y };
   }
 
   // ── Fontgrootte-schaling ────────────────────────────────────────────────
@@ -376,42 +382,55 @@
     });
 
     // (2) omvattende structuren die uitsluitend mb's bladeren bevatten
-    var structBounds = [];
+    // Splits naar BREUK (\frac) en OVERIG-structuur (\sqrt/macht). Wortels zijn
+    // een apart, geparkeerd probleem en houden de oude asymmetrische methode.
+    var fracBounds = [], otherStructBounds = [];
     offsets.forEach(function (o) {
       var lx = o.latex || '';
       if (!(o.bounds && o.bounds.width > 0)) return;            // caret/grens uit
       if (!(/\\frac|\\sqrt|\^/.test(lx) && lx.length > 2)) return; // alleen structuren
       if (/^\\left\(|^\(/.test(lx)) return;                     // delimiter-groep weren
       var binnen = bladeren.filter(function (L) { return _centerInside(L.b, o.bounds); });
-      if (binnen.length && binnen.every(function (L) { return L.mb === mb; })) {
-        structBounds.push(o.bounds);
-      }
+      if (!(binnen.length && binnen.every(function (L) { return L.mb === mb; }))) return;
+      if (/\\frac/.test(lx) && !/\\sqrt/.test(lx)) fracBounds.push(o.bounds);
+      else otherStructBounds.push(o.bounds);
     });
 
-    var viaStructuur = structBounds.length > 0;
-    var rect;
-    if (viaStructuur) {
-      // ASYMMETRISCHE begrenzing (zie
-      // box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md):
-      //   - TOP komt van de structuuroffset: die snoeit de loze glyph-witruimte
-      //     BOVEN de teller weg (een \sqrt levert juist een hogere top: het
-      //     wortelteken/de overstreep).
-      //   - BOTTOM komt van de cijfer-unie: de \frac/\sqrt-offset is structureel
-      //     4–6px KORTER dan waar de noemer/radicand-glyphs echt ophouden, dus op
-      //     de structuur-bottom clampen sneed de noemer af.
-      //   - BREEDTE blijft de unie (smalle structuur mag door bredere cijfers/bar
-      //     verruimd worden).
+    var structBounds = fracBounds.concat(otherStructBounds);
+    var rect, soort;
+
+    if (otherStructBounds.length) {
+      // WORTEL/MACHT — GEPARKEERD: ongewijzigde asymmetrische begrenzing
+      // (top van de structuuroffset = wortelteken/overstreep, bottom van de
+      // cijfer-unie). Zie box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md.
       var sSpan = spanBounds(structBounds);
-      var uSpan = spanBounds(leafBounds.concat(structBounds)); // ongelimiteerde unie
+      var uSpan = spanBounds(leafBounds.concat(structBounds));
       var top    = Math.max(uSpan.y, sSpan.y);
       var bottom = Math.max(uSpan.y + uSpan.height, sSpan.y + sSpan.height);
       rect = { x: uSpan.x, y: top, width: uSpan.width, height: bottom - top };
+      soort = 'structuur';
+    } else if (fracBounds.length) {
+      // BREUK — simpele, begrijpelijke methode (zie
+      // box_breuk_simpele_methode_plus_minfontscale.md): er zijn geen
+      // kettingbreuken, dus de breukhoogte IS gewoon teller-top..noemer-bottom
+      // (de cijfer-unie). BREEDTE = het breedste van teller/noemer, verruimd met
+      // de breukstreep (\frac-offset). De ±1px-marge zet de caller (drawBox).
+      var uLeaf = spanBounds(leafBounds);
+      var fSpan = spanBounds(fracBounds);
+      var left  = Math.min(uLeaf.x, fSpan.x);
+      var right = Math.max(uLeaf.x + uLeaf.width, fSpan.x + fSpan.width);
+      rect = { x: left, y: uLeaf.y, width: right - left, height: uLeaf.height };
+      soort = 'breuk';
     } else {
-      // Geen omvattende structuur (bv. samengestelde teller) → bladbounds zijn
-      // de waarheid.
+      // Geen omvattende structuur (los getal, of breuk zonder losse \frac-offset)
+      // → bladbounds. Voor een breuk is dat nog steeds teller-top..noemer-bottom.
       rect = spanBounds(leafBounds);
+      soort = 'blad';
     }
-    return { bounds: leafBounds.concat(structBounds), rect: rect, viaStructuur: viaStructuur };
+    return {
+      bounds: leafBounds.concat(structBounds), rect: rect,
+      viaStructuur: structBounds.length > 0, soort: soort,
+    };
   }
 
   window.VERANKERING = {

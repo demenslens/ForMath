@@ -132,10 +132,13 @@
         while(i < s.length && s[i] === ' ') i++;
         // First argument
         if(i < s.length && s[i] === '{'){
-          // Already has braces — copy the whole brace group
+          // Already has braces — normaliseer OOK de inhoud (geneste \frac-
+          // shorthand zoals \frac18 binnen een gehaakte breuk werd anders
+          // overgeslagen, waarna replaceFracs de verkeerde accolades pakte →
+          // verhaspelde/ongebalanceerde uitvoer).
           var bc = extractBraceContent(s, i);
           if(bc){
-            result += '{' + bc.content + '}';
+            result += '{' + normalizeFracShorthand(bc.content) + '}';
             i = bc.end + 1;
           } else {
             result += s[i]; i++;
@@ -153,7 +156,7 @@
         if(i < s.length && s[i] === '{'){
           var bc2 = extractBraceContent(s, i);
           if(bc2){
-            result += '{' + bc2.content + '}';
+            result += '{' + normalizeFracShorthand(bc2.content) + '}';
             i = bc2.end + 1;
           } else {
             result += s[i]; i++;
@@ -308,7 +311,14 @@
     s = s.replace(/\\,/g, ' ').replace(/\\;/g, ' ').replace(/\\!/g, '');
     s = s.replace(/\\quad/g, ' ').replace(/\\qquad/g, ' ');
     s = replaceSqrts(s);
-    s = replaceFracs(s);                 // \frac{a}{b} -> (a)/(b)  (breuk = /)
+    s = replaceFracs(s);                 // \frac{a}{b} -> ((a)/(b))  (breuk = /)
+    // Atomaire breuk terug naar de KALE vorm: replaceFracs maakt van \frac{7}{6}
+    // de gehaakte vorm ((7)/(6)), maar parseDuo herkent een breuk-WAARDE (Frac)
+    // alleen aan kale cijfers (7/6). De gehaakte vorm leest parseDuo als een
+    // DELING (Divide), waardoor ELKE breuk structureel afwijkt van de opgave en
+    // geen enkele leerlingstap meer herleidbaar is ("niet-herleidbare bewerking"
+    // bij een gestapelde-breuk-opgave). Zet cijfer/cijfer-breuken daarom terug.
+    s = s.replace(/\((\d+)\)\/\((\d+)\)/g, '$1/$2');
     s = s.replace(/\[/g, '(').replace(/\]/g, ')');
     s = s.replace(/\\cdot/g, '*').replace(/\\times/g, '*').replace(/\\div/g, '/');
     s = s.replace(/\\pm/g, '+');
@@ -677,6 +687,9 @@
       var mf = document.createElement('math-field');
       mf.id='mf-el'; mf.setAttribute('virtual-keyboard-mode','onfocus');
       mf.setAttribute('smart-mode','true'); mf.className='editor';
+      // Leesbaarheid bij gestapelde breuken/exponenten: houd geneste font op
+      // minstens 0.8em (MathLive 0.110 minFontScale; 0 = standaard verkleinen).
+      try { mf.minFontScale = 0.8; } catch(e){}
       r4.appendChild(mf); addLFButton(r4); mfRef=mf;
       setTimeout(function(){
         try {
@@ -1924,6 +1937,38 @@
   // accumulerende onCursorUpdate-stroom die de console onstabiel maakt.
   var _trackedEl = null;
 
+  // Eén echte klik/aanraking IN de expressie ruimt ALLE markeringen op (hint én
+  // fout). Bewust aan 'pointerdown' gebonden — een ECHTE gebruikersklik — en NIET
+  // aan focus/selection-change/het 250ms-interval, want die vuren ook
+  // programmatisch (bv. de mf.focus() na een LF) en zouden een net getekende
+  // foutbox meteen wissen.
+  function wisAlleBoxen(){
+    if (window.VERANKERING) window.VERANKERING.clearBoxes(); // .__hlbox = hint + fout
+    clearFoutKaders();                                       // .__foutbox (zekerheid)
+  }
+
+  // Klikken IN de expressie (de math-field/editor) wist alle markeringen. Een
+  // klik binnen een math-field ontstaat in de shadow DOM; MathLive verwerkt
+  // pointerdown intern, dus een listener op het host-element vuurt niet
+  // betrouwbaar. Daarom op document-niveau in de CAPTURE-fase (loopt vóór
+  // MathLive's eigen afhandeling) en via composedPath bepalen of de klik in een
+  // editor landde. Eén keer registreren.
+  if (typeof document !== 'undefined' && !window.__wisBoxKlikGebonden){
+    window.__wisBoxKlikGebonden = true;
+    document.addEventListener('pointerdown', function(e){
+      var path = (e.composedPath && e.composedPath()) || [e.target];
+      for (var i = 0; i < path.length; i++){
+        var el = path[i];
+        if (!el || !el.tagName) continue;
+        if (el.tagName === 'MATH-FIELD' ||
+            (el.classList && el.classList.contains('editor'))){
+          wisAlleBoxen();
+          return;
+        }
+      }
+    }, true);
+  }
+
   function detachCursorTracking(){
     _cnt.detachCursorTracking++;
     if(cursorTrackInterval){ clearInterval(cursorTrackInterval); cursorTrackInterval = null; }
@@ -2101,13 +2146,16 @@
           var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
           var bounds = mbB.bounds;
           var rawUnie = V.spanBounds(bounds);   // ongelimiteerde unie (diagnostisch)
-          var span = mbB.rect;                  // hoogte door structuur begrensd
-          // Zelfde regel als markFoutKaders: omvattende structuur → geen fudge.
-          var d = mbB.viaStructuur ? null : (depths.length ? Math.min.apply(null, depths) : 0);
+          var span = mbB.rect;                  // rect zoals markFoutKaders gebruikt
+          // Zelfde marge-regime als markFoutKaders (per soort).
+          var marge, d;
+          if (mbB.soort === 'breuk')          { marge = {links:0, rechts:0, boven:1, onder:1}; d = null; }
+          else if (mbB.soort === 'structuur') { marge = HM; d = null; }
+          else                                { marge = HM; d = (depths.length ? Math.min.apply(null, depths) : 0); }
           var box = null;
           if(span){
             var sz = (d == null) ? {dw:0,dh:0} : (DEPTH_SIZE_CORR[Math.min(d,4)] || {dw:0,dh:0});
-            var links=HM.links*scale, rechts=HM.rechts*scale, boven=HM.boven*scale, onder=HM.onder*scale;
+            var links=marge.links*scale, rechts=marge.rechts*scale, boven=marge.boven*scale, onder=marge.onder*scale;
             var szDw=sz.dw*scale, szDh=sz.dh*scale;
             box = {
               left:   Math.round(span.x + delta.x - szDw/2 - links),
@@ -2121,10 +2169,9 @@
           console.log('     verzamelde offsets:'); console.table(rows);
           var fmtR = function(s){ return s ? {x:Math.round(s.x),y:Math.round(s.y),w:Math.round(s.width),h:Math.round(s.height)} : null; };
           console.log('     ongelimiteerde unie (bladeren+structuur):', fmtR(rawUnie));
-          console.log('     → rect (hoogte door structuur begrensd):', fmtR(span),
-                      ' depth=', d, ' viaStructuur=', mbB.viaStructuur);
+          console.log('     → rect:', fmtR(span), ' soort=', mbB.soort, ' viaStructuur=', mbB.viaStructuur);
           console.log('     → box-rect (zoals drawBox):', box);
-          uit[r.mathblock] = { offsets:rows, rawUnie:rawUnie, rect:span, depth:d, viaStructuur:mbB.viaStructuur, box:box };
+          uit[r.mathblock] = { offsets:rows, rawUnie:rawUnie, rect:span, soort:mbB.soort, viaStructuur:mbB.viaStructuur, box:box };
         });
         console.log('  TIP: vergelijk box.top/height met waar de teller/wortel visueel staat ' +
                     '(klik een breuk-token aan en lees in de DOM .ML__frac/.ML__sqrt getBoundingClientRect).');
@@ -3673,6 +3720,9 @@
       var mf = document.createElement('math-field');
       mf.id='mf-el'; mf.setAttribute('virtual-keyboard-mode','onfocus');
       mf.setAttribute('smart-mode','true'); mf.className='editor';
+      // Leesbaarheid bij gestapelde breuken/exponenten: houd geneste font op
+      // minstens 0.8em (MathLive 0.110 minFontScale; 0 = standaard verkleinen).
+      try { mf.minFontScale = 0.8; } catch(e){}
       nextLine.appendChild(mf); addLFButton(nextLine); mfRef=mf;
       setTimeout(function(){
         try {
@@ -3808,16 +3858,19 @@
         var lab = perOff[idx];
         if (lab && lab.mb === r.mathblock && o.bounds && o.bounds.width > 0) depths.push(o.depth);
       });
-      // Box-rect: hoogte uit de omvattende structuur (indien aanwezig), breedte
-      // uit bladeren+structuur. mathblockBounds levert de juiste rect al.
+      // Box-rect + marge-regime per soort:
+      //  - breuk:     rect = teller-top..noemer-bottom (cijfer-unie) + breukstreep-
+      //               breedte; marge = ±1px (geen fudge).
+      //  - structuur: wortel/macht (geparkeerd) — asymmetrische rect + HINT_MARGE.
+      //  - blad:      los getal — bladbounds + HINT_MARGE + diepte-fudge.
       var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
       var span = mbB.rect;
       if (span){
-        // Kwam de span van een omvattende structuur-offset? Dan geeft die al de
-        // echte breedte+hoogte → geen digit-fudge (depth=null). Anders de
-        // diepte-gebaseerde fudge zoals voorheen.
-        var d = mbB.viaStructuur ? null : (depths.length ? Math.min.apply(null, depths) : 0);
-        var box = V.drawBox(mf, span, FOUT_KLEUR, delta, d, V.HINT_MARGE);
+        var marge, dArg;
+        if (mbB.soort === 'breuk')          { marge = {links:0, rechts:0, boven:1, onder:1}; dArg = null; }
+        else if (mbB.soort === 'structuur') { marge = V.HINT_MARGE; dArg = null; }
+        else                                { marge = V.HINT_MARGE; dArg = (depths.length ? Math.min.apply(null, depths) : 0); }
+        var box = V.drawBox(mf, span, FOUT_KLEUR, delta, dArg, marge);
         if (box) box.classList.add('__foutbox');
         getekend++;
       }
