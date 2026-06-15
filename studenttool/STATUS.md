@@ -135,7 +135,9 @@ wortel-teken-probleem (dat was een RODE HARING — zie achterhaald doc). Echte o
 - **v157**: waarde-pad — `normalizeFracShorthand` recursde niet in gehaakte args →
   geneste shorthand `\frac18` verhaspeld → `latexToMathJs` kapot → waarde-check faalt.
   Fix: recursie in gehaakte args. Doc: `latexToMathJs_shorthand_breuk_kapot.md`.
-  STATUS: code in commit 6f3bb09, wortelstap-natest (`[doLF] type=0`) NOG OPEN.
+  STATUS: code in commit 6f3bb09; wortelstap-natest GEVERIFIEERD in browser
+  (15-06, privévenster): `[evaluate]=5/4`, `[latexToDuo]` kale breuken,
+  `[doLF] type=0 resolved=1` → stap goedgekeurd, geen popup. v156/v157 WERKEN.
 
 **Inventarisatie gedaan (Code-rapport, `INVENTARISATIE_breuk_notatie_paden.md`):**
 ZES breuk-notaties circuleren (`7/6`, `(7)/(6)`, `\frac{7}{6}`, `\frac18`,
@@ -198,6 +200,11 @@ curl -s "http://localhost:8000/werkblad/<bestand>" | wc -c
   `::after`/`getComputedStyle` of zoek op `repeating-linear-gradient`.
 - Fout-boxen zijn `position:fixed` → scrollen verschuift ze tot de volgende render
   (bekende beperking).
+- MathLive-focus-error: `TypeError: undefined is not an object (this.mathfield.options)`
+  in `atomToString`/`onBlur`/`onFocus`, getriggerd vanuit werkblad.js (o.a. r3741, r693
+  `renderOpgave`). Komt ná een goedgekeurde stap / bij opgave-wissel; blokkeert niets
+  maar duikt herhaald op. Mogelijk verwant aan spoor 2 (delta.y, render/focus-timing).
+  Apart spoortje als het zichtbaar iets breekt (cursor wegspringen e.d.).
 - Referentie-opgave: `studenttool/testopgaven/opgave_20260511_023.json`.
 - Mapstructuur: `~/Desktop/formath/` met `authortool/` + `studenttool/`
   (`werkblad/` + `testopgaven/`). Studenttool-server: vanuit `studenttool/`,
