@@ -1,6 +1,6 @@
 # ForMath studenttool — STATUS (brug naar nieuwe chat)
 
-Samenvatting van waar het werk staat op 2026-06-14, zodat een nieuwe chat-sessie
+Samenvatting van waar het werk staat op 2026-06-15, zodat een nieuwe chat-sessie
 de draad oppakt zonder de hele geschiedenis over te doen. Diepere details staan in
 de losse documenten in `studenttool/` (zie "Documenten" onderaan).
 
@@ -78,16 +78,17 @@ strak; `.rl.active` mustard-highlight, groene kopstreep, rode kantlijn
 De box-plaatsing bleek na de hoogte-fix nog drie verdere problemen te hebben, plus
 een matcher-probleem. Vier ONAFHANKELIJKE sporen, elk met eigen .md voor Code:
 
-### Spoor 1 — box-hoogte: KLAAR, wacht op natest + commit
-Geschiedenis: 2/5 puilde uit (te hoog) → eerste fix clampte symmetrisch op de
-structuuroffset → die schoot door en sneed de NOEMER af (struct-offset is 4–6px
-korter dan de glyphs). Eindfix is ASYMMETRISCH: `top=max(unie.top, struct.top)`,
-`bottom=max(unie.bottom, struct.bottom)`, breedte uit unie. Headless geverifieerd
-door Code (verankering `?v=6`): 2/5 → 321…358, 13/12 → 312…338, wortel
-top=overstreep/bottom=radicand. Doc: `box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md`
-(corrigeert `box_structuuroffset_moet_hoogte_begrenzen.md`). NB: geverifieerd op
-delta.y=0-gevallen, dus niet verstoord door spoor 2. ACTIE: Henk natesten
-(2/5 + 13/12 geen afsnijden) → committen.
+### Spoor 1 — box-hoogte: VERVANGEN door simpele breuk-methode
+De asymmetrische hoogte-fix (commits 660042b/7fc58d6, verankering v6) is VERVANGEN
+door een eenvoudiger aanpak op Henks voorstel: kettingbreuken komen niet voor, dus
+de hele structuur-offset-machinerie is voor breuken overbodig. Nieuwe methode
+(werkblad v153 / verankering v7): box = teller-top…noemer-bottom (cijfer-unie) +
+1px, breedte = breedste van teller/noemer incl. breukstreep. Plus `minFontScale=0.8`
+voor leesbaarheid bij gestapelde breuken/exponenten. `mathblockBounds` splitst nu in
+breuk / structuur(wortel-macht, oude methode, ongemoeid) / blad. Doc:
+`box_breuk_simpele_methode_plus_minfontscale.md`. STATUS: code in commit 6f3bb09,
+NOG NIET browser-natgetest door Henk (2/5, 13/12, breedte, hint, minFontScale-smaak).
+De oude asymmetrische-fix-commits blijven als historie staan.
 
 ### Spoor 2 — delta.y: box ~20px te laag (511_016)
 Box staat om de noemer i.p.v. de hele breuk. Bounds KLOPPEN (viaStructuur=true,
@@ -117,8 +118,34 @@ Visuele wortel-box-check hangt hieraan; voorlopig op Code's headless-cijfers.
 
 ### Volgorde-advies
 4 vóór 3 (spoor 3 is bij 511_010 een gevolg van 4 — eerst label goed, dan kijken
-of de marge-afdwaling vanzelf weg is). Spoor 1 los committen wanneer Henk wil.
-Spoor 2 onafhankelijk.
+of de marge-afdwaling vanzelf weg is). Spoor 2 onafhankelijk.
+
+## BREUK-NOTATIE — de grote Achilleshiel (tweede sessiehelft 14-06)
+
+Breuken bleken een terugkerend grondprobleem: meerdere parallelle latex→notatie-
+converters die elk hun eigen breuk-regels herimplementeren. Eén notatie-mismatch =
+de breuk verliest zijn Frac-identiteit (wordt Divide) of raakt verhaspeld.
+
+**Concrete bug die dit blootlegde — 511_023 wortelstap afgekeurd:**
+Leerling rekent `√(1/64)=1/8` correct, krijgt "niet-herleidbare bewerking". GEEN
+wortel-teken-probleem (dat was een RODE HARING — zie achterhaald doc). Echte oorzaak
+= breuk-parsing in twee paden:
+- **v156**: matcher-pad — `latexToDuo` leverde gehaakt `((7)/(6))`, `parseDuo` las
+  dat als deling i.p.v. breuk. Fix: collapse naar kaal `7/6`. GEFIXT.
+- **v157**: waarde-pad — `normalizeFracShorthand` recursde niet in gehaakte args →
+  geneste shorthand `\frac18` verhaspeld → `latexToMathJs` kapot → waarde-check faalt.
+  Fix: recursie in gehaakte args. Doc: `latexToMathJs_shorthand_breuk_kapot.md`.
+  STATUS: code in commit 6f3bb09, wortelstap-natest (`[doLF] type=0`) NOG OPEN.
+
+**Inventarisatie gedaan (Code-rapport, `INVENTARISATIE_breuk_notatie_paden.md`):**
+ZES breuk-notaties circuleren (`7/6`, `(7)/(6)`, `\frac{7}{6}`, `\frac18`,
+mathjs `((1)/(8))`, boom-knoop Frac/Divide). De Frac-vs-Divide-beslissing hangt aan
+één regex `(\d+)/(\d+)` die kale cijfers eist. VOORSTEL: één canonieke interne vorm
+(DUO-tekst) + één centrale `normalizeLatex` aan de rand + regressienet. Maakt
+v156/v157 structureel overbodig.
+BESLISSING OPEN — Henk wil eerst (a) browserprobe §4 (wat stuurt MathLive uit), en
+(b) box-plaatsing-risico checken (de `\frac`-structuuroffsets die de box leest mogen
+niet wegvallen) vóór de migratie start. NIET committen zonder regressienet.
 
 ### Restjes van de box-natest (na de fixes)
 - De 16 goede gevallen: geen regressie na alle box-fixes.
@@ -190,10 +217,20 @@ curl -s "http://localhost:8000/werkblad/<bestand>" | wc -c
   (herzien; corrigeert de eerdere filter-bug-conclusie)
 - `box_structuuroffset_moet_hoogte_begrenzen.md` — 511_026 2/5: eerste hoogte-fix
   (schoot door — gecorrigeerd door het volgende doc)
-- `box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md` — definitieve hoogte-fix
-  (top van structuur, bottom van cijfers); spoor 1
+- `box_hoogte_asymmetrisch_top_structuur_bottom_cijfers.md` — asymmetrische hoogte-fix
+  (VERVANGEN door de simpele breuk-methode hieronder)
+- `box_breuk_simpele_methode_plus_minfontscale.md` — simpele breuk-box (teller-top…
+  noemer-bottom) + minFontScale=0.8; vervangt spoor 1 (v153/v7)
 - `box_delta_y_verschuiving.md` — 511_016: box 20px te laag (delta.y); spoor 2
 - `matcher_mathblock_identiteit_ambigue_waarden.md` — 511_010: verkeerd
   mathblock-label bij gelijke uitkomsten; spoor 4 (spoor 3 delta.x volgt hieruit)
+- `latexToMathJs_shorthand_breuk_kapot.md` — 511_023 wortelstap: shorthand-breuk
+  verhaspeld in waarde-pad (v157)
+- `INVENTARISATIE_breuk_notatie_paden.md` — Code-rapport: 6 breuk-notaties, canonieke-
+  vorm-voorstel (beslissing open)
+- `authortool_minteken_voor_wortel_verkeerd_toegekend.md` — ⚠️ ACHTERHAALD (rode
+  haring; wortel-teken was NIET de oorzaak — zie kop van het bestand)
+- `REFERENTIE_box_plaatsing.md` — naslag: box-parameters per wiskundige vorm
+- `box_plaatsing_diagram.svg` — visueel diagram bij de referentie
 - `liniatuur_meegroeien_met_rijhoogte.md` — liniatuur per rij (v216)
 - `STATUS.md` — dit document
