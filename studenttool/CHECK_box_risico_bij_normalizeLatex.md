@@ -1,0 +1,50 @@
+# Check (LEZEN, niet wijzigen): raakt normalizeLatex de pinpoint-box?
+
+Overdracht chat → Claude Code, 2026-06-15. Laatste voorbereidende stap vóór de
+breuk-notatie-migratie-beslissing. ALLEEN VERIFIËREN — geen code wijzigen. Lever een
+kort antwoord (ja/nee + onderbouwing) terug.
+
+## Context
+
+De voorgestelde canonieke-vorm-migratie (`INVENTARISATIE_breuk_notatie_paden.md` §6)
+introduceert één `normalizeLatex` aan de rand die MathLive-LaTeX naar de canonieke
+DUO-vorm brengt, vóór matcher en waarde-check. Twee feiten zijn nu hard:
+- Wortelstap (v156/v157) browser-geverifieerd.
+- MathLive-serialisatie gemeten (`browserprobe_MathLive_breuk_serialisatie.md`):
+  shorthand ⟺ beide args één teken; geneste breuken met `\left(\right)`.
+
+E�n open vraag blokkeert de beslissing: **raakt normalizeLatex de pinpoint-box?**
+
+## De zorg
+
+De pinpoint-box leest de `\frac{...}`-STRUCTUUROFFSETS uit de GERENDERDE latex van
+MathLive (via `getElementInfo` in de offset-verzameling → `mathblockBounds` in
+verankering.js). Als normalizeLatex de breuk-notatie verandert op een manier die ook
+de gerenderde latex / de structuuroffsets raakt, dan verschuift de box.
+
+## Wat te verifiëren (lezen in de code)
+
+1. **Draait normalizeLatex op een ANDER pad dan de rendering?** Verwachting/hypothese:
+   normalizeLatex zit in het matcher-pad (`latexToDuo`) en het waarde-pad
+   (`latexToMathJs`/`evaluateExpression`) — dus op de latex die NAAR de evaluatie/matcher
+   gaat, NIET op de latex die MathLive RENDERT (de mathfield-inhoud die de box uitleest).
+   Bevestig dat de mathfield-`getValue('latex')` / de gerenderde DOM ongemoeid blijft.
+
+2. **Leest de box ooit de genormaliseerde vorm?** Check `collectOffsets` /
+   `getElementInfo` / `mathblockBounds`: halen die hun latex uit MathLive direct (de
+   render), of uit een genormaliseerde string? Als direct uit MathLive → geen risico.
+   Als uit een gedeelde genormaliseerde bron → wél risico, dan moet normalizeLatex
+   buiten dat pad blijven.
+
+3. **Conclusie**: ja/nee — kan normalizeLatex veilig worden toegevoegd zonder de
+   box-plaatsing te raken? Zo nee: waar zit de koppeling en hoe te scheiden?
+
+## Lever terug
+
+Een kort .md- of chat-antwoord: bevestiging (box-pad gescheiden van normalisatie-pad,
+veilig) OF waarschuwing (koppeling gevonden op plek X, scheiden vóór migratie).
+Daarna neemt Henk de migratie-beslissing — Code begint NIET met bouwen tot Henk
+beslist.
+
+NB: dit raakt ook de wortel-structuur-tak (oude asymmetrische methode, geparkeerd) —
+die leest óók structuuroffsets. Neem die mee in de check.

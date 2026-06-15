@@ -145,9 +145,27 @@ mathjs `((1)/(8))`, boom-knoop Frac/Divide). De Frac-vs-Divide-beslissing hangt 
 één regex `(\d+)/(\d+)` die kale cijfers eist. VOORSTEL: één canonieke interne vorm
 (DUO-tekst) + één centrale `normalizeLatex` aan de rand + regressienet. Maakt
 v156/v157 structureel overbodig.
-BESLISSING OPEN — Henk wil eerst (a) browserprobe §4 (wat stuurt MathLive uit), en
-(b) box-plaatsing-risico checken (de `\frac`-structuuroffsets die de box leest mogen
-niet wegvallen) vóór de migratie start. NIET committen zonder regressienet.
+BESLISSING OPEN — maar de VOORBEREIDING IS COMPLEET (15-06). De drie checks die
+Henk wilde vóór de beslissing zijn alle drie groen:
+- (a) **Wortelstap** browser-geverifieerd: v156/v157 werken (zie hierboven).
+- (b) **Browserprobe §4** gedaan (`browserprobe_MathLive_breuk_serialisatie.md`):
+  MathLive gebruikt shorthand `\fracAB` DAN EN SLECHTS DAN als beide args één teken
+  zijn; anders accolades. Shorthand+accolades door elkaar per nestingsniveau →
+  normalizeLatex moet RECURSIEF. Tweede zorg: `\left(\right)` rond geneste
+  breuk-args afpellen.
+- (c) **Box-risico** door Code geverifieerd (`CHECK_box_risico_bij_normalizeLatex.md`):
+  GEEN risico — de box leest geometrie uit `getElementInfo` (live render),
+  normalizeLatex zit in het matcher/waarde-pad (one-way naar checkStep), `setValue`
+  schrijft nooit de genormaliseerde vorm terug. genStudentTokens emit voor Frac én
+  Divide identieke `\frac{…}{…}` → label-matching blijft uitlijnen.
+
+HARDE RANDVOORWAARDE voor de migratie: `normalizeLatex` moet READ-ONLY blijven en
+strikt buiten het render-/`setValue`-pad. Schrijft het ooit de genormaliseerde vorm
+terug in de mathfield → render verandert → box verschuift.
+
+ACTIE = alleen nog de ja/nee-BESLISSING (Henk), dan kan Code bouwen. Bouwen
+incrementeel MET regressienet (inventarisatie §6d) als harde voorwaarde — dat is
+het vangnet tegen precies de notatie-mismatches. NIET committen zonder regressienet.
 
 ### Restjes van de box-natest (na de fixes)
 - De 16 goede gevallen: geen regressie na alle box-fixes.
@@ -235,6 +253,9 @@ curl -s "http://localhost:8000/werkblad/<bestand>" | wc -c
   verhaspeld in waarde-pad (v157)
 - `INVENTARISATIE_breuk_notatie_paden.md` — Code-rapport: 6 breuk-notaties, canonieke-
   vorm-voorstel (beslissing open)
+- `browserprobe_MathLive_breuk_serialisatie.md` — gemeten shorthand-grens (voorbereiding b)
+- `CHECK_box_risico_bij_normalizeLatex.md` — box-risico-check + Code's antwoord: geen
+  risico mits read-only (voorbereiding c)
 - `authortool_minteken_voor_wortel_verkeerd_toegekend.md` — ⚠️ ACHTERHAALD (rode
   haring; wortel-teken was NIET de oorzaak — zie kop van het bestand)
 - `REFERENTIE_box_plaatsing.md` — naslag: box-parameters per wiskundige vorm
