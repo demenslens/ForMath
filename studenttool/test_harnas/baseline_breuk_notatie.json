@@ -1,0 +1,68 @@
+{
+  "L:shorthand-1cijfer": {
+    "latexToMathJs": "((1)/(8))",
+    "waarde": "1/8",
+    "latexToDuo": "(1/8)",
+    "matcherTree": "Frac:1,num:2",
+    "matcherWaarde": "0.125"
+  },
+  "L:accolade-meercijfer": {
+    "latexToMathJs": "((12)/(15))",
+    "waarde": "4/5",
+    "latexToDuo": "(12/15)",
+    "matcherTree": "Frac:1,num:2",
+    "matcherWaarde": "0.8"
+  },
+  "L:gemengd-1-15": {
+    "latexToMathJs": "((1)/(15))",
+    "waarde": "1/15",
+    "latexToDuo": "(1/15)",
+    "matcherTree": "Frac:1,num:2",
+    "matcherWaarde": "0.0(6)"
+  },
+  "L:genest-delimiters": {
+    "latexToMathJs": "(((((1)/(2))))/((((3)/(4)))))",
+    "waarde": "2/3",
+    "latexToDuo": "((((1/2)))/(((3/4))))",
+    "matcherTree": "Divide:1,Frac:2,num:4",
+    "matcherWaarde": "0.(6)"
+  },
+  "L:negatief-shorthand": {
+    "latexToMathJs": "-((3)/(4))",
+    "waarde": "-3/4",
+    "latexToDuo": "-(3/4)",
+    "matcherTree": "Frac:1,Negate:1,num:2",
+    "matcherWaarde": "-0.75"
+  },
+  "L:511_023-wortelstap": {
+    "latexToMathJs": "(((((7)/(6))-((3)/(4)))/(2-((1)/(8)))))*3^2-((3)/(4))",
+    "waarde": "5/4",
+    "latexToDuo": "((((7/6)-(3/4))/(2-(1/8))))*3^2-(3/4)",
+    "matcherTree": "Add:3,Divide:1,Frac:4,Multiply:1,Negate:3,Power:1,num:11",
+    "matcherWaarde": "1.25"
+  },
+  "D:kaal-breuk": {
+    "waarde": "7/6",
+    "matcherTree": "Frac:1,num:2",
+    "matcherWaarde": "1.1(6)"
+  },
+  "D:gehaakt-breuk": {
+    "waarde": "7/6",
+    "matcherTree": "Divide:1,num:2",
+    "matcherWaarde": "1.1(6)"
+  },
+  "D:deling": {
+    "waarde": "5/1",
+    "matcherTree": "Divide:1,num:2",
+    "matcherWaarde": "5"
+  },
+  "D:negatief": {
+    "waarde": "-1/8",
+    "matcherTree": "Frac:1,Negate:1,num:2",
+    "matcherWaarde": "-0.125"
+  },
+  "CHECKSTEP:511_023-wortelstap": {
+    "B1": "CANONIEK",
+    "pinpointType": 0
+  }
+}

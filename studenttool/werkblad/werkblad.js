@@ -245,8 +245,28 @@
     return s;
   }
 
+  // ── normalizeLatex — FASE 1 (MIGRATIEPLAN_normalizeLatex_gefaseerd.md) ──────
+  // Centrale, ADDITIEVE, READ-ONLY normalisatie van binnenkomende MathLive-latex
+  // naar één vorm, aan het BEGIN van beide afgeleide paden (matcher = latexToDuo,
+  // waarde-check = latexToMathJs). Brengt de twee notatie-zorgen uit de
+  // browserprobe op één plek samen:
+  //   (1) shorthand-breuk \fracAB → \frac{A}{B}, RECURSIEF (geneste niveaus);
+  //   (2) \left(...\right)/\bigl-delimiters → kale haakjes.
+  // HARDE RANDVOORWAARDE: READ-ONLY — NOOIT via setValue terug in de mathfield
+  // (render-/box-pad). Zie CHECK_box_risico_bij_normalizeLatex.md.
+  // FASE 1 is additief: de oude per-geval-hacks (v156-collapse in latexToDuo,
+  // v157-recursie in normalizeFracShorthand) BLIJVEN staan; downstream herhaalt
+  // deze stappen idempotent. Opruimen is fase 2 (aparte beslissing).
+  function normalizeLatex(latex){
+    if(typeof latex !== 'string') return latex;
+    var s = normalizeFracShorthand(latex);              // (1) shorthand → accolades
+    s = s.replace(/\\left/g, '').replace(/\\right/g, ''); // (2) delimiters → kaal
+    s = s.replace(/\\bigl/g, '').replace(/\\bigr/g, '');
+    return s;
+  }
+
   function latexToMathJs(latex){
-    var s = latex;
+    var s = normalizeLatex(latex);
     // Remove display-only commands
     s = s.replace(/\\left/g, '').replace(/\\right/g, '');
     s = s.replace(/\\bigl/g, '').replace(/\\bigr/g, '');
@@ -305,7 +325,7 @@
   // BREUK (\frac, hoofddeelstreep) is een andere mathblock dan een DELING (:).
   // Gebruikt door de hint-verankering die checkStep aanroept.
   function latexToDuo(latex){
-    var s = latex;
+    var s = normalizeLatex(latex);
     s = s.replace(/\\left/g, '').replace(/\\right/g, '');
     s = s.replace(/\\bigl/g, '').replace(/\\bigr/g, '');
     s = s.replace(/\\,/g, ' ').replace(/\\;/g, ' ').replace(/\\!/g, '');
@@ -2149,7 +2169,7 @@
           var span = mbB.rect;                  // rect zoals markFoutKaders gebruikt
           // Zelfde marge-regime als markFoutKaders (per soort).
           var marge, d;
-          if (mbB.soort === 'breuk')          { marge = {links:0, rechts:0, boven:1, onder:1}; d = null; }
+          if (mbB.soort === 'breuk')          { marge = {links:FOUT_MARGE, rechts:FOUT_MARGE, boven:FOUT_MARGE, onder:FOUT_MARGE}; d = null; }
           else if (mbB.soort === 'structuur') { marge = HM; d = null; }
           else                                { marge = HM; d = (depths.length ? Math.min.apply(null, depths) : 0); }
           var box = null;
@@ -3822,6 +3842,12 @@
   // mustard hint-omkadering). De boxen krijgen een eigen klasse (__foutbox)
   // zodat ze los van de hint-boxen op te ruimen zijn.
   var FOUT_KLEUR = { bg: 'rgba(152,48,24,0.28)', border: 'rgba(152,48,24,0.95)' };
+  // Symmetrische ademruimte-marge (px per kant) voor de fout-box bij soort
+  // 'breuk' (losse breuk én groep). Vervangt de te krappe ±1px en is de ENIGE
+  // marge-bron voor die soort — NIET combineren met HINT_MARGE (-2, krimpt; zie
+  // box_categorie_A_symmetrische_marge.md). Live bij te stellen in de browser via
+  // window.__setFoutMarge(px).
+  var FOUT_MARGE = 3;
   function clearFoutKaders(){
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
   }
@@ -3867,7 +3893,7 @@
       var span = mbB.rect;
       if (span){
         var marge, dArg;
-        if (mbB.soort === 'breuk')          { marge = {links:0, rechts:0, boven:1, onder:1}; dArg = null; }
+        if (mbB.soort === 'breuk')          { marge = {links:FOUT_MARGE, rechts:FOUT_MARGE, boven:FOUT_MARGE, onder:FOUT_MARGE}; dArg = null; }
         else if (mbB.soort === 'structuur') { marge = V.HINT_MARGE; dArg = null; }
         else                                { marge = V.HINT_MARGE; dArg = (depths.length ? Math.min.apply(null, depths) : 0); }
         var box = V.drawBox(mf, span, FOUT_KLEUR, delta, dArg, marge);
@@ -3879,6 +3905,9 @@
     return getekend;
   }
   window.__wisFout = clearFoutKaders;
+  // Tuning-knop voor de ademruimte rond de breuk-foutbox (px/kant). Stel in de
+  // browser bij: __setFoutMarge(4), forceer daarna opnieuw een fout om te zien.
+  window.__setFoutMarge = function(px){ var n = Number(px); FOUT_MARGE = isNaN(n) ? FOUT_MARGE : n; return FOUT_MARGE; };
 
   function addLFButton(line){
     var btn = document.createElement('button');

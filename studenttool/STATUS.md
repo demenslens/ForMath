@@ -163,13 +163,44 @@ HARDE RANDVOORWAARDE voor de migratie: `normalizeLatex` moet READ-ONLY blijven e
 strikt buiten het render-/`setValue`-pad. Schrijft het ooit de genormaliseerde vorm
 terug in de mathfield → render verandert → box verschuift.
 
-ACTIE = alleen nog de ja/nee-BESLISSING (Henk), dan kan Code bouwen. Bouwen
-incrementeel MET regressienet (inventarisatie §6d) als harde voorwaarde — dat is
-het vangnet tegen precies de notatie-mismatches. NIET committen zonder regressienet.
+FASE 1 GEBOUWD + BROWSER-GEVERIFIEERD (17-juni, v158, plan
+`MIGRATIEPLAN_normalizeLatex_gefaseerd.md`):
+- Regressienet `test_harnas/regress_breuk_notatie.js` (11 varianten, baseline JSON),
+  laadt de live converters. 11/11 identiek na normalizeLatex.
+- `normalizeLatex` toegevoegd aan begin van latexToMathJs + latexToDuo (shorthand→
+  accolades recursief; `\left/\right`-delimiters → kale haakjes). Additief, read-only.
+- Browser-natest 3/3 goed: (1) 511_023 wortelstap `type=0`, (2) diverse/gestapelde
+  breuken rekenen soepel, (3) box-plaatsing ongemoeid (read-only-grens gerespecteerd).
+- v156/v157-hacks blijven staan (dood/onschadelijk) — opruimen = FASE 2 (later).
+FASE 2 (opruimen oude hacks + evt. parsers consolideren): nog te doen, aparte
+beslissing, met hetzelfde regressienet als vangnet.
 
 ### Restjes van de box-natest (na de fixes)
 - De 16 goede gevallen: geen regressie na alle box-fixes.
 - 8/14:50 (511_024): strak + kantlijn — samen met spoor 3 meten.
+
+### TESTRAPPORT 17-juni (Henk) — 9 gevallen, openstaand
+Geordend naar categorie; alleen A is deels aangepakt.
+- **A — box te krap (marge):** gevallen 2,4,9. Marge-fix gebouwd (`FOUT_MARGE`,
+  default 3, `__setFoutMarge(px)`-tuning, v159, `box_categorie_A_symmetrische_marge.md`).
+  ⚠️ HALF AF: marge komt links wél, rechts NIET — box niet symmetrisch om de cijfers.
+  Gemeten (9/2): box left=1100/right=1112 vs cijfers 1103…1111 → links 3px, rechts 1px.
+  Vermoedelijke oorzaak: `width += marge` i.p.v. `+= 2*marge`, of delta.x/streep-breedte
+  asymmetrisch. TODO: meten met marge actief, dan de width-berekening fixen. (Henk:
+  bewust geparkeerd, 1px is nu geen prioriteit.) NB fontScale schaalt FOUT_MARGE
+  (3 ≈ 1,8 scherm-px); ~5 voor ~3px scherm.
+- **B — wortel-haal links buiten box:** geval 3 (`∛`). Structuur-tak (wortel,
+  geparkeerd). Breedte mist de `\sqrt`-haal links.
+- **C — teller/noemer-boxen overlappen verticaal:** geval 6 (511_022 gestapeld).
+  Twee aparte breuk-boxen te dicht op elkaar (onderkant teller raakt bovenkant noemer).
+  Relevant voor PVN/teller-noemer-boxing.
+- **D — hint-kaders:** geval 5 (hint staat heel vreemd, verkeerd geplaatst), geval 7
+  (hint-inhoud onduidelijk). Ander pad (`toonHintKaders`/AST). Geval 9-marge (hint)
+  hoort hier ook bij — hint-box lift niet mee met de A-marge-fix.
+- **E — scroll/resize:** geval 8. Bekende `position:fixed`-beperking (box beweegt niet
+  mee bij horizontaal resizen). Stond al genoteerd.
+- **Geval 1 (wortel OK):** een wortelvorm rekent nu correct door (511_021) — positief
+  signaal voor het geparkeerde wortel-spoor.
 
 Verificatie-helpers in de console: `window.__meetFoutBox()` (toont box-rect; evt.
 nu ook `viaStructuur`), `window.__meetStructuur()` (getElementInfo per offset),
