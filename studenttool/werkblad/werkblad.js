@@ -723,7 +723,7 @@
         hideMFChrome(mf);
         mf.addEventListener('input',onEditorInput);
         attachCursorTracking(mf);
-        mf.focus();
+        try { mf.focus(); } catch(e){}   // zelfde MathLive-ESM focus-race afvangen
       },200);
     } else {
       var sp = document.createElement('span');
@@ -3763,11 +3763,16 @@
         } catch(e){
           try { mf.value = latexVal; } catch(e2){}
         }
-        hideMFChrome(mf); mf.focus();
+        hideMFChrome(mf);
         // Pas NÁ het programmatisch zetten de listener koppelen, zodat
         // alleen echte studentwijzigingen onEditorInput triggeren.
         mf.addEventListener('input',onEditorInput);
         attachCursorTracking(mf);
+        // focus als LAATSTE en defensief: de gepinde MathLive-ESM (0.110.0) kan
+        // bij mf.focus() op een net-gerenderd veld 'this.mathfield.options' gooien
+        // (element nog niet volledig geüpgraded). Die race mag de listener-
+        // koppeling hierboven NIET overslaan — vandaar achteraan + try/catch.
+        try { mf.focus(); } catch(e){}
       },200);
     } else {
       var sp = document.createElement('span');
