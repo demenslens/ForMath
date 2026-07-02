@@ -275,14 +275,16 @@
 
 <!-- Libraries -->
 <script src="https://unpkg.com/mathjs@12.4.1/lib/browser/math.js"></script>
-<script defer src="https://unpkg.com/mathlive"></script>
+<!-- MathLive wordt gepind (0.110.0) als ES-module dynamisch geladen in werkblad.js
+     (mlGo). De oude ongepinde <script src="unpkg.com/mathlive"> brak toen unpkg
+     'latest' naar een dist/-layout wees (404 + geweigerde MIME-type). -->
 
 <!-- Matcher + verankering (bewezen mechaniek, herbruikbaar) -->
 <script src="matcher.browser.js?v=6"></script>
 <script src="verankering.js?v=8"></script>
 
 <!-- Application -->
-<script src="werkblad.js?v=159"></script>
+<script src="werkblad.js?v=161"></script>
 
 <!-- Settings + thema (klein blokje, geen interferentie met werkblad.js) -->
 <script>

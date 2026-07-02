@@ -1669,9 +1669,14 @@
 
   // Update step tracking using resolvedBlocks (set by tree engine)
   function updateStepTracking(){
-    // Remove resolved blocks from remaining lists
-    remainingHoog = remainingHoog.filter(function(bid){ return resolvedBlocks.indexOf(bid) === -1; });
-    remainingLaag = remainingLaag.filter(function(bid){ return resolvedBlocks.indexOf(bid) === -1; });
+    // Remove resolved blocks from remaining lists.
+    // LET OP: remainingHoog/Laag bevatten OBJECTEN {mathblock, output_expressie}
+    // (uit de duo-verzameling), terwijl resolvedBlocks string-id's bevat. Vergelijk
+    // dus op de id — niet op het object, want dan matcht indexOf() nooit, wordt
+    // remainingHoog nooit leeg en schuift de step NOOIT op (bleef vast op regel 1).
+    var _mbId = function(x){ return (x && typeof x === 'object') ? x.mathblock : x; };
+    remainingHoog = remainingHoog.filter(function(x){ return resolvedBlocks.indexOf(_mbId(x)) === -1; });
+    remainingLaag = remainingLaag.filter(function(x){ return resolvedBlocks.indexOf(_mbId(x)) === -1; });
 
     dbg('[stepTracking] After LF — hoog remaining:', remainingHoog, 'laag remaining:', remainingLaag, 'resolved:', resolvedBlocks);
 
@@ -4272,17 +4277,30 @@
     document.head.appendChild(ce);
   }
 
-  var sc=document.createElement('script');
-  sc.src='https://unpkg.com/mathlive/dist/mathlive.min.js';
-  sc.onload=function(){setTimeout(mlGo,500);};
-  sc.onerror=function(){
-    var sc2=document.createElement('script');
-    sc2.src='https://cdn.jsdelivr.net/npm/mathlive/dist/mathlive.min.js';
-    sc2.onload=function(){setTimeout(mlGo,500);};
-    sc2.onerror=function(){};
-    document.head.appendChild(sc2);
-  };
-  document.head.appendChild(sc);
+  // MathLive 0.110.0 GEPIND, als ES-module. De ongepinde/dist-URL brak toen unpkg
+  // 'latest' naar een dist/-layout wees (404 + geweigerde MIME). 0.110.0 zet de
+  // builds in de package-ROOT en is ESM; `import` registreert <math-field> als
+  // side-effect → mlGo (die op customElements.get('math-field') checkt) slaagt.
+  // Dynamische import() mag in een klassiek script; met unpkg→jsdelivr-fallback.
+  var ML_URLS = [
+    'https://unpkg.com/mathlive@0.110.0/mathlive.min.mjs',
+    'https://cdn.jsdelivr.net/npm/mathlive@0.110.0/mathlive.min.mjs'
+  ];
+  (function loadML(i){
+    if(i >= ML_URLS.length){ dbgWarn('[ML] MathLive kon niet geladen worden'); return; }
+    import(ML_URLS[i]).then(function(mod){
+      // MathLive registreert <math-field> normaal zelf bij import; voor de
+      // zekerheid (versie-quirks) registreren + globaliseren we anders alsnog
+      // vanuit de module-export.
+      try {
+        if(mod && mod.MathfieldElement){
+          if(typeof window.MathfieldElement === 'undefined') window.MathfieldElement = mod.MathfieldElement;
+          if(!customElements.get('math-field')) customElements.define('math-field', mod.MathfieldElement);
+        }
+      } catch(e){ /* al geregistreerd */ }
+      setTimeout(mlGo, 100);
+    }).catch(function(e){ dbgWarn('[ML] laadfout ' + ML_URLS[i] + ': ' + (e && e.message)); loadML(i + 1); });
+  })(0);
 
   // ══════════════════════════════════════
   // INIT
