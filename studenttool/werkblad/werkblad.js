@@ -2589,9 +2589,12 @@
     if(!_inSync){
       // Student is midden in een reductie: editor wijkt af van de bekende
       // regelstructuur. Geen (misleidende) hint; trek de mapping terug.
-      console.warn('[atomMap] structural OFF: niet in sync. ' +
-                  'srcNums=[' + _srcNums.join(',') + '] ' +
-                  'verbruikt=' + _li + '/' + _srcNums.length);
+      if(Date.now() - _atomMapWarnAt > 1500){
+        _atomMapWarnAt = Date.now();
+        console.warn('[atomMap] structural OFF: niet in sync. ' +
+                    'srcNums=[' + _srcNums.join(',') + '] ' +
+                    'verbruikt=' + _li + '/' + _srcNums.length);
+      }
       atomToMathblock = {};
       atomRanges = [];
       _structOK = false;
@@ -3129,6 +3132,7 @@
   //     (breekt asynchrone event-stormen zonder de mapping te verliezen).
   var _buildBusy = false;
   var _lastBuildAt = 0;
+  var _atomMapWarnAt = 0;   // throttle voor de atomMap-waarschuwingen (spam-demping)
   var _pendingBuildTimer = null;
   var _BUILD_MIN_MS = 120;
 
@@ -3168,9 +3172,12 @@
       try {
         var ok = _buildStructural(mfEl);
         if(!ok){
-          console.warn('[atomMap] STRUCTURAL BUILD FAILED — atomToMathblock ' +
-                       'is leeggemaakt; geen cursor→mathblock mapping tot de ' +
-                       'structurele build slaagt. Zie eerdere dbg(...) regels.');
+          if(Date.now() - _atomMapWarnAt > 1500){
+            _atomMapWarnAt = Date.now();
+            console.warn('[atomMap] STRUCTURAL BUILD FAILED — atomToMathblock ' +
+                         'is leeggemaakt; geen cursor→mathblock mapping tot de ' +
+                         'structurele build slaagt. Zie eerdere dbg(...) regels.');
+          }
           atomToMathblock = {};
           atomRanges = [];
         }
@@ -3833,12 +3840,12 @@
   // structureel verankerd via de AST. Staat naast de bestaande logica; raakt de
   // LF-flow nog niet. Aanroepen via window.__toonHint() of de tijdelijke knop.
   function toonHintKaders(prioriteit){
-    if (!window.VERANKERING) { dbg('[hint] VERANKERING-module niet geladen'); return; }
+    if (!window.VERANKERING) { dbg('[hint] VERANKERING-module niet geladen'); return {reden:'VERANKERING niet geladen'}; }
     var V = window.VERANKERING;
     V.clearBoxes();
-    if (!currentOpgave) { st('er', 'Geen opgave geladen'); return; }
+    if (!currentOpgave) { st('er', 'Geen opgave geladen'); return {reden:'geen opgave geladen'}; }
     var ast = currentOpgave.metadata && currentOpgave.metadata.expressie && currentOpgave.metadata.expressie.ast;
-    if (!ast || !ast.node_map) { st('er', 'Geen AST/node_map in opgave'); return; }
+    if (!ast || !ast.node_map) { st('er', 'Geen AST/node_map in opgave'); return {reden:'geen AST/node_map'}; }
 
     // Pak GEGARANDEERD de actieve invoer-mathfield, niet een zijbalk-preview.
     // Het werkblad heeft veel math-fields in de DOM (één per opgave-preview);
@@ -3847,23 +3854,35 @@
           || document.querySelector('.rl.active math-field')
           || mfRef
           || document.querySelector('math-field');
-    if (!mf) { st('er', 'Geen invoerveld actief'); return; }
+    if (!mf) { st('er', 'Geen invoerveld actief'); return {reden:'geen invoerveld actief'}; }
 
-    // Verankering via de ORIGINELE AST (genLatexTokens). Werkt correct op de
-    // eerste regel, waar de expressie nog gelijk is aan de begin-expressie.
-    // (De matcher-gebaseerde verankering voor latere regels is geparkeerd.)
+    // Verankering op de GEËVOLUEERDE boom (genLatexTokens). Na elke correcte
+    // LF klapt de tree-evolutie opgeloste mathblocks in tot numerieke bladeren
+    // (currentTree) en werkt doLF de nodeMap bij — zelfde formaat als
+    // ast.node_map. Op regel 1 is currentTree gelijk aan de originele AST; op
+    // latere regels volgt hij het veld. Zonder dit tekende genLatexTokens op de
+    // ORIGINELE structuur (7/6-3/4, √(1/64)) terwijl het veld al 5/12 / 1/8
+    // toont → kaders mismatchten op regel 2 (was geparkeerd).
+    var astVoorHint = (currentTree && Array.isArray(nodeMap))
+        ? { tree: currentTree, node_map: nodeMap }
+        : ast;
     var tak = (prioriteit === 'laag') ? 'laag' : 'hoog';
     var kleur = (prioriteit === 'laag') ? V.COLORS.LAAG : V.COLORS.HOOG;
     var bron = (prioriteit === 'laag') ? (remainingLaag || []) : (remainingHoog || []);
     var teTonen = bron.map(function(x){ return (x && typeof x === 'object') ? x.mathblock : x; });
-    if (!teTonen.length) { st('ok', 'Geen ' + tak + '-mathblocks deze step'); return; }
+    var _uniqMb = function(arr){ var s={}; arr.forEach(function(x){ if(x!=null){ s[x]=(s[x]||0)+1; } }); return s; };
+    if (!teTonen.length) {
+      st('ok', 'Geen ' + tak + '-mathblocks deze step');
+      return {reden:'teTonen leeg', tak:tak, teTonen:teTonen};
+    }
 
-    var tokens = V.genLatexTokens(ast);
+    var tokens = V.genLatexTokens(astVoorHint);
     var offsets = V.collectOffsets(mf);
     var mbPerOffset = V.anchorOffsets(offsets, tokens);
     var delta = V.computeDelta(mf, offsets);
 
     var getekend = 0;
+    var perBlock = [];
     teTonen.forEach(function(bid){
       var bounds = [], depths = [];
       offsets.forEach(function(o, idx){
@@ -3872,6 +3891,7 @@
         }
       });
       var span = V.spanBounds(bounds);
+      perBlock.push({ bid: bid, offsets: bounds.length, span: !!span });
       if (span){
         var d = depths.length ? Math.min.apply(null, depths) : 0;
         V.drawBox(mf, span, kleur, delta, d, V.HINT_MARGE);
@@ -3879,10 +3899,20 @@
       }
     });
     st('ok', 'Hint: ' + getekend + ' mathblock(s) omkaderd (' + tak + ')');
+    // Diagnose als RETURNWAARDE → direct zichtbaar in de console, immuun voor
+    // console-filters en de atomMap-ruis (i.p.v. losse dbg-regels die verdrinken).
+    return {
+      tak: tak,
+      teTonen: teTonen,
+      tokensMbs: _uniqMb(tokens.map(function(t){ return t.mb; })),
+      offsetMbs: _uniqMb(mbPerOffset),
+      perBlock: perBlock,
+      getekend: getekend
+    };
   }
   // Globale haakjes voor handmatig testen vanuit de console.
-  window.__toonHint = function(){ toonHintKaders('hoog'); };
-  window.__toonHintLaag = function(){ toonHintKaders('laag'); };
+  window.__toonHint = function(){ return toonHintKaders('hoog'); };
+  window.__toonHintLaag = function(){ return toonHintKaders('laag'); };
   window.__wisHint = function(){ if (window.VERANKERING) window.VERANKERING.clearBoxes(); };
 
   // FASE 1b — FOUT-MARKERING via student-verankering (window.VERANKERING)
