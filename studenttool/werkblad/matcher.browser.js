@@ -378,10 +378,34 @@ function alignTarget(inputNode, studentNode, target) {
     // student er één heeft gereduceerd, koppelt wegstrepen de onveranderde
     // tweeling correct en blijft de gereduceerde plek over voor target.
     const usedStu = new Array(sa.length).fill(false);
+    const ongematcht = [];
+    // Pass 1: exacte structurele match (echt onveranderde andere args).
     for (let i = 0; i < ia.length; i++) {
       if (i === ti) continue;
+      let gematcht = false;
       for (let k = 0; k < sa.length; k++) {
-        if (!usedStu[k] && treesEqual(ia[i], sa[k])) { usedStu[k] = true; break; }
+        if (!usedStu[k] && treesEqual(ia[i], sa[k])) { usedStu[k] = true; gematcht = true; break; }
+      }
+      if (!gematcht) ongematcht.push(i);
+    }
+    // Pass 2: waarde-match voor ANDERE args die de student óók heeft gereduceerd.
+    // Een reductie behoudt de waarde (bv. 40/180 -> 2/9), dus een naburig
+    // mathblock dat in dezelfde commutatieve knoop is uitgerekend matcht z'n
+    // input op WAARDE, ook al is het skelet veranderd. Zonder deze pass zou de
+    // weg-streping falen en target aan de verkeerde overgebleven plek koppelen
+    // (de "ambigue waarden"-bug: 9 van 3^2 vs de 9 in de noemer van 2/9).
+    // TWIN-GUARD: sla dit over als het andere arg DEZELFDE waarde als target
+    // heeft — dan is waarde-matching ambigu (welke student-plek hoort bij wie?)
+    // en moet de structurele/skelet-sort het doen (tweeling-geval, 511_023-varia).
+    const vTarget = canonicalValue(ia[ti]);
+    for (const i of ongematcht) {
+      const vi = canonicalValue(ia[i]);
+      if (vi == null) continue;
+      if (vTarget != null && valuesEqual(vi, vTarget)) continue;   // twin-guard
+      for (let k = 0; k < sa.length; k++) {
+        if (usedStu[k]) continue;
+        const vk = canonicalValue(sa[k]);
+        if (vk != null && valuesEqual(vi, vk)) { usedStu[k] = true; break; }
       }
     }
     // Kandidaten voor target = niet-weggestreepte student-args.
