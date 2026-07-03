@@ -1127,6 +1127,20 @@
     return tree;
   }
 
+  // Bouw het canonieke numerieke blad voor een mathblock-output ("5/12",
+  // "-1/8", "9/1"): integers direct, breuken als ["Rational",n,d], negatieve
+  // breuken als ["Negate",["Rational",n,d]] (zie ../CLAUDE.md conventies).
+  // Gebruikt door de tree-evolutie in doLF om een opgeloste subboom in te klappen.
+  function outputToLeaf(outStr){
+    var fr;
+    try { fr = math.fraction(outStr); } catch(e){ return null; }
+    if(!fr) return null;
+    var n = Number(fr.n), d = Number(fr.d), neg = (fr.s < 0);
+    if(d === 1) return neg ? -n : n;         // integer-blad
+    var rat = ['Rational', n, d];
+    return neg ? ['Negate', rat] : rat;
+  }
+
   // ── Compare two subtrees: are they structurally + numerically equal? ──
   function treesEqual(a, b){
     // Both numbers
@@ -3644,6 +3658,34 @@
         }
         if(opEntry){
           var resolvedPath = opEntry.path;
+
+          // ── Tree-evolutie (reductiemodel): vervang de opgeloste mathblock-
+          // subboom in currentTree door zijn numerieke blad. Zonder dit blijft
+          // currentTree op de originele expressie hangen, waardoor hints en
+          // fout-feedback op de VOLGENDE regel op de oude structuur landen.
+          // Pad uit nodeMap (opEntry.path), waarde uit mb.output (getekend).
+          if(currentTree){
+            var _mbLeaf = findMathblock(bid);
+            var _leaf = _mbLeaf ? outputToLeaf(_mbLeaf.output) : null;
+            if(_leaf !== null){
+              // Teken-correctie: bij een negatieve output (bv. operatie "-(√)")
+              // draagt de boom het teken al via een ouder-Negate, want een
+              // minteken hoort bij de optelling erboven → Add(2, Negate(Sqrt(..))).
+              // Zou ik het getekende blad op de operatie (√) zelf zetten, dan
+              // ontstaat Negate(Negate(..)) = dubbele min. Vervang in dat geval
+              // de ouder-Negate door het getekende blad.
+              var _targetPath = resolvedPath;
+              if(Array.isArray(_leaf) && _leaf[0] === 'Negate' && resolvedPath.length > 0){
+                var _parent = getSubtree(currentTree, resolvedPath.slice(0, -1));
+                if(Array.isArray(_parent) && _parent[0] === 'Negate'){
+                  _targetPath = resolvedPath.slice(0, -1);
+                }
+              }
+              currentTree = setSubtree(currentTree, _targetPath, _leaf);
+              dbg('[doLF] tree-evolutie: blad', JSON.stringify(_leaf), 'op', JSON.stringify(_targetPath));
+            }
+          }
+
           // Find parent operation
           var parentBid = null;
           var parentPathLen = -1;
