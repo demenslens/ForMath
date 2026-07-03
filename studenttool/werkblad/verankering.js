@@ -27,8 +27,8 @@
     BEZIG    : { bg: 'rgba(212,167,44,0.28)',  border: 'rgba(212,167,44,0.9)' },
     ONBEWERKT: { bg: 'rgba(140,140,140,0.20)', border: 'rgba(140,140,140,0.7)' },
     AFWIJKEND: { bg: 'rgba(207,57,57,0.30)',   border: 'rgba(207,57,57,0.9)'  },
-    HOOG     : { bg: 'rgba(46,110,180,0.22)',  border: 'rgba(46,110,180,0.9)' },
-    LAAG     : { bg: 'rgba(140,140,140,0.18)', border: 'rgba(140,140,140,0.65)'}
+    HOOG     : { bg: 'rgba(120,190,130,0.26)', border: 'rgba(70,150,90,0.9)'  },  // lichtgroen
+    LAAG     : { bg: 'rgba(150,150,150,0.20)', border: 'rgba(120,120,120,0.85)' }  // lichtgrijs (zichtbare rand)
   };
 
   var HINT_MARGE = { links: 2, rechts: 4, boven: -2, onder: -2 };
