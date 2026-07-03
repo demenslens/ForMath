@@ -4,6 +4,43 @@ Samenvatting van waar het werk staat op 2026-06-15, zodat een nieuwe chat-sessie
 de draad oppakt zonder de hele geschiedenis over te doen. Diepere details staan in
 de losse documenten in `studenttool/` (zie "Documenten" onderaan).
 
+## Update 2026-07-02/03 — LF-keten compleet op regel 2 (v161–v167, verankering v10)
+
+Alles hieronder is BROWSER-GEVERIFIEERD op 511_023 en staat op GitHub (t/m commit
+`1aacbf1`). Cache-buster werkblad.js **v167**, verankering.js **v10**.
+
+- **MathLive gepind (v161).** De ongepinde `unpkg.com/mathlive` brak (unpkg 'latest'
+  → dist/-layout, 404 + geweigerde MIME). Nu 0.110.0 als ES-module via dynamische
+  `import()`, unpkg→jsdelivr-fallback.
+- **Step-tracking fix (v161).** `updateStepTracking` vergeleek objecten
+  `{mathblock,…}` met string-id's → step schoof NOOIT op (bleef op regel 1). Nu
+  vergeleken op `.mathblock`-id. → **step schuift door 1 → 2 (geverifieerd).**
+- **MathLive focus-race afgevangen (v162).** Op regel 3766 stond `mf.focus()` vóór
+  de listener-koppeling; de ESM-focus gooide `this.mathfield.options` → regel 2
+  kreeg geen listeners. Focus nu ná de listeners + in try/catch (ook 726).
+- **Tree-evolutie in doLF (v164).** `currentTree` evolueert nu na een LF: de
+  opgeloste mathblock-subboom wordt vervangen door zijn canonieke numerieke blad
+  (`outputToLeaf`). Teken-correctie: bij een negatieve output onder een ouder-Negate
+  (bv. operatie `-(√)`) wordt die ouder-Negate vervangen i.p.v. de operatie eronder
+  (anders dubbele min). Geverifieerd: boom evalueert overal naar 5/4.
+- **Hints verankerd op de geëvolueerde boom (v167).** `toonHintKaders` voerde
+  `genLatexTokens` op de ORIGINELE AST → op regel 2 landden kaders op de oude
+  structuur. Nu op `{tree: currentTree, node_map: nodeMap}`. Geverifieerd: op regel 2
+  omkadert hoog A2 (`5/12`) én B2 (`2−1/8`) correct.
+- **Hint-kleuren gescheiden (verankering v10).** Hoog lichtgroen, laag lichtgrijs.
+- **Meetgereedschap.** `__toonHint()`/`__toonHintLaag()` geven nu een diagnose-object
+  terug (tak/teTonen/tokensMbs/offsetMbs/perBlock/getekend). De `[atomMap]`-spam is
+  ge-throttled (max 1×/1,5s). `__dumpCurrentTree()` toont de geëvolueerde boom.
+
+**Open (na deze sessie):**
+- Keten testen op **regel 3/4+** (nog maar t/m regel 2 geverifieerd). Let op regel 6
+  (`2 + (−3/4)`): opnieuw een teken-situatie zoals B1.
+- **Fout-feedback op regel 2**: `markFoutKaders` moet nog dezelfde geëvolueerde-boom-
+  behandeling krijgen als de hints.
+- **`[atomMap] STRUCTURAL BUILD FAILED`** faalt nog echt (`verbruikt=0/7`) — nu alleen
+  getemd in de console; raakt cursor→mathblock (klik-identificatie), niet de hints.
+- Verloren chat van 2 juli teruggehaald als `HERSTEL_chat_2juli.md`.
+
 ## Het grote doel
 
 Hints én errors pinpointen op ELKE stap van de leerling, in de studenttool
