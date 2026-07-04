@@ -10,7 +10,7 @@ in vier **fasen**. Per fase houden we status, datums en voortgang bij.
 > Houd dit bestand bij na elke werksessie. Claude Code leest de verwijzing in
 > `CLAUDE.md` en opent dit overzicht wanneer relevant.
 
-Laatst bijgewerkt: 2026-07-03
+Laatst bijgewerkt: 2026-07-04
 
 ---
 
@@ -47,9 +47,13 @@ via `pinpointFromMatcher` (`werkblad.js`), achter toggle
 schuift door (v161), boom evolueert na LF (v164 — `doLF` klapt opgeloste
 subbomen in tot numerieke bladeren; `applyCorrectChanges` zelf blijft ongebruikt),
 hints verankerd op de geëvolueerde boom (v167, hoog A2+B2 correct op regel 2).
-MathLive gepind 0.110.0 ESM. Zie STATUS.md §"Update 2026-07-02/03". RESTEREND:
-keten testen op regel 3/4+; fout-feedback (`markFoutKaders`) op de geëvolueerde
-boom; `[atomMap]` structural build faalt nog (verbruikt=0/7, wel getemd).
+MathLive gepind 0.110.0 ESM. Regel-3/4+-test (3-4 juli) verifieerde de keten t/m
+step 5 en bracht de "ambigue waarden"-matcher-bug aan het licht (511_023: de `9`
+van `3²` vs de `9` in `2/9`), nu GEFIXT (matcher v7, waarde-weg-streping +
+twin-guard, harness 451/451). Zie STATUS.md §"Update 2026-07-02…04". RESTEREND:
+keten t/m step 8 dichtlopen; tweeling-variant ambigue waarden (gelijke waarden,
+511_010) nog open; fout-feedback (`markFoutKaders`) op de geëvolueerde boom;
+`[atomMap]` structural build faalt nog (verbruikt=0/7, wel getemd).
 
 ### Teachertool
 

@@ -4,7 +4,7 @@ Samenvatting van waar het werk staat op 2026-06-15, zodat een nieuwe chat-sessie
 de draad oppakt zonder de hele geschiedenis over te doen. Diepere details staan in
 de losse documenten in `studenttool/` (zie "Documenten" onderaan).
 
-## Update 2026-07-02/03 — LF-keten compleet op regel 2 (v161–v167, verankering v10)
+## Update 2026-07-02…04 — LF-keten + matcher-fix (v161–v167, verankering v10, matcher v7)
 
 Alles hieronder is BROWSER-GEVERIFIEERD op 511_023 en staat op GitHub (t/m commit
 `1aacbf1`). Cache-buster werkblad.js **v167**, verankering.js **v10**.
@@ -31,10 +31,23 @@ Alles hieronder is BROWSER-GEVERIFIEERD op 511_023 en staat op GitHub (t/m commi
 - **Meetgereedschap.** `__toonHint()`/`__toonHintLaag()` geven nu een diagnose-object
   terug (tak/teTonen/tokensMbs/offsetMbs/perBlock/getekend). De `[atomMap]`-spam is
   ge-throttled (max 1×/1,5s). `__dumpCurrentTree()` toont de geëvolueerde boom.
+- **Matcher ambigue-waarden fix (matcher v7).** De regel-3/4+-test bracht de keten aan
+  het licht tot waar hij vastliep: bij twee reducties in dezelfde `Multiply` (A4
+  `40/180→2/9` én B4 `3²→9`) koppelde `alignTarget` B4 aan `2/9` i.p.v. `9`
+  (de `9` van `3²` vs de `9` in de noemer). Fix: waarde-gebaseerde weg-streping +
+  twin-guard. Repro `test_harnas/repro_b4.js`, harness 451/451, browser step 4→5.
+  Zie [matcher_mathblock_identiteit_ambigue_waarden.md](matcher_mathblock_identiteit_ambigue_waarden.md).
+
+**Regel-3/4+-test (2026-07-03/04):** keten step → boom → hints geverifieerd t/m
+**step 5** (regels 1–3 visueel; step 4→5 na de matcher-fix). Onderweg bevestigd dat
+herstelde typo's de boom niet corrumperen (currentTree evolueert alleen bij correcte
+LF) en dat `2 − 3/4` schoon als `Rational(-3,4)` in de boom staat (geen dubbele min).
 
 **Open (na deze sessie):**
-- Keten testen op **regel 3/4+** (nog maar t/m regel 2 geverifieerd). Let op regel 6
-  (`2 + (−3/4)`): opnieuw een teken-situatie zoals B1.
+- Keten **t/m step 8** dichtlopen (A5 → A6 `2−3/4` → A7 → A8 gemengd getal) — t/m
+  step 5 bevestigd, de rest nog na te lopen.
+- **Tweeling-variant** van de ambigue-waarden-bug (gelijke waarden, bv. 511_010
+  A5/A8 beide −3) blijft open; de twin-guard valt daar terug op de skelet-weg.
 - **Fout-feedback op regel 2**: `markFoutKaders` moet nog dezelfde geëvolueerde-boom-
   behandeling krijgen als de hints.
 - **`[atomMap] STRUCTURAL BUILD FAILED`** faalt nog echt (`verbruikt=0/7`) — nu alleen

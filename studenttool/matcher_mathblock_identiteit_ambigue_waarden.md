@@ -3,6 +3,32 @@
 Overdracht chat → Claude Code, 2026-06-14. APART probleem — NIET de box-plaatsing,
 NIET de delta-bug. Zit in de matcher/lokalisatie-laag (mathblock-toekenning).
 
+## UPDATE 2026-07-03/04 — DISTINCTE-waarden-variant OPGELOST (511_023, matcher v7)
+
+Tijdens de regel-3/4+-test (511_023) dook een verwante variant op, nu GEFIXT en
+browser-geverifieerd. Onderscheid van het 511_010-geval hieronder:
+
+- **511_023-variant (distincte waarden) — OPGELOST.** Op step 4 reduceert de
+  student in dezelfde `Multiply` twee mathblocks: A4 (`40/180 → 2/9`) en B4
+  (`3² → 9`). Bij het lokaliseren van B4 streepte `alignTarget` de andere args weg
+  met `treesEqual` (STRUCTUREEL). Maar `40/180` is óók gereduceerd (naar `2/9`) →
+  geen structurele match → B4 werd aan `2/9` gekoppeld i.p.v. `9`. Gevolg: B4
+  AFWIJKEND, step vast op 4, hints stoppen. De ambiguïteit: de `9` van `3²` vs de
+  `9` in de noemer van `2/9`.
+  - **Fix** (`alignTarget`, commit a70d6a2): ná de structurele weg-streep-pass een
+    tweede pass op WAARDE (een reductie behoudt de waarde, dus een naburig
+    uitgerekend mathblock matcht z'n input op waarde ook al is het skelet veranderd).
+    **TWIN-GUARD**: waarde-matching overslaan wanneer het andere arg dezelfde waarde
+    als target heeft — dan is het ambigu (zie 511_010) en doet de skelet-sort het.
+  - **Verificatie**: `test_harnas/repro_b4.js` (B4 CANONIEK), batch 451/451, run
+    30/30, browser (step 4→5, A5-hint tekent).
+
+- **511_010-variant (TWEELING / gelijke waarden) — NOG OPEN.** Meerdere mathblocks
+  met DEZELFDE waarde (A5/A8 beide −3, A1/C2 beide 3). Hier grijpt de twin-guard in
+  en valt terug op de structurele/skelet-weg — die moet het tweeling-geval correct
+  desambigueren op POSITIE/skelet, niet op waarde. Of dat 511_010 volledig oplost is
+  nog te verifiëren (aparte sessie; de analyse hieronder blijft leidend).
+
 ## Symptoom
 
 Bij 511_010 (lange machten/haakjes-expressie, GEEN breuken/wortels) staat de
