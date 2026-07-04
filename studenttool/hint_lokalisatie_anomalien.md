@@ -33,6 +33,26 @@ Het groene A1-kader (`³√1 − 1/2`) valt door die afwijkende rendering op `1�
 de AST-structuur niet), niet de studenttool-hint. Eerst verifiëren welke van de
 twee (LaTeX of AST) de bedoelde opgave is.
 
+**Aanvullende observaties (Henk, 2026-07-04):**
+- Het **grijze** (laag) kader dekt `2²/3` in z'n geheel, terwijl alleen `2²`
+  omkaderd hoort te worden. In de AST is dit blok `A2 = (2/3)²` (Power van de breuk
+  2/3, output 4/9) — dat rendert als `2²/3`, wat opnieuw op een AST↔render-verschil
+  wijst (zoals de ³√ hierboven: `(2/3)²` = 4/9 vs `2²/3` = 4/3).
+- Er zijn méér bewerkingen die **groen (hoog)** omkaderd zouden kunnen worden, bv.
+  `1 + 1/2` (`B1`, `+`, output 3/2) — die verschijnt nu niet als hoog-hint. Te
+  onderzoeken: worden alle beschikbare hoog-blokken van de step wel getekend?
+
+## Screenshots
+
+Bewaar de twee screenshots met deze namen NAAST dit document (`studenttool/`),
+dan renderen ze hieronder:
+
+- `anomalie_520-001.png` — groen kader op `1/2` (deling i.p.v. breuk-waarde).
+- `anomalie_511-027.png` — grijs kader om `2²/3` (moet `2²`), groen om `1−1/2`.
+
+![520-001 anomalie](anomalie_520-001.png)
+![511-027 anomalie](anomalie_511-027.png)
+
 ## Verificatie-ingang
 - `JSON.stringify(__toonHintBeide())` op elke opgave toont `teTonen` + `perBlock`.
 - `__dumpCurrentTree()` / de opgave-`metadata.expressie.ast` voor de boomvorm.
