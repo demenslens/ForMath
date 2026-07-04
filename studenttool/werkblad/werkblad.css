@@ -534,6 +534,20 @@ math-field, .editor { font-size: 17px; }
 .lf-btn:hover { filter: brightness(1.08); }
 .lf-btn:active { transform: translateY(1px); }
 
+/* Klaar-boodschap achter de uitkomst zodra de opgave voltooid is (geen LF meer). */
+.klaar-badge {
+  flex-shrink: 0;
+  margin-left: 16px;
+  padding: 4px 12px;
+  font-family: var(--font-ui);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #f2d94e;            /* gele letters */
+  background: #579a6b;       /* lichter groen dan --ok (#2f6d3f) */
+  border-radius: var(--radius);
+  white-space: nowrap;
+}
+
 .margin-mark {
   position: absolute;
   left: -76px;               /* gecentreerd in de kolom tussen lijnen-start en kantlijn */

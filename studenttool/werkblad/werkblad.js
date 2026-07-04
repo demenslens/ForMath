@@ -72,6 +72,7 @@
   var remainingLaag = [];
   var kadersAan = false;     // toggle-status van de visuele mathblock-kaders
   var resolvedBlocks = [];
+  var opgaveVoltooid = false; // true zodra alle steps klaar zijn — geen nieuwe LF-regel meer
   var previousLatex = '';   // last confirmed (correct) expression LaTeX
   var lfBlocked = false;    // true when pinpointed errors exist — LF disabled  // IDs of mathblocks that have been resolved (replaced by their output)
 
@@ -669,6 +670,7 @@
     previousLatex = latex;
     lfBlocked = false;
     currentStep = 1;
+    opgaveVoltooid = false;
     initTreeEngine();
     initStepTracking();
     if(beginUitkomst !== null){
@@ -1703,6 +1705,7 @@
         st('ok', '✓ Correct! → Step ' + currentStep);
         dbg('[stepTracking] Advanced to step', currentStep);
       } else {
+        opgaveVoltooid = true;
         st('ok', '🎉 Opgave voltooid!');
         dbg('[stepTracking] All steps completed!');
       }
@@ -3781,6 +3784,18 @@
     }
 
     addMarginMark(currentLine, true);
+
+    // Opgave voltooid: GEEN nieuwe LF-regel meer. Toon een klaar-boodschap achter
+    // de uitkomst op de zojuist bevroren regel (de LF-knop is bij het bevriezen
+    // al via innerHTML='' verwijderd, dus LF is hier uitgeschakeld).
+    if(opgaveVoltooid){
+      var klaar = document.createElement('span');
+      klaar.className = 'klaar-badge';
+      klaar.textContent = '✓ Uitkomst bereikt — je bent klaar met deze opgave';
+      currentLine.appendChild(klaar);
+      updateLineInfo();
+      return;
+    }
 
     // Move to next line
     var nextIndex = activeLineIndex + 1;
