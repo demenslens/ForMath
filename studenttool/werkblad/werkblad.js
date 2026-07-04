@@ -3839,10 +3839,12 @@
   // Tekent een kader om de mathblocks die deze step "hoog" zijn (aan de beurt),
   // structureel verankerd via de AST. Staat naast de bestaande logica; raakt de
   // LF-flow nog niet. Aanroepen via window.__toonHint() of de tijdelijke knop.
-  function toonHintKaders(prioriteit){
+  function toonHintKaders(prioriteit, skipClear){
     if (!window.VERANKERING) { dbg('[hint] VERANKERING-module niet geladen'); return {reden:'VERANKERING niet geladen'}; }
     var V = window.VERANKERING;
-    V.clearBoxes();
+    // skipClear: bij de gecombineerde weergave (hoog + laag) wissen we één keer
+    // vooraf en tekenen we beide takken zonder elkaar weg te vegen.
+    if (!skipClear) V.clearBoxes();
     if (!currentOpgave) { st('er', 'Geen opgave geladen'); return {reden:'geen opgave geladen'}; }
     var ast = currentOpgave.metadata && currentOpgave.metadata.expressie && currentOpgave.metadata.expressie.ast;
     if (!ast || !ast.node_map) { st('er', 'Geen AST/node_map in opgave'); return {reden:'geen AST/node_map'}; }
@@ -3913,6 +3915,15 @@
   // Globale haakjes voor handmatig testen vanuit de console.
   window.__toonHint = function(){ return toonHintKaders('hoog'); };
   window.__toonHintLaag = function(){ return toonHintKaders('laag'); };
+  // Gecombineerd: laag (grijs) + hoog (groen) TEGELIJK. Eén keer wissen vooraf,
+  // dan beide takken met skipClear zodat ze elkaar niet weg vegen.
+  function toonHintKadersBeide(){
+    if (window.VERANKERING) window.VERANKERING.clearBoxes();
+    var laag = toonHintKaders('laag', true);
+    var hoog = toonHintKaders('hoog', true);
+    return { hoog: hoog, laag: laag };
+  }
+  window.__toonHintBeide = toonHintKadersBeide;
   window.__wisHint = function(){ if (window.VERANKERING) window.VERANKERING.clearBoxes(); };
 
   // FASE 1b — FOUT-MARKERING via student-verankering (window.VERANKERING)
@@ -4120,7 +4131,7 @@
         if (window.VERANKERING) window.VERANKERING.clearBoxes();
         resetKadersToggle();
       } else {
-        toonHintKaders('hoog');
+        toonHintKadersBeide();   // hoog (groen) + laag (grijs) tegelijk
         kadersAan = true;
         kadersBtn.classList.add('active');
       }
