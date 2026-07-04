@@ -47,11 +47,11 @@ twee (LaTeX of AST) de bedoelde opgave is.
 Bewaar de twee screenshots met deze namen NAAST dit document (`studenttool/`),
 dan renderen ze hieronder:
 
-- `anomalie_520-001.png` — groen kader op `1/2` (deling i.p.v. breuk-waarde).
-- `anomalie_511-027.png` — grijs kader om `2²/3` (moet `2²`), groen om `1−1/2`.
+- `anomalie_520_001.png` — groen kader op `1/2` (deling i.p.v. breuk-waarde).
+- `anomalie_511_027.png` — grijs kader om `2²/3` (moet `2²`), groen om `1−1/2`.
 
-![520-001 anomalie](anomalie_520-001.png)
-![511-027 anomalie](anomalie_511-027.png)
+![520-001 anomalie](anomalie_520_001.png)
+![511-027 anomalie](anomalie_511_027.png)
 
 ## Verificatie-ingang
 - `JSON.stringify(__toonHintBeide())` op elke opgave toont `teTonen` + `perBlock`.
