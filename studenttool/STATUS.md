@@ -36,7 +36,10 @@ Alles hieronder is BROWSER-GEVERIFIEERD op 511_023 en staat op GitHub (t/m commi
   `40/180→2/9` én B4 `3²→9`) koppelde `alignTarget` B4 aan `2/9` i.p.v. `9`
   (de `9` van `3²` vs de `9` in de noemer). Fix: waarde-gebaseerde weg-streping +
   twin-guard. Repro `test_harnas/repro_b4.js`, harness 451/451, browser step 4→5.
-  Zie [matcher_mathblock_identiteit_ambigue_waarden.md](matcher_mathblock_identiteit_ambigue_waarden.md).
+  De TWEELING-variant (gelijke waarden, 511_010) is óók opgelost/geverifieerd
+  (`test_harnas/repro_tweeling.js`, 5 scenario's) — geen code nodig, want tweelingen
+  zitten op verschillende steps en `checkStep` ankert per step op positie. Zie
+  [archief/matcher_mathblock_identiteit_ambigue_waarden.md](archief/matcher_mathblock_identiteit_ambigue_waarden.md).
 
 **Regel-3/4+-test (2026-07-03/04):** keten step → boom → hints geverifieerd t/m
 **step 5** (regels 1–3 visueel; step 4→5 na de matcher-fix). Onderweg bevestigd dat
@@ -46,8 +49,6 @@ LF) en dat `2 − 3/4` schoon als `Rational(-3,4)` in de boom staat (geen dubbel
 **Open (na deze sessie):**
 - Keten **t/m step 8** dichtlopen (A5 → A6 `2−3/4` → A7 → A8 gemengd getal) — t/m
   step 5 bevestigd, de rest nog na te lopen.
-- **Tweeling-variant** van de ambigue-waarden-bug (gelijke waarden, bv. 511_010
-  A5/A8 beide −3) blijft open; de twin-guard valt daar terug op de skelet-weg.
 - **Fout-feedback op regel 2**: `markFoutKaders` moet nog dezelfde geëvolueerde-boom-
   behandeling krijgen als de hints.
 - **`[atomMap] STRUCTURAL BUILD FAILED`** faalt nog echt (`verbruikt=0/7`) — nu alleen
