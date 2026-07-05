@@ -81,7 +81,7 @@
             "path": [
               0
             ],
-            "mathblock_id": "A5",
+            "mathblock_id": "A6",
             "type": "input",
             "waarde": "-1/9"
           },
@@ -92,7 +92,7 @@
               0,
               0
             ],
-            "mathblock_id": "A2",
+            "mathblock_id": "A3",
             "type": "input",
             "waarde": "2/3"
           },
@@ -102,7 +102,7 @@
               0,
               0
             ],
-            "mathblock_id": "A2",
+            "mathblock_id": "A3",
             "type": "operation"
           },
           {
@@ -111,7 +111,7 @@
               0,
               1
             ],
-            "mathblock_id": "A3",
+            "mathblock_id": "A4",
             "type": "input",
             "waarde": "13/6"
           },
@@ -120,14 +120,14 @@
               1,
               0
             ],
-            "mathblock_id": "A3",
+            "mathblock_id": "A4",
             "type": "operation"
           },
           {
             "path": [
               1
             ],
-            "mathblock_id": "A4",
+            "mathblock_id": "A5",
             "type": "operation"
           },
           {
@@ -139,7 +139,7 @@
               0,
               0
             ],
-            "mathblock_id": "A0",
+            "mathblock_id": "A1",
             "type": "input",
             "waarde": "1"
           },
@@ -151,7 +151,7 @@
               0,
               0
             ],
-            "mathblock_id": "A0",
+            "mathblock_id": "A1",
             "type": "operation"
           },
           {
@@ -162,7 +162,7 @@
               0,
               1
             ],
-            "mathblock_id": "A1",
+            "mathblock_id": "A2",
             "type": "input",
             "waarde": "-1/2"
           },
@@ -173,7 +173,7 @@
               0,
               0
             ],
-            "mathblock_id": "A1",
+            "mathblock_id": "A2",
             "type": "operation"
           },
           {
@@ -182,7 +182,7 @@
               0,
               0
             ],
-            "mathblock_id": "B2",
+            "mathblock_id": "B3",
             "type": "operation"
           },
           {
@@ -193,7 +193,7 @@
               0,
               0
             ],
-            "mathblock_id": "B1",
+            "mathblock_id": "B2",
             "type": "input",
             "waarde": "1"
           },
@@ -205,7 +205,7 @@
               0,
               1
             ],
-            "mathblock_id": "B1",
+            "mathblock_id": "B2",
             "type": "input",
             "waarde": "1/2"
           },
@@ -216,7 +216,7 @@
               1,
               0
             ],
-            "mathblock_id": "B1",
+            "mathblock_id": "B2",
             "type": "operation"
           },
           {
@@ -225,7 +225,7 @@
               0,
               1
             ],
-            "mathblock_id": "C2",
+            "mathblock_id": "C3",
             "type": "operation"
           },
           {
@@ -233,27 +233,27 @@
               2,
               0
             ],
-            "mathblock_id": "B3",
+            "mathblock_id": "B4",
             "type": "operation"
           },
           {
             "path": [
               2
             ],
-            "mathblock_id": "B4",
+            "mathblock_id": "B5",
             "type": "operation"
           },
           {
             "path": [
               3
             ],
-            "mathblock_id": "A5",
+            "mathblock_id": "A6",
             "type": "input",
             "waarde": "1/9"
           },
           {
             "path": [],
-            "mathblock_id": "A5",
+            "mathblock_id": "A6",
             "type": "operation"
           }
         ]
@@ -272,7 +272,7 @@
       "vereenvoudigen": 2,
       "gemengd_getal": 0
     },
-    "aantal_steps": 5,
+    "aantal_steps": 6,
     "niveau": "Hoog",
     "randvoorwaarden": {
       "vereenvoudig_uitkomst": false,
@@ -293,8 +293,8 @@
   },
   "mathblocks": [
     {
-      "id": "A0",
-      "step": 0,
+      "id": "A1",
+      "step": 1,
       "operatie": {
         "symbool": "√3",
         "beschrijving": "worteltrekken",
@@ -326,8 +326,8 @@
       }
     },
     {
-      "id": "A1",
-      "step": 1,
+      "id": "A2",
+      "step": 2,
       "operatie": {
         "symbool": "+",
         "beschrijving": "optelling"
@@ -335,7 +335,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "A0"
+          "id": "A1"
         },
         {
           "type": "extern",
@@ -366,8 +366,8 @@
       }
     },
     {
-      "id": "B1",
-      "step": 1,
+      "id": "B2",
+      "step": 2,
       "operatie": {
         "symbool": "+",
         "beschrijving": "optelling"
@@ -414,8 +414,8 @@
       }
     },
     {
-      "id": "A2",
-      "step": 2,
+      "id": "A3",
+      "step": 3,
       "operatie": {
         "symbool": "^2",
         "beschrijving": "machtsverheffen",
@@ -447,8 +447,8 @@
       }
     },
     {
-      "id": "B2",
-      "step": 2,
+      "id": "B3",
+      "step": 3,
       "operatie": {
         "symbool": "^3",
         "beschrijving": "machtsverheffen",
@@ -457,7 +457,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "A1"
+          "id": "A2"
         }
       ],
       "output": "1/8",
@@ -480,8 +480,8 @@
       }
     },
     {
-      "id": "C2",
-      "step": 2,
+      "id": "C3",
+      "step": 3,
       "operatie": {
         "symbool": "^3",
         "beschrijving": "machtsverheffen",
@@ -490,7 +490,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "B1"
+          "id": "B2"
         }
       ],
       "output": "27/8",
@@ -521,8 +521,8 @@
       }
     },
     {
-      "id": "A3",
-      "step": 3,
+      "id": "A4",
+      "step": 4,
       "operatie": {
         "symbool": "×",
         "beschrijving": "vermenigvuldiging"
@@ -530,7 +530,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "A2"
+          "id": "A3"
         },
         {
           "type": "extern",
@@ -557,8 +557,8 @@
       }
     },
     {
-      "id": "B3",
-      "step": 3,
+      "id": "B4",
+      "step": 4,
       "operatie": {
         "symbool": ":",
         "beschrijving": "deling"
@@ -566,11 +566,11 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "B2"
+          "id": "B3"
         },
         {
           "type": "mathblock",
-          "id": "C2"
+          "id": "C3"
         }
       ],
       "output": "8/216",
@@ -593,8 +593,8 @@
       }
     },
     {
-      "id": "A4",
-      "step": 4,
+      "id": "A5",
+      "step": 5,
       "operatie": {
         "symbool": "÷GGD",
         "beschrijving": "vereenvoudigen",
@@ -603,7 +603,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "A3"
+          "id": "A4"
         }
       ],
       "output": "26/27",
@@ -632,8 +632,8 @@
       }
     },
     {
-      "id": "B4",
-      "step": 4,
+      "id": "B5",
+      "step": 5,
       "operatie": {
         "symbool": "÷GGD",
         "beschrijving": "vereenvoudigen",
@@ -642,7 +642,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "B3"
+          "id": "B4"
         }
       ],
       "output": "1/27",
@@ -671,8 +671,8 @@
       }
     },
     {
-      "id": "A5",
-      "step": 5,
+      "id": "A6",
+      "step": 6,
       "operatie": {
         "symbool": "M+(4)",
         "beschrijving": "optel-manifold",
@@ -685,11 +685,11 @@
         },
         {
           "type": "mathblock",
-          "id": "A4"
+          "id": "A5"
         },
         {
           "type": "mathblock",
-          "id": "B4"
+          "id": "B5"
         },
         {
           "type": "extern",
@@ -747,49 +747,49 @@
     {
       "waarde": "-1/9",
       "mathblock_ids": [
-        "A5"
+        "A6"
       ]
     },
     {
       "waarde": "2/3",
       "mathblock_ids": [
-        "A2"
+        "A3"
       ]
     },
     {
       "waarde": "13/6",
       "mathblock_ids": [
-        "A3"
+        "A4"
       ]
     },
     {
       "waarde": "1",
-      "mathblock_ids": [
-        "A0"
-      ]
-    },
-    {
-      "waarde": "-1/2",
       "mathblock_ids": [
         "A1"
       ]
     },
     {
+      "waarde": "-1/2",
+      "mathblock_ids": [
+        "A2"
+      ]
+    },
+    {
       "waarde": "1",
       "mathblock_ids": [
-        "B1"
+        "B2"
       ]
     },
     {
       "waarde": "1/2",
       "mathblock_ids": [
-        "B1"
+        "B2"
       ]
     },
     {
       "waarde": "1/9",
       "mathblock_ids": [
-        "A5"
+        "A6"
       ]
     }
   ],
@@ -797,23 +797,22 @@
     {
       "step": 1,
       "mathblocks": [
-        "A1",
-        "B1"
+        "A1"
       ]
     },
     {
       "step": 2,
       "mathblocks": [
         "A2",
-        "B2",
-        "C2"
+        "B2"
       ]
     },
     {
       "step": 3,
       "mathblocks": [
         "A3",
-        "B3"
+        "B3",
+        "C3"
       ]
     },
     {
@@ -826,7 +825,14 @@
     {
       "step": 5,
       "mathblocks": [
-        "A5"
+        "A5",
+        "B5"
+      ]
+    },
+    {
+      "step": 6,
+      "mathblocks": [
+        "A6"
       ]
     }
   ],
@@ -837,75 +843,95 @@
       "hoog": [
         {
           "mathblock": "A1",
-          "output_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:(1+1/2)^3)+1/9"
-        },
-        {
-          "mathblock": "B1",
-          "output_expressie": "-1/9+(2/3^2×13/6)+((√3(1)-1/2)^3:3/2^3)+1/9"
+          "output_expressie": "-1/9+(2/3^2×13/6)+((1-1/2)^3:(1+1/2)^3)+1/9"
         }
       ],
       "laag": [
         {
-          "mathblock": "A2",
+          "mathblock": "A3",
           "output_expressie": "-1/9+(4/9×13/6)+((√3(1)-1/2)^3:(1+1/2)^3)+1/9"
+        },
+        {
+          "mathblock": "B2",
+          "output_expressie": "-1/9+(2/3^2×13/6)+((√3(1)-1/2)^3:3/2^3)+1/9"
         }
       ]
     },
     {
       "step": 2,
-      "input_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:3/2^3)+1/9",
+      "input_expressie": "-1/9+(2/3^2×13/6)+((1-1/2)^3:(1+1/2)^3)+1/9",
       "hoog": [
         {
           "mathblock": "A2",
-          "output_expressie": "-1/9+(4/9×13/6)+(1/2^3:3/2^3)+1/9"
+          "output_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:(1+1/2)^3)+1/9"
         },
         {
           "mathblock": "B2",
+          "output_expressie": "-1/9+(2/3^2×13/6)+((1-1/2)^3:3/2^3)+1/9"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "A3",
+          "output_expressie": "-1/9+(4/9×13/6)+((1-1/2)^3:(1+1/2)^3)+1/9"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "input_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:3/2^3)+1/9",
+      "hoog": [
+        {
+          "mathblock": "A3",
+          "output_expressie": "-1/9+(4/9×13/6)+(1/2^3:3/2^3)+1/9"
+        },
+        {
+          "mathblock": "B3",
           "output_expressie": "-1/9+(2/3^2×13/6)+(1/8:3/2^3)+1/9"
         },
         {
-          "mathblock": "C2",
+          "mathblock": "C3",
           "output_expressie": "-1/9+(2/3^2×13/6)+(1/2^3:27/8)+1/9"
         }
       ],
       "laag": []
     },
     {
-      "step": 3,
+      "step": 4,
       "input_expressie": "-1/9+(4/9×13/6)+(1/8:27/8)+1/9",
       "hoog": [
         {
-          "mathblock": "A3",
+          "mathblock": "A4",
           "output_expressie": "-1/9+52/54+(1/8:27/8)+1/9"
         },
         {
-          "mathblock": "B3",
+          "mathblock": "B4",
           "output_expressie": "-1/9+(4/9×13/6)+8/216+1/9"
         }
       ],
       "laag": []
     },
     {
-      "step": 4,
+      "step": 5,
       "input_expressie": "-1/9+52/54+8/216+1/9",
       "hoog": [
         {
-          "mathblock": "A4",
+          "mathblock": "A5",
           "output_expressie": "-1/9+26/27+8/216+1/9"
         },
         {
-          "mathblock": "B4",
+          "mathblock": "B5",
           "output_expressie": "-1/9+52/54+1/27+1/9"
         }
       ],
       "laag": []
     },
     {
-      "step": 5,
+      "step": 6,
       "input_expressie": "-1/9+26/27+1/27+1/9",
       "hoog": [
         {
-          "mathblock": "A5",
+          "mathblock": "A6",
           "output_expressie": "1"
         }
       ],

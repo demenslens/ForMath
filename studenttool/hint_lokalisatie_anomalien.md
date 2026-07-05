@@ -4,7 +4,16 @@ Gevonden bij het breder testen van de gecombineerde hoog+laag-hints (v168). Beid
 zijn PRÉ-EXISTENT — niet veroorzaakt door de combinatie; de individuele
 kader-verankering is ongewijzigd. Los spoor, apart van de LF-keten.
 
-## ROOT CAUSE (2026-07-05, Henk): AUTHORTOOL — geen bewerking in step 0
+## ROOT CAUSE (2026-07-05, Henk): AUTHORTOOL — geen bewerking in step 0 — ✅ OPGELOST
+
+**Opgelost (2026-07-05, authortool-sessie).** De step-decompositie
+(`authortool/python_bestanden/getallen/ast_visualizer.py`) telde `ROOT` (en
+`UNARY_OP`) niet als eigen diepteniveau in `compute_node_depth`/`assign_steps`,
+waardoor de wortel op step 0 werd geperst. ROOT telt nu als één stap bovenop zijn
+radicand. Beide opgaven zijn geregenereerd: de wortel is nu een eigen step 1
+(`√1` → 1, `³√1` → 1) vóór de omvattende bewerking; step 0 is weer input-only.
+Geverifieerd: 0 operaties op step 0 over alle 26 testopgaven, 24 ongewijzigd. De
+analyses hieronder blijven als naslag.
 
 Beide anomalieën komen uit de OPGAVE-DATA (authortool), NIET uit de studenttool-hint.
 De authortool laat een bewerking (bv. `√1`) al in step 0 gebeuren / gevouwen in een

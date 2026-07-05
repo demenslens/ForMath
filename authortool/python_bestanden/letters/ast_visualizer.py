@@ -487,6 +487,19 @@ def compute_node_depth(node):
     if t == 'POWER':
         base_depth = compute_node_depth(node.get('base', {}))
         return 1 + base_depth
+    if t == 'ROOT':
+        # Een wortel is één stap bovenop zijn radicand (net als POWER op zijn
+        # base). De radicand (het getal onder het wortelteken) is een EXTERNE
+        # INPUT en hoort op step 0 — de input-basislijn, waar nooit een
+        # bewerking mag staan; de worteltrekking is de bewerking één stap
+        # daarboven (step 1). Zie de ROOT-tak in compute_layout, die de radicand
+        # als kind-blad op step 0 tekent — zónder die tak bleef step 0 leeg en
+        # leek de wortel op step 0 te vouwen.
+        return 1 + compute_node_depth(node.get('radicand', {}))
+    if t == 'UNARY_OP':
+        # Idem als ROOT: één stap bovenop de operand. De operand is een externe
+        # input (step 0), de unaire bewerking staat één stap hoger (step 1).
+        return 1 + compute_node_depth(node.get('operand', {}))
     if t == 'BINARY_OP':
         return 1 + max(compute_node_depth(node.get('left', {})), compute_node_depth(node.get('right', {})))
     if t == 'MANIFOLD_OP':
@@ -574,6 +587,11 @@ def assign_block_ids(layout_root, max_depth):
                 assign_steps(op, child_step)
         elif t == 'POWER':
             assign_steps(node.get('base', {}), child_step)
+        elif t == 'ROOT':
+            # De radicand ligt één stap dieper (zoals de base van een POWER),
+            # zodat een geneste operatie ín de wortel — bv. √(1+2) — ook een
+            # eigen step krijgt in plaats van in de wortel-step te vouwen.
+            assign_steps(node.get('radicand', {}), child_step)
         elif t == 'MATROESJKA_OP':
             # Elke schil is één stap dieper; schil 1 left is het diepst
             shells = node.get('shells', [])
@@ -684,6 +702,19 @@ def compute_layout(node, depth=0, x_offset=0, max_depth=None, parent_depth=None)
     elif t == "POWER":
         # Toon base als kind; exponent staat als superscript in het label
         child_nodes = [node.get("base")]
+        child_nodes = [c for c in child_nodes if c is not None]
+    elif t == "ROOT":
+        # Toon de radicand als kind, zodat het getal onder het wortelteken als
+        # externe-input-blad ÉÉN rij ONDER de wortel (op step 0) wordt getekend.
+        # Zonder deze tak werd de wortel als los blad behandeld: de radicand
+        # bleef onzichtbaar en step 0 leeg, waardoor de wortel op step 0 leek te
+        # vouwen. Nu staat de radicand als input op step 0 en de worteltrekking
+        # als bewerking op step 1.
+        child_nodes = [node.get("radicand")]
+        child_nodes = [c for c in child_nodes if c is not None]
+    elif t == "UNARY_OP":
+        # Idem als ROOT: toon de operand als kind-blad onder de bewerking.
+        child_nodes = [node.get("operand")]
         child_nodes = [c for c in child_nodes if c is not None]
     elif t == "SIMPLIFY_OP":
         # SIMPLIFY_OP heeft één kind: de source

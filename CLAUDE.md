@@ -29,6 +29,8 @@ Werk het bij na een werksessie wanneer de status of voortgang verandert.
 - **node_map** = koppelt AST-paden aan mathblocks.
 - **DUO-verzameling** = per step de `hoog`/`laag`-mathblocks met `input_expressie`
   en per mathblock een `output_expressie`. Drijft de stap-voortgang aan.
+- **step (niveau)** = één rij in de uitwerking. Step 0 (onderaan) = uitsluitend
+  externe input; bewerkingen bouwen op naar de root (einduitkomst) bovenaan.
 - **verankering** = harde koppeling AST↔schermtekens via offset-meting in MathLive.
 - **reductiemodel** = elke step vervangt de uitgerekende mathblock-subboom door
   een numeriek blad.
@@ -42,6 +44,12 @@ Werk het bij na een werksessie wanneer de status of voortgang verandert.
 - Didactiek: een minteken hoort bij de optelling erboven, niet bij de bewerking
   eronder. `:` (deling) ≠ `/` (breuk) — structureel verschillend, niet
   samenvoegen. Een tekenfout is een fout.
+- **Step/niveau 0 = uitsluitend externe input** (getallen/expressies), NOOIT een
+  bewerking; bewerkingen beginnen op step 1 en bouwen op naar de root. Geldt voor
+  formath én forquest (ook voor het lezen/begrijpen van de JSON). Bijv. `√1`: de
+  radicand `1` is externe input op step 0, de worteltrekking staat op step 1. In de
+  authortool sturen `compute_node_depth`/`compute_layout`/`assign_steps` dit aan —
+  zie `authortool/ARCHITECTUUR.md` §3.
 - Validatie verschilt per bewerkingstype: reken-bewerkingen → numerieke
   gelijkheid; `vereenvoudigen` → exacte vormovereenkomst.
 

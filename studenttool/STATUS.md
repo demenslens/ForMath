@@ -53,11 +53,16 @@ LF) en dat `2 − 3/4` schoon als `Rational(-3,4)` in de boom staat (geen dubbel
   behandeling krijgen als de hints.
 - **`[atomMap] STRUCTURAL BUILD FAILED`** faalt nog echt (`verbruikt=0/7`) — nu alleen
   getemd in de console; raakt cursor→mathblock (klik-identificatie), niet de hints.
-- **Hint-anomalieën (520-001, 511-027) → AUTHORTOOL-taak.** Root cause: de opgave-data
-  laat een bewerking in step 0 gebeuren (bv. `√1` gevouwen in de delings-step) terwijl
-  step 0 alleen input mag zijn. De studenttool-hint klopt gegeven correcte data; fix in
-  de authortool (step-decompositie). Zie `hint_lokalisatie_anomalien.md`. De
-  tweeling-variant van de matcher-mislabeling is wél opgelost (studenttool, geverifieerd).
+- **Hint-anomalieën (520-001, 511-027) → OPGELOST in de authortool (2026-07-05).**
+  Root cause zat in de step-decompositie: `compute_node_depth`/`assign_steps` telden
+  het node-type `ROOT` (en `UNARY_OP`) niet als eigen niveau, waardoor de wortel op
+  step 0 werd geperst (bv. `√1` gevouwen in de delings-step) terwijl step 0 alleen
+  input mag zijn. Fix: ROOT telt nu als één stap bovenop zijn radicand (net als POWER
+  op zijn base). Beide opgaven zijn met de gefixte code geregenereerd — de wortel is
+  nu een eigen step 1 (`√1` → 1) vóór de omvattende bewerking; 0 operaties op step 0
+  over alle 26 testopgaven, 24 opgaven ongewijzigd. Zie
+  `hint_lokalisatie_anomalien.md` en `../authortool/OVERDRACHT_step0_geen_bewerking.md`.
+  De tweeling-variant van de matcher-mislabeling was al opgelost (studenttool).
 - Verloren chat van 2 juli teruggehaald als `HERSTEL_chat_2juli.md`.
 
 ## Het grote doel

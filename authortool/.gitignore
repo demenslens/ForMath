@@ -39,6 +39,11 @@ python_bestanden/config.json
 *.orig
 _archief/
 Archief*/
+# Uitzondering: het doc-archief (afgeronde investigatie-docs, spiegelt
+# studenttool/archief) WEL tracken — op macOS (case-insensitief) ving Archief*/
+# ook deze lowercase map.
+!archief/
+!archief/**
 
 # ─── Logs / runtime ─────────────────────────────────────────────────
 *.log
