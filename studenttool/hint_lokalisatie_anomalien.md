@@ -16,9 +16,20 @@ Expressie bevat `(1/2 : √1)`. In de AST:
 loopt omhoog). De `√1`-tokens vallen dus onder A0, waardoor A1's kader alleen
 `1/2 :` dekt en niet de hele deling. Visueel lijkt het "om 1/2" te staan.
 
-**Kern:** een mathblock-kader dat een genest sub-mathblock omvat, wordt door de
-token-tagging opgeknipt. Mogelijk gewenst gedrag (A0 en A1 zijn aparte stappen),
-mogelijk te verbeteren (A1-kader zou de hele deling incl. de √1-plek kunnen dekken).
+**Kern (HERZIEN 2026-07-05 — Henk):** dit is GEEN studenttool-kader-kwestie maar de
+STAP-DECOMPOSITIE. De opgave FOLDT `√1` (A0) in de delings-step (A1): A0 komt in
+GEEN enkele step voor als hoog/laag hint (geverifieerd), en A1's reductie gaat
+`1/2:√1 → -1/2` in één keer. Didactisch fout: de volgorde van bewerkingen dwingt
+eerst `√1` (=1), dán de deling `1/2 : 1`. Daarom:
+- kader op `1/2 :` alleen (v171) — fout;
+- kader op de héle `1/2 : √1` (poging v172 — TERUGGEDRAAID) — óók fout, want de
+  student kan die deling niet doen vóór √1 is uitgerekend;
+- correct: de hint hoort EERST op `√1` (A0) te staan, als eigen stap vóór A1.
+
+→ Fix hoort in de **authortool/opgave-model** (A0 = √1 als eigen step vóór A1), óf
+een studenttool-regel "hint de DIEPSTE onopgeloste bewerking eerst" — die laatste
+raakt ook de step-tracking (√1 reduceren mag de step niet ten onrechte laten
+opschuiven, want A0 is geen getrackte step).
 
 ## 2. 511-027 — vermoedelijke AST↔LaTeX-mismatch (authortool / data)
 
