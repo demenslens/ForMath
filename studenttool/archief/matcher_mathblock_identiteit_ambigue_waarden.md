@@ -23,11 +23,18 @@ browser-geverifieerd. Onderscheid van het 511_010-geval hieronder:
   - **Verificatie**: `test_harnas/repro_b4.js` (B4 CANONIEK), batch 451/451, run
     30/30, browser (step 4→5, A5-hint tekent).
 
-- **511_010-variant (TWEELING / gelijke waarden) — NOG OPEN.** Meerdere mathblocks
-  met DEZELFDE waarde (A5/A8 beide −3, A1/C2 beide 3). Hier grijpt de twin-guard in
-  en valt terug op de structurele/skelet-weg — die moet het tweeling-geval correct
-  desambigueren op POSITIE/skelet, niet op waarde. Of dat 511_010 volledig oplost is
-  nog te verifiëren (aparte sessie; de analyse hieronder blijft leidend).
+- **511_010-variant (TWEELING / gelijke waarden) — OPGELOST (2026-07-05, geverifieerd).**
+  Meerdere mathblocks met DEZELFDE waarde (A5/A8 beide −3, A1/C2 beide 3, A2/A4 beide 9,
+  B2/B3 beide 27). Cruciaal: die tweelingen zitten op VERSCHILLENDE steps, en `checkStep`
+  evalueert PER STEP — binnen elke step zijn de hoog-waarden distinct (step 8: −3 vs −8).
+  De structurele/positionele ankering (`alignTarget`) wint dus op POSITIE, niet op waarde.
+  Geverifieerd met `test_harnas/repro_tweeling.js` (5 scenario's, incl. het adversaire
+  geval waarin de student A8 fout op precies B8's waarde −8 uitrekent → A8 blijft correct
+  AFWIJKEND, geen mislabel). De juni-diagnose gold voor de OUDE matcher; de lokalisatie-
+  overhaul + de ambigue-waarden-fix (matcher v7) hebben het opgelost. Geen code nodig.
+
+**→ Beide varianten opgelost; deze doc is afgesloten (archief). De analyse hieronder
+blijft als historische naslag.**
 
 ## Symptoom
 
