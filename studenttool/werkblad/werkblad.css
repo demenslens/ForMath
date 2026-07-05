@@ -371,7 +371,7 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
   content: "";
   position: absolute;
   left: 90px;
-  top: var(--page-lines-top, 130px);
+  top: 50px;                 /* begin 50px vanaf de bovenkant van het werkblad */
   bottom: 0;
   width: 0;
   border-left: 2px solid var(--margin-red);
@@ -493,6 +493,19 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
   --mathfield-caret-color: var(--accent);
 }
 math-field, .editor { font-size: 17px; }
+
+/* Regel 1 van de opgave: de begin-expressie gerenderd in blauw, READ-ONLY
+   (alleen ter info; de student werkt op de kopie eronder). */
+.opgave-mf {
+  flex: 1;
+  font-size: 17px;
+  color: #1a6fc4;
+  pointer-events: none;
+  --mf-color: #1a6fc4;
+  background: transparent;
+  border: none;
+}
+.opgave-label { color: #1a6fc4; font-size: 17px; }
 
 /* Regel 5: opgavenummer (blauw) + opdracht + expressie, netjes op één regel */
 .rl-title {

@@ -701,10 +701,37 @@
     rId.appendChild(lbl);
     rules.appendChild(rId);
 
-    // Regel 3: editor (voorgevuld met de beginexpressie), met LF-knop
+    // Regel 3: de OPGAVE gerenderd in blauw, READ-ONLY (alleen ter informatie —
+    // hier kan niets in veranderd worden). De student werkt op de regel eronder.
+    var rOpg = mkLine();
+    if(mathLiveReady){
+      var opgMf = document.createElement('math-field');
+      opgMf.setAttribute('read-only','');
+      opgMf.setAttribute('virtual-keyboard-mode','off');
+      opgMf.className = 'opgave-mf';
+      rOpg.appendChild(opgMf);
+      setTimeout(function(){
+        try {
+          if(opgMf.setValue) opgMf.setValue(latex, {suppressChangeNotifications: true});
+          else opgMf.value = latex;
+        } catch(e){ try { opgMf.value = latex; } catch(e2){} }
+        // hideMFChrome (net als de bewerkbare regel) i.p.v. styleMfChrome: die
+        // laatste zet padding:0 4px op de host → 4px naar rechts. Zo lijnen de
+        // blauwe opgave-regel en de bewerkbare kopie eronder links uit.
+        hideMFChrome(opgMf);
+      },100);
+    } else {
+      var opgSp = document.createElement('span');
+      opgSp.className = 'opgave-label'; opgSp.textContent = latex;
+      rOpg.appendChild(opgSp);
+    }
+    rules.appendChild(rOpg);
+
+    // Regel 4: bewerkbare KOPIE van de beginexpressie, met LF-knop — hier werkt
+    // de student. (Voorheen stond de editor direct op regel 3.)
     var r4 = mkLine();
     r4.className = 'rl active'; r4.id = 'active-line';
-    activeLineIndex = 2;
+    activeLineIndex = 3;
     if(mathLiveReady){
       var mf = document.createElement('math-field');
       mf.id='mf-el'; mf.setAttribute('virtual-keyboard-mode','onfocus');
