@@ -53,6 +53,11 @@ LF) en dat `2 − 3/4` schoon als `Rational(-3,4)` in de boom staat (geen dubbel
   behandeling krijgen als de hints.
 - **`[atomMap] STRUCTURAL BUILD FAILED`** faalt nog echt (`verbruikt=0/7`) — nu alleen
   getemd in de console; raakt cursor→mathblock (klik-identificatie), niet de hints.
+- **Hint-anomalieën (520-001, 511-027) → AUTHORTOOL-taak.** Root cause: de opgave-data
+  laat een bewerking in step 0 gebeuren (bv. `√1` gevouwen in de delings-step) terwijl
+  step 0 alleen input mag zijn. De studenttool-hint klopt gegeven correcte data; fix in
+  de authortool (step-decompositie). Zie `hint_lokalisatie_anomalien.md`. De
+  tweeling-variant van de matcher-mislabeling is wél opgelost (studenttool, geverifieerd).
 - Verloren chat van 2 juli teruggehaald als `HERSTEL_chat_2juli.md`.
 
 ## Het grote doel

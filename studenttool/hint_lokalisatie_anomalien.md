@@ -4,6 +4,21 @@ Gevonden bij het breder testen van de gecombineerde hoog+laag-hints (v168). Beid
 zijn PRÉ-EXISTENT — niet veroorzaakt door de combinatie; de individuele
 kader-verankering is ongewijzigd. Los spoor, apart van de LF-keten.
 
+## ROOT CAUSE (2026-07-05, Henk): AUTHORTOOL — geen bewerking in step 0
+
+Beide anomalieën komen uit de OPGAVE-DATA (authortool), NIET uit de studenttool-hint.
+De authortool laat een bewerking (bv. `√1`) al in step 0 gebeuren / gevouwen in een
+parent-step, terwijl **step 0 alleen INPUT mag bevatten — nooit een bewerking**.
+Correct:
+- **520-001:** in step 0 hoort `1` als input te staan; de worteltrekking (`√1`) hoort
+  een EIGEN bewerking op step 1 te zijn (vóór de deling), niet gevouwen in A1.
+- **511-027:** hetzelfde fenomeen (de `³√`- en de `(2/3)²`-vorm).
+
+De studenttool-hint rendert correct GEGEVEN correcte data; de fix hoort in de
+**authortool** (opgave-model / step-decompositie). Zolang de data dit foldt,
+mislokaliseren zowel de hint ALS straks de pinpointing — dit is dus een fundament
+voor beide. De studenttool-analyses hieronder blijven als naslag.
+
 ## 1. 520-001 — genest mathblock knipt het kader af (studenttool / genLatexTokens)
 
 Expressie bevat `(1/2 : √1)`. In de AST:
