@@ -1,18 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1088" height="898" viewBox="0 0 1088 898">
+<svg xmlns="http://www.w3.org/2000/svg" width="1088" height="1038" viewBox="0 0 1088 1038">
   <rect width="100%" height="100%" fill="#FFFFFF" />
   <text x="40" y="50" font-family="JetBrains Mono, Consolas, monospace" font-size="15" font-weight="500" fill="#1a1a1a">AST: -1/9+2/3^2×13/6+((root(3,1)-1/2)^3:(1+1/2)^3)+1/9</text>
+  <line x1="120" y1="960" x2="1048" y2="960" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
+  <text x="114" y="964" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 0</text>
   <line x1="120" y1="820" x2="1048" y2="820" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
-  <text x="114" y="824" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 0</text>
+  <text x="114" y="824" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 1</text>
   <line x1="120" y1="680" x2="1048" y2="680" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
-  <text x="114" y="684" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 1</text>
+  <text x="114" y="684" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 2</text>
   <line x1="120" y1="540" x2="1048" y2="540" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
-  <text x="114" y="544" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 2</text>
+  <text x="114" y="544" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 3</text>
   <line x1="120" y1="400" x2="1048" y2="400" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
-  <text x="114" y="404" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 3</text>
+  <text x="114" y="404" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 4</text>
   <line x1="120" y1="260" x2="1048" y2="260" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
-  <text x="114" y="264" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 4</text>
+  <text x="114" y="264" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 5</text>
   <line x1="120" y1="120" x2="1048" y2="120" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
-  <text x="114" y="124" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 5</text>
+  <text x="114" y="124" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 6</text>
   <line x1="604.0" y1="172" x2="205.0" y2="240" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
   <line x1="604.0" y1="172" x2="376.0" y2="240" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
   <line x1="604.0" y1="172" x2="718.0" y2="240" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
@@ -20,7 +22,7 @@
   <rect x="559.0" y="100" width="90" height="72" rx="3" ry="3" fill="#FFE8C0" stroke="#E07B00" stroke-width="2" />
   <text x="604.0" y="143.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="13" font-weight="500" fill="#6B3A00">M+(4)</text>
   <text x="604.0" y="111" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#E07B00" opacity="0.8">manifold</text>
-  <text x="564.0" y="167" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A5</text>
+  <text x="564.0" y="167" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A6</text>
   <text x="564.0" y="184" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = []</text>
   <text x="604.0" y="95" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 1</text>
   <rect x="160.0" y="240" width="90" height="40" rx="3" ry="3" fill="#FFFFFF" stroke="#C62828" stroke-width="3" />
@@ -32,7 +34,7 @@
   <text x="376.0" y="267.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#1B5E20">÷</text>
   <text x="417.0" y="276" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="500" fill="#2E7D32" opacity="0.85">GGD=2</text>
   <text x="376.0" y="251" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2E7D32" opacity="0.8">vereenvoudig</text>
-  <text x="336.0" y="275" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A4</text>
+  <text x="336.0" y="275" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A5</text>
   <text x="336.0" y="292" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [1]</text>
   <text x="376.0" y="235" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 26/27</text>
   <line x1="376.0" y1="420" x2="319.0" y2="520" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
@@ -40,14 +42,14 @@
   <rect x="331.0" y="380" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="376.0" y="407.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">×</text>
   <text x="376.0" y="391" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">binair</text>
-  <text x="336.0" y="415" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A3</text>
+  <text x="336.0" y="415" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A4</text>
   <text x="336.0" y="432" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [1, 0]</text>
   <text x="376.0" y="375" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 52/54</text>
   <line x1="319.0" y1="560" x2="319.0" y2="660" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
   <rect x="274.0" y="520" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="319.0" y="547.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">^2</text>
   <text x="319.0" y="531" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">macht</text>
-  <text x="279.0" y="555" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A2</text>
+  <text x="279.0" y="555" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A3</text>
   <text x="279.0" y="572" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [1, 0, 0]</text>
   <text x="319.0" y="515" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 4/9</text>
   <rect x="274.0" y="660" width="90" height="40" rx="3" ry="3" fill="#FFFFFF" stroke="#000000" stroke-width="2" />
@@ -63,7 +65,7 @@
   <text x="718.0" y="267.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#1B5E20">÷</text>
   <text x="759.0" y="276" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="500" fill="#2E7D32" opacity="0.85">GGD=8</text>
   <text x="718.0" y="251" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2E7D32" opacity="0.8">vereenvoudig</text>
-  <text x="678.0" y="275" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B4</text>
+  <text x="678.0" y="275" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B5</text>
   <text x="678.0" y="292" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2]</text>
   <text x="718.0" y="235" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 1/27</text>
   <line x1="718.0" y1="420" x2="604.0" y2="520" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
@@ -71,14 +73,14 @@
   <rect x="673.0" y="380" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="718.0" y="407.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">:</text>
   <text x="718.0" y="391" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">binair</text>
-  <text x="678.0" y="415" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B3</text>
+  <text x="678.0" y="415" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B4</text>
   <text x="678.0" y="432" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0]</text>
   <text x="718.0" y="375" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 8/216</text>
   <line x1="604.0" y1="560" x2="604.0" y2="660" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
   <rect x="559.0" y="520" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="604.0" y="547.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">^3</text>
   <text x="604.0" y="531" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">macht</text>
-  <text x="564.0" y="555" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B2</text>
+  <text x="564.0" y="555" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B3</text>
   <text x="564.0" y="572" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0, 0]</text>
   <text x="604.0" y="515" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 1/8</text>
   <line x1="604.0" y1="700" x2="547.0" y2="800" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
@@ -86,15 +88,20 @@
   <rect x="559.0" y="660" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="604.0" y="687.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">+</text>
   <text x="604.0" y="671" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">binair</text>
-  <text x="564.0" y="695" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A1</text>
+  <text x="564.0" y="695" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A2</text>
   <text x="564.0" y="712" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0, 0, 0]</text>
   <text x="604.0" y="655" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 1/2</text>
+  <line x1="547.0" y1="840" x2="547.0" y2="940" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
   <rect x="502.0" y="800" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="547.0" y="827.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">^1/3</text>
   <text x="547.0" y="811" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">wortel</text>
-  <text x="507.0" y="835" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A0</text>
+  <text x="507.0" y="835" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">A1</text>
   <text x="507.0" y="852" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0, 0, 0, 0]</text>
   <text x="547.0" y="795" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 1</text>
+  <rect x="502.0" y="940" width="90" height="40" rx="3" ry="3" fill="#FFFFFF" stroke="#000000" stroke-width="2" />
+  <text x="547.0" y="967.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="13" font-weight="500" fill="#000000">1</text>
+  <text x="547.0" y="951" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#000000" opacity="0.8">getal</text>
+  <text x="507.0" y="992" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0, 0, 0, 0, 0]</text>
   <rect x="616.0" y="800" width="90" height="40" rx="3" ry="3" fill="#FFFFFF" stroke="#C62828" stroke-width="3" />
   <text x="661.0" y="827.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="13" font-weight="500" fill="#000000">-1/2</text>
   <text x="661.0" y="811" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#C62828" opacity="0.8">breuk</text>
@@ -103,7 +110,7 @@
   <rect x="787.0" y="520" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="832.0" y="547.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">^3</text>
   <text x="832.0" y="531" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">macht</text>
-  <text x="792.0" y="555" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">C2</text>
+  <text x="792.0" y="555" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">C3</text>
   <text x="792.0" y="572" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0, 1]</text>
   <text x="832.0" y="515" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 27/8</text>
   <line x1="832.0" y1="700" x2="775.0" y2="800" stroke="#999" stroke-width="1.5" stroke-dasharray="none" />
@@ -111,7 +118,7 @@
   <rect x="787.0" y="660" width="90" height="40" rx="3" ry="3" fill="#D0E8FF" stroke="#2176AE" stroke-width="2" />
   <text x="832.0" y="687.0" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="18" font-weight="500" fill="#0D3B66">+</text>
   <text x="832.0" y="671" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="8" fill="#2176AE" opacity="0.8">binair</text>
-  <text x="792.0" y="695" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B1</text>
+  <text x="792.0" y="695" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="500" fill="#1a1a1a">B2</text>
   <text x="792.0" y="712" text-anchor="start" font-family="JetBrains Mono, Consolas, monospace" font-size="9" font-weight="400" fill="#666">path = [2, 0, 1, 0]</text>
   <text x="832.0" y="655" text-anchor="middle" font-family="JetBrains Mono, Consolas, monospace" font-size="11" font-weight="400" fill="#333">= 3/2</text>
   <rect x="730.0" y="800" width="90" height="40" rx="3" ry="3" fill="#FFFFFF" stroke="#000000" stroke-width="2" />

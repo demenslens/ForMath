@@ -85,13 +85,6 @@
       "stappen": 5
     },
     {
-      "bestand": "opgave_20260511_027.json",
-      "id": "opgave_20260511_027",
-      "titel": "-\\frac19+\\frac{2}{3}^2\\times\\frac{13}{6}+\\left(\\left(\\sqr...",
-      "niveau": "gemengd",
-      "stappen": 5
-    },
-    {
       "bestand": "opgave_20260513_001.json",
       "id": "opgave_20260513_001",
       "titel": "\\left(50-90\\right)^2",
@@ -134,9 +127,9 @@
       "stappen": 6
     },
     {
-      "bestand": "opgave_20260520_001.json",
-      "id": "opgave_20260520_001",
-      "titel": "\\left(2-\\frac{3}{5}-\\frac{33}{15}\\right)+\\left(1+\\frac{4}...",
+      "bestand": "opgave_20260511_027.json",
+      "id": "opgave_20260511_027",
+      "titel": "-\\frac19+\\frac{2}{3}^2\\times\\frac{13}{6}+\\left(\\left(\\sqr...",
       "niveau": "gevorderd",
       "stappen": 6
     },
@@ -158,6 +151,13 @@
       "bestand": "opgave_20260514_002.json",
       "id": "opgave_20260514_002",
       "titel": "\\frac19+-\\left(\\frac{3}{2}+\\frac{5}{6}\\right)+\\frac{2}{3}...",
+      "niveau": "gevorderd",
+      "stappen": 7
+    },
+    {
+      "bestand": "opgave_20260520_001.json",
+      "id": "opgave_20260520_001",
+      "titel": "\\left(2-\\frac{3}{5}-\\frac{33}{15}\\right)+\\left(1+\\frac{4}...",
       "niveau": "gevorderd",
       "stappen": 7
     },
