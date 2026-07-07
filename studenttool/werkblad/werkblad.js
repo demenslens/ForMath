@@ -3925,6 +3925,23 @@
     var mbPerOffset = V.anchorOffsets(offsets, tokens);
     var delta = V.computeDelta(mf, offsets);
 
+    // Meet-instrument: zet `window.__boxDebug = true` in de console.
+    //  [offsets] = de losse MathLive-elementen (digits/structuren) met bounds.
+    //  [kader]   = de daadwerkelijk getékende box per mathblock (span + marge +
+    //              diepte-fudge). Zie box_coordinaten_uitleg.md.
+    if (window.__boxDebug) {
+      console.log('[offsets] n=' + offsets.length + '  (x,y,w,h,bottom,mb)');
+      offsets.forEach(function(o, i){
+        var b = o.bounds;
+        console.log('  ' + i + ': ' + JSON.stringify(o.latex) +
+          (b ? '  x=' + Math.round(b.x) + ' y=' + Math.round(b.y) +
+               ' w=' + Math.round(b.width) + ' h=' + Math.round(b.height) +
+               ' bot=' + Math.round(b.y + b.height)
+             : '  (geen bounds)') +
+          ' mb=' + (mbPerOffset[i] || '-'));
+      });
+    }
+
     var getekend = 0;
     var perBlock = [];
     teTonen.forEach(function(bid){
@@ -3934,11 +3951,58 @@
           bounds.push(o.bounds); depths.push(o.depth);
         }
       });
+      // y-baseline + hoogte uit de bladeren (cijfers) — zelfde verticale regime
+      // als bijv. de macht-box 3^2, zodat wortel- en macht-kaders uitlijnen.
       var span = V.spanBounds(bounds);
+      // Het wortelteken heeft geen eigen blad-offset (alleen de radicand-cijfers
+      // krijgen het mathblock-label). Verruim daarom ALLEEN de linker x-grens tot
+      // de omvattende \sqrt-offset die UITSLUITEND deze mathblock's bladeren omvat
+      // — 3px naar binnen — zodat het kader de √ dekt zónder de afwijkende
+      // overstreep-hoogte van die offset over te nemen. Breuk/macht/blad blijven
+      // ongewijzigd (die hebben geen los \sqrt-offset). Zelfde exclusiviteits-idee
+      // als mathblockBounds (de fout-kaders).
+      if (span) {
+        offsets.forEach(function(so){
+          if (!(so.bounds && so.bounds.width > 0)) return;
+          if (!/\\sqrt/.test(so.latex || '')) return;
+          var eigen = 0, vreemd = 0;
+          offsets.forEach(function(p, j){
+            var lab = mbPerOffset[j];   // string-mathblock-id (of null), geen object
+            if (!(lab && p.bounds && p.bounds.width > 0)) return;
+            if (/\\frac|\\sqrt|\^/.test(p.latex || '')) return;   // alleen bladeren
+            var cx = p.bounds.x + p.bounds.width / 2, cy = p.bounds.y + p.bounds.height / 2;
+            if (cx < so.bounds.x - 2 || cx > so.bounds.x + so.bounds.width + 2
+                || cy < so.bounds.y - 2 || cy > so.bounds.y + so.bounds.height + 2) return;
+            if (lab === bid) eigen++; else vreemd++;
+          });
+          if (eigen > 0 && vreemd === 0) {
+            // Onderkant (baseline) = cijferregel behouden (valt samen met bijv.
+            // de 3^2-baseline). Bovenkant omhoog t/m de overstreep (de \sqrt-
+            // offset-top), zodat de hoogte overeenkomt met de macht-box. Links
+            // t/m het wortelteken, 3px naar binnen.
+            var newLeft = Math.min(span.x, so.bounds.x + 3);
+            var newTop  = Math.min(span.y, so.bounds.y);
+            var bottom  = span.y + span.height;
+            span = { x: newLeft, y: newTop,
+                     width: (span.x + span.width) - newLeft, height: bottom - newTop };
+            // De box hangt nu aan de wortel-structuur (diepte van de \sqrt-offset,
+            // typisch 1 — net als de "3" van een macht), niet aan de diepere
+            // radicand-cijfers. Neem die diepte mee zodat drawBox's DEPTH_SIZE_CORR
+            // dezelfde fudge geeft als de macht-box → gelijke getekende hoogte.
+            if (so.depth != null) depths.push(so.depth);
+          }
+        });
+      }
       perBlock.push({ bid: bid, offsets: bounds.length, span: !!span });
       if (span){
         var d = depths.length ? Math.min.apply(null, depths) : 0;
-        V.drawBox(mf, span, kleur, delta, d, V.HINT_MARGE);
+        var box = V.drawBox(mf, span, kleur, delta, d, V.HINT_MARGE);
+        if (window.__boxDebug && box) {
+          var kr = box.getBoundingClientRect();
+          console.log('[kader] ' + bid + '  x=' + Math.round(kr.x) + ' y=' + Math.round(kr.y) +
+            ' w=' + Math.round(kr.width) + ' h=' + Math.round(kr.height) +
+            ' bot=' + Math.round(kr.bottom) + '   (diepte=' + d + ')');
+        }
         getekend++;
       }
     });
@@ -4076,7 +4140,7 @@
   // MATHLIVE HELPERS
   // ══════════════════════════════════════
   function hideMFChrome(mf){
-    try{var sh=mf.shadowRoot;if(sh){var s=document.createElement('style');s.textContent=':host{background:transparent!important;border:none!important;box-shadow:none!important;outline:none!important;} .ML__container{display:flex!important;align-items:center!important;height:44px!important;} .ML__fieldcontainer{flex:1!important;} .ML__menu-toggle{display:none!important;} .ML__virtual-keyboard-toggle{display:none!important;}';sh.appendChild(s);}}catch(e){}
+    try{var sh=mf.shadowRoot;if(sh){var s=document.createElement('style');s.textContent=':host{background:transparent!important;border:none!important;box-shadow:none!important;outline:none!important;} .ML__container{display:flex!important;align-items:center!important;min-height:44px!important;} .ML__fieldcontainer{flex:1!important;} .ML__menu-toggle{display:none!important;} .ML__virtual-keyboard-toggle{display:none!important;}';sh.appendChild(s);}}catch(e){}
   }
   function styleMfChrome(mf){
     try{var sh=mf.shadowRoot;if(sh){var s=document.createElement('style');s.textContent=':host{background:transparent!important;border:none!important;box-shadow:none!important;outline:none!important;padding:0 4px!important;margin:0!important;} .ML__container{height:auto!important;} .ML__menu-toggle{display:none!important;} .ML__virtual-keyboard-toggle{display:none!important;}';sh.appendChild(s);}}catch(e){}
