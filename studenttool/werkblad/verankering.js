@@ -181,7 +181,7 @@
     var tree = ast.tree;
     var padToMb = {};
     ast.node_map.forEach(function (nm) { padToMb[nm.path.join(',')] = nm.mathblock_id; });
-    var PREC = { Add:1, Subtract:1, Negate:3, Multiply:2, Divide:2, Power:4, Sqrt:4, Rational:5, num:5 };
+    var PREC = { Add:1, Subtract:1, Negate:3, Multiply:2, Divide:2, Power:4, Sqrt:4, NthRoot:4, Root:4, Rational:5, num:5 };
     var tokens = [];
     function mbForPath(path) {
       for (var len = path.length; len >= 0; len--) {
@@ -208,8 +208,11 @@
         return;
       }
       if (opNaam === 'Sqrt') { emit('\\sqrt{', mbHere, 'sqrt'); gen(args[0], path.concat(0), 0); emit('}', mbHere, 'sqrt'); return; }
-      if (opNaam === 'NthRoot') {
-        // args = [radicand, index]. MathLive: \sqrt[index]{radicand}.
+      if (opNaam === 'NthRoot' || opNaam === 'Root') {
+        // args = [radicand, index]. MathLive: \sqrt[index]{radicand}. De
+        // authortool exporteert n-de-machtswortels als standaard-MathJSON 'Root'
+        // (bv. ["Root",1,3] = ∛1); zonder deze tak viel dat door de fallback en
+        // kreeg de radicand geen mathblock-label → geen (groen) kader.
         emit('\\sqrt[', mbHere, 'sqrt'); gen(args[1], path.concat(1), 0); emit(']{', mbHere, 'sqrt');
         gen(args[0], path.concat(0), 0); emit('}', mbHere, 'sqrt'); return;
       }
@@ -222,7 +225,8 @@
         // Add/Multiply-bases wikkelen zichzelf al via de precedentie-check.
         var pb = args[0], pbOp = Array.isArray(pb) ? pb[0] : null;
         var wrapPB = pbOp === 'Divide' || pbOp === 'Sqrt' || pbOp === 'NthRoot'
-                     || pbOp === 'Power' || (pbOp === 'Rational' && pb[2] !== 1);
+                     || pbOp === 'Root' || pbOp === 'Power'
+                     || (pbOp === 'Rational' && pb[2] !== 1);
         if (wrapPB) emit('(', mbHere, 'paren');
         gen(pb, path.concat(0), myPrec);
         if (wrapPB) emit(')', mbHere, 'paren');
