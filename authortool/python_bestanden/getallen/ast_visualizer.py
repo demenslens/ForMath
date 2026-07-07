@@ -479,49 +479,65 @@ def is_wrapper_node(node):
     return bool(node.get('is_negative') and node.get('_bracketed'))
 
 
-def compute_node_depth(node):
-    """Berekent de maximale diepte van een node (0 = leaf, N = root)."""
+LEAF_TYPES = ('NUMBER', 'FRACTION', 'PARAMETER')
+
+
+def children(node):
+    """GEZAGHEBBENDE bron: de structurele kinderen van een node, in canonieke
+    volgorde. Label-velden (exponent, index, operator) tellen NIET als kind;
+    bladeren en onbekende types geven []; None-kinderen worden weggefilterd.
+
+    Dit is de ENIGE plek waar 'welk veld bevat de kinderen van dit type' staat.
+    Elke generieke traversal gebruikt deze functie i.p.v. een eigen type-lijst:
+    compute_node_depth, assign_steps, collect_nodes, compute_layout en
+    json_exporter._traverse. (MATROESJKA_OP heeft daarnaast eigen diepte/step-
+    math in compute_node_depth/assign_steps — de child-LIJST komt hiervandaan.)
+    Semantische functies (evaluate, node_to_expr, _node_to_mathjson) benaderen
+    kinderen bewust met naam en staan hier LOS van. Zie AST_MODEL.md.
+    """
+    if not isinstance(node, dict):
+        return []
     t = node.get('type')
-    if t in ('NUMBER', 'FRACTION', 'PARAMETER'):
-        return 0
-    if t == 'POWER':
-        base_depth = compute_node_depth(node.get('base', {}))
-        return 1 + base_depth
-    if t == 'ROOT':
-        # Een wortel is één stap bovenop zijn radicand (net als POWER op zijn
-        # base). De radicand (het getal onder het wortelteken) is een EXTERNE
-        # INPUT en hoort op step 0 — de input-basislijn, waar nooit een
-        # bewerking mag staan; de worteltrekking is de bewerking één stap
-        # daarboven (step 1). Zie de ROOT-tak in compute_layout, die de radicand
-        # als kind-blad op step 0 tekent — zónder die tak bleef step 0 leeg en
-        # leek de wortel op step 0 te vouwen.
-        return 1 + compute_node_depth(node.get('radicand', {}))
-    if t == 'UNARY_OP':
-        # Idem als ROOT: één stap bovenop de operand. De operand is een externe
-        # input (step 0), de unaire bewerking staat één stap hoger (step 1).
-        return 1 + compute_node_depth(node.get('operand', {}))
     if t == 'BINARY_OP':
-        return 1 + max(compute_node_depth(node.get('left', {})), compute_node_depth(node.get('right', {})))
-    if t == 'MANIFOLD_OP':
-        ops = node.get('operands', [])
-        if not ops: return 1
-        return 1 + max(compute_node_depth(op) for op in ops)
-    if t == 'MATROESJKA_OP':
+        kids = [node.get('left'), node.get('right')]
+    elif t == 'MANIFOLD_OP':
+        kids = list(node.get('operands', []))
+    elif t == 'POWER':
+        kids = [node.get('base')]           # exponent is een label, geen kind
+    elif t == 'ROOT':
+        kids = [node.get('radicand')]       # index is een label, geen kind
+    elif t == 'UNARY_OP':
+        kids = [node.get('operand')]
+    elif t in ('SIMPLIFY_OP', 'MIXED_NUMBER_OP'):
+        kids = [node.get('source')]
+    elif t == 'MATROESJKA_OP':
         shells = node.get('shells', [])
-        if not shells: return 1
-        # Diepte = aantal schillen (elke schil is één niveau)
-        # Plus de diepte van de inhoud van schil 1
-        s0_left_depth = compute_node_depth(shells[0].get('left', {}))
-        return len(shells) + s0_left_depth
-    if t == 'SIMPLIFY_OP':
-        # SIMPLIFY_OP is één stap bovenop zijn source
-        source = node.get('source', {})
-        return 1 + compute_node_depth(source)
-    if t == 'MIXED_NUMBER_OP':
-        # MIXED_NUMBER_OP is één stap bovenop zijn source
-        source = node.get('source', {})
-        return 1 + compute_node_depth(source)
-    return 0
+        kids = ([shells[0].get('left')] if shells else [])
+        kids += [s.get('right') for s in shells]
+    else:
+        kids = []                           # bladeren en onbekende types
+    return [c for c in kids if c is not None]
+
+
+def compute_node_depth(node):
+    """Bottom-up subboom-hoogte (0 = blad, N = root).
+
+    Voor elk operatie-type: 1 + de diepste van children(node). MATROESJKA_OP is
+    de uitzondering — z'n diepte = aantal schillen + de diepte van schil 1 links
+    (elke schil is een eigen niveau). Zie AST_MODEL.md.
+
+    Didactiek: een ROOT/UNARY_OP telt zo als één niveau bovenop z'n enige kind —
+    de radicand/operand is een externe input op step 0, de bewerking op step 1.
+    """
+    if node.get('type') == 'MATROESJKA_OP':
+        shells = node.get('shells', [])
+        if not shells:
+            return 1
+        return len(shells) + compute_node_depth(shells[0].get('left', {}))
+    kids = children(node)
+    if not kids:
+        return 0
+    return 1 + max(compute_node_depth(c) for c in kids)
 
 
 # ─── Expressie reconstructie voor bracketed nodes ────────────────────────────
@@ -594,39 +610,22 @@ def assign_block_ids(layout_root, max_depth):
 
     def assign_steps(node, incoming_step):
         t = node.get('type')
-        if t in ('NUMBER', 'FRACTION', 'PARAMETER', None): return
+        if t in LEAF_TYPES or t is None:
+            return
         node_steps[id(node)] = incoming_step
         child_step = incoming_step - 1
-        if t == 'BINARY_OP':
-            assign_steps(node.get('left', {}), child_step)
-            assign_steps(node.get('right', {}), child_step)
-        elif t == 'MANIFOLD_OP':
-            for op in node.get('operands', []):
-                assign_steps(op, child_step)
-        elif t == 'POWER':
-            assign_steps(node.get('base', {}), child_step)
-        elif t == 'ROOT':
-            # De radicand ligt één stap dieper (zoals de base van een POWER),
-            # zodat een geneste operatie ín de wortel — bv. √(1+2) — ook een
-            # eigen step krijgt in plaats van in de wortel-step te vouwen.
-            assign_steps(node.get('radicand', {}), child_step)
-        elif t == 'MATROESJKA_OP':
-            # Elke schil is één stap dieper; schil 1 left is het diepst
+        if t == 'MATROESJKA_OP':
+            # Uitzondering: elke schil is één stap dieper; schil 1 left is diepst.
             shells = node.get('shells', [])
             for i, shell in enumerate(shells):
                 shell_step = incoming_step - (len(shells) - i)
                 if i == 0:
                     assign_steps(shell.get('left', {}), shell_step - 1)
                 assign_steps(shell.get('right', {}), shell_step - 1)
-        elif t == 'SIMPLIFY_OP':
-            # SIMPLIFY_OP heeft één child: source
-            assign_steps(node.get('source', {}), child_step)
-        elif t == 'MIXED_NUMBER_OP':
-            # MIXED_NUMBER_OP heeft één child: source
-            assign_steps(node.get('source', {}), child_step)
-        elif t == 'UNARY_OP':
-            # UNARY_OP heeft één child: operand
-            assign_steps(node.get('operand', {}), child_step)
+            return
+        # Alle andere types: elk kind één step dieper (children = bron van waarheid)
+        for child in children(node):
+            assign_steps(child, child_step)
 
     assign_steps(layout_root['node'], max_depth)
 
@@ -645,28 +644,14 @@ def assign_block_ids(layout_root, max_depth):
 
     def collect_nodes(node):
         t = node.get('type')
-        if t in ('NUMBER', 'FRACTION', 'PARAMETER'): return
+        if t in LEAF_TYPES:
+            return
         all_nodes.append(node)
-        if t == 'BINARY_OP':
-            collect_nodes(node.get('left', {}))
-            collect_nodes(node.get('right', {}))
-        elif t == 'MANIFOLD_OP':
-            for op in node.get('operands', []):
-                collect_nodes(op)
-        elif t == 'POWER':
-            collect_nodes(node.get('base', {}))
-        elif t == 'MATROESJKA_OP':
-            shells = node.get('shells', [])
-            for i, shell in enumerate(shells):
-                if i == 0:
-                    collect_nodes(shell.get('left', {}))
-                collect_nodes(shell.get('right', {}))
-        elif t == 'SIMPLIFY_OP':
-            collect_nodes(node.get('source', {}))
-        elif t == 'MIXED_NUMBER_OP':
-            collect_nodes(node.get('source', {}))
-        elif t == 'UNARY_OP':
-            collect_nodes(node.get('operand', {}))
+        # children = bron van waarheid. Dit repareert meteen de oude bug: er was
+        # hier geen ROOT-tak, dus een operatie ín een wortel (√(1+2)) werd niet
+        # verzameld en kreeg een fallback-block-ID "?{step}".
+        for child in children(node):
+            collect_nodes(child)
 
     collect_nodes(layout_root['node'])
 
@@ -711,50 +696,9 @@ def compute_layout(node, depth=0, x_offset=0, max_depth=None, parent_depth=None)
 
     t = node.get("type")
 
-    if t == "BINARY_OP":
-        child_nodes = [node.get("left"), node.get("right")]
-        child_nodes = [c for c in child_nodes if c is not None]
-    elif t == "MANIFOLD_OP":
-        child_nodes = node.get("operands", [])
-    elif t == "POWER":
-        # Toon base als kind; exponent staat als superscript in het label
-        child_nodes = [node.get("base")]
-        child_nodes = [c for c in child_nodes if c is not None]
-    elif t == "ROOT":
-        # Toon de radicand als kind, zodat het getal onder het wortelteken als
-        # externe-input-blad ÉÉN rij ONDER de wortel (op step 0) wordt getekend.
-        # Zonder deze tak werd de wortel als los blad behandeld: de radicand
-        # bleef onzichtbaar en step 0 leeg, waardoor de wortel op step 0 leek te
-        # vouwen. Nu staat de radicand als input op step 0 en de worteltrekking
-        # als bewerking op step 1.
-        child_nodes = [node.get("radicand")]
-        child_nodes = [c for c in child_nodes if c is not None]
-    elif t == "UNARY_OP":
-        # Idem als ROOT: toon de operand als kind-blad onder de bewerking.
-        child_nodes = [node.get("operand")]
-        child_nodes = [c for c in child_nodes if c is not None]
-    elif t == "SIMPLIFY_OP":
-        # SIMPLIFY_OP heeft één kind: de source
-        child_nodes = [node.get("source")]
-        child_nodes = [c for c in child_nodes if c is not None]
-    elif t == "MIXED_NUMBER_OP":
-        # MIXED_NUMBER_OP heeft één kind: de source
-        child_nodes = [node.get("source")]
-        child_nodes = [c for c in child_nodes if c is not None]
-    elif t == "MATROESJKA_OP":
-        # Matroesjka: gebruik alle rechter operanden + de linker van schil 1 als kinderen
-        shells = node.get("shells", [])
-        child_nodes = []
-        if shells:
-            # Schil 1 linker is eerste kind
-            if shells[0].get("left"):
-                child_nodes.append(shells[0]["left"])
-            # Alle rechter operanden
-            for shell in shells:
-                if shell.get("right"):
-                    child_nodes.append(shell["right"])
-    else:
-        child_nodes = []
+    # children() = de gezaghebbende bron voor de kinderen per type (incl. ROOT/
+    # UNARY_OP/MATROESJKA); de leaf-render hieronder pakt lege child_nodes op.
+    child_nodes = children(node)
 
     # Y-positie: depth-vanaf-root (top-down).
     # Alle nodes (operatie en leaf) staan op `depth * step_h`. Root op y=0,

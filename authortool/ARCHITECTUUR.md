@@ -75,24 +75,23 @@ steps:
 Een operatie-node krijgt block-ID `letter+step` (bijv. `A1`, `B4`): de **letter**
 is de x-volgorde binnen de step, het **nummer** is de step.
 
-### De valkuil (en de bug van 2026-07-05)
-`compute_node_depth`, `compute_layout` en `assign_steps` hebben elk hun **eigen**
-per-type tak-lijst. Als `compute_node_depth` een type wél als eigen niveau telt
-maar `compute_layout` datzelfde type als blad behandelt (geen `child_nodes`-tak),
-dan:
+### De valkuil (en de bug van 2026-07-05) — nu opgelost via `children()`
+Vroeger had elke traversal (`compute_node_depth`, `compute_layout`, `assign_steps`,
+`collect_nodes`, `_traverse`) z'n **eigen** per-type tak-lijst. Als de één een type
+wél als eigen niveau telde maar de ander het als blad behandelde, dan telde
+`max_depth` het extra niveau mee terwijl de layout de operand niet tekende → de
+onderste step bleef **leeg** en de operatie "vouwde". Zo ontstond de ROOT-step-bug
+(`compute_layout` miste de `ROOT`-tak) én de `?`-block-ID-bug (`collect_nodes` miste
+'m → een operatie ín een wortel kreeg een fallback-block-ID).
 
-- telt `max_depth` het extra niveau mee, maar
-- tekent de layout de operand niet → de onderste step blijft **leeg** en de
-  operatie lijkt te "vouwen".
+**Sinds 2026-07-07 is dit structureel opgelost:** er is één gezaghebbende functie
+`children(node)` die per type de kinderen teruggeeft, en álle generieke traversals
+gebruiken die. Nieuw type toevoegen of een kind-veld hernoemen = **één** wijziging.
+De volledige regel + het node-model staan in het centrale document **`AST_MODEL.md`**.
 
-Dat gebeurde bij `ROOT`: `compute_node_depth` gaf `√x` diepte `1 + radicand`, maar
-`compute_layout` miste de `ROOT`-tak → de radicand (bv. de `1` in `√1`) werd niet
-getekend, step 0 bleef leeg en `√1` leek op step 0/1 te vouwen. **Fix:** een
-`ROOT`- en `UNARY_OP`-tak in `compute_layout` die de radicand/operand als kind-blad
-op step 0 tekent. Zie `archief/step0_geen_bewerking_OPGELOST.md`.
-
-**Regel:** voeg je een operand-dragend type toe of wijzig je zijn diepte, werk dan
-alle drie de functies bij en houd hun kind-lijsten gelijk.
+**Regel (kort):** wijzig `children()` — niet de traversals. Alleen niet-standaard
+diepte (zoals `MATROESJKA_OP`) en semantische functies (`evaluate`,
+`_node_to_mathjson`) hebben nog een eigen, bewuste per-type tak.
 
 ## 4. SVG ↔ export delen dezelfde decompositie
 

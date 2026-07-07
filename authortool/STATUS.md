@@ -27,6 +27,15 @@ pipeline-details: `ARCHITECTUUR.md`. Afgeronde onderzoeken: `archief/`.
   de letter), zodat json_exporter het step-nummer met `\d+$` blijft teruglezen. De
   oude `N{i}`-fallback maakte van block 26 op step 1 "N261" → step las als 261.
   Getest in `tests/test_block_ids.py`.
+- **#2 — één gezaghebbende `children()`-bron.** De ~5 generieke AST-traversals
+  (`compute_node_depth`, `assign_steps`, `collect_nodes`, `compute_layout`,
+  `json_exporter._traverse`) hadden elk hun eigen per-type kind-lijst — bron van
+  de ROOT-step-bug én de `?`-block-ID-bug. Nu leiden ze allemaal af van één
+  `children(node)`. Dit repareerde meteen een latente bug: een operatie ín een
+  wortel (`√(1+2)`) kreeg voorheen block-ID `?1` (`collect_nodes` miste ROOT), nu
+  een echte ID. Behoud-van-gedrag geverifieerd met een byte-diff: her-export van
+  520-001 en 511-027 is identiek aan de opgeslagen versie. Centraal gedocumenteerd
+  in **`AST_MODEL.md`**; getest in `tests/test_ast_children.py`.
 
 ## Update 2026-07-07 — testinfra-vangnet hersteld
 
@@ -103,7 +112,8 @@ standalone scripts staan in `collect_ignore` (los draaibaar via
 
 ## Documenten
 
-- `ARCHITECTUUR.md` — pipeline + step-model + de 3 diepte/step-functies.
+- `ARCHITECTUUR.md` — pipeline + step-model + de diepte/step-functies.
+- `AST_MODEL.md` — het node-model + de gezaghebbende `children()`-bron (centraal).
 - `CLAUDE.md` — authortool-instructies; `../CLAUDE.md` — gedeelde conventies.
 - `README.md`, `tools/tools_README.md` — gebruik.
 - `archief/` — afgeronde onderzoeken (o.a. de step-0-fix).

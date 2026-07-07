@@ -19,7 +19,7 @@ PIPELINE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'p
 if PIPELINE_DIR not in sys.path:
     sys.path.insert(0, PIPELINE_DIR)
 
-from ast_visualizer import evaluate, format_result, compute_node_depth
+from ast_visualizer import evaluate, format_result, compute_node_depth, children
 
 # Dynamic OUTPUT_DIR: leest altijd de actuele waarde uit config.py
 # Toegang via 'from json_exporter import OUTPUT_DIR' blijft werken, maar
@@ -500,52 +500,11 @@ def _traverse(node, result, order_counter=None):
     order_counter[0] += 1
     result.append(info)
 
-    # Recursie naar kinderen
-    if t == 'BINARY_OP':
-        for child in [node.get('left'), node.get('right')]:
-            if child:
-                info['children_py_ids'].append(id(child))
-                _traverse(child, result, order_counter)
-    elif t == 'MANIFOLD_OP':
-        for operand in node.get('operands', []):
-            info['children_py_ids'].append(id(operand))
-            _traverse(operand, result, order_counter)
-    elif t == 'POWER':
-        base = node.get('base')
-        if base:
-            info['children_py_ids'].append(id(base))
-            _traverse(base, result, order_counter)
-    elif t == 'ROOT':
-        radicand = node.get('radicand')
-        if radicand:
-            info['children_py_ids'].append(id(radicand))
-            _traverse(radicand, result, order_counter)
-    elif t == 'MATROESJKA_OP':
-        for i, shell in enumerate(node.get('shells', [])):
-            if i == 0:
-                left = shell.get('left')
-                if left:
-                    info['children_py_ids'].append(id(left))
-                    _traverse(left, result, order_counter)
-            right = shell.get('right')
-            if right:
-                info['children_py_ids'].append(id(right))
-                _traverse(right, result, order_counter)
-    elif t == 'SIMPLIFY_OP':
-        source = node.get('source')
-        if source:
-            info['children_py_ids'].append(id(source))
-            _traverse(source, result, order_counter)
-    elif t == 'MIXED_NUMBER_OP':
-        source = node.get('source')
-        if source:
-            info['children_py_ids'].append(id(source))
-            _traverse(source, result, order_counter)
-    elif t == 'UNARY_OP':
-        operand = node.get('operand')
-        if operand:
-            info['children_py_ids'].append(id(operand))
-            _traverse(operand, result, order_counter)
+    # Recursie naar kinderen (children = gezaghebbende bron; zie ast_visualizer
+    # / AST_MODEL.md). Voorheen had elk type hier z'n eigen tak — bron van drift.
+    for child in children(node):
+        info['children_py_ids'].append(id(child))
+        _traverse(child, result, order_counter)
 
 
 # ─── Block ID toewijzing ────────────────────────────────────────────────────

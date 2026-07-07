@@ -52,6 +52,12 @@ Werk het bij na een werksessie wanneer de status of voortgang verandert.
   zie `authortool/ARCHITECTUUR.md` §3.
 - Validatie verschilt per bewerkingstype: reken-bewerkingen → numerieke
   gelijkheid; `vereenvoudigen` → exacte vormovereenkomst.
+- **Eén gezaghebbende bron per node-/mathblock-structuur.** Definieer "wat is de
+  structuur van dit type" (welke velden zijn kinderen, hoe reken/render je het) op
+  precies één plek; laat andere code die afleiden, niet herhalen — anders drift →
+  stille, laat-ontdekte bugs. In de authortool is dat de `children()`-functie (zie
+  `authortool/AST_MODEL.md`). Als principe geldt dit óók voor forquest (mathblocks
+  worden daar met de hand, éénmalig gedefinieerd) en de latere letters-pipeline.
 
 ## Gedeelde visuele identiteit (authortool + studenttool, licht thema)
 
