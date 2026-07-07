@@ -432,14 +432,19 @@ def _node_to_latex(node, top_level=True):
 
         base_latex = _node_to_latex(base_node, top_level=False)
 
-        # Bug 2 + 3: de base heeft altijd haakjes nodig als:
-        # - de base zelf een POWER is (geneste macht: (a^b)^c)
-        # - de base _bracketed is maar al geen haakjes heeft gekregen
-        #   (dit kan als de base een NUMBER of FRACTION is zonder neg)
-        # NUMBER/FRACTION met neg krijgen al \left(-v\right) uit de NUMBER-tak
-        # BINARY_OP/_bracketed krijgt \left(...\right) uit de BINARY_OP-tak
-        # POWER-base heeft nog geen haakjes → die voegen we hier toe
-        needs_parens = (base_t == 'POWER')
+        # De base heeft haakjes nodig als hij als samengestelde uitdrukking
+        # rendert waar de macht anders maar aan één deel zou binden:
+        # - een geneste macht: (a^b)^c
+        # - een breuk: (1/4)^3 → \left(\frac{1}{4}\right)^{3}, niet \frac{1}{4}^{3}
+        #   (dat laatste laat de macht alleen op de teller lijken te slaan)
+        # - een wortel: (√5)^2 → \left(\sqrt{5}\right)^{2}, niet \sqrt{5}^{2}
+        # BINARY_OP/_bracketed krijgt zijn haakjes al uit de eigen tak. Niet
+        # dubbel wikkelen als de base-latex al met \left( begint (bijv. een
+        # negatieve breuk die zelf \left(-\frac..\right) teruggaf).
+        needs_parens = (
+            base_t in ('POWER', 'FRACTION', 'ROOT')
+            and not base_latex.startswith('\\left(')
+        )
 
         if needs_parens:
             base_latex = f"\\left({base_latex}\\right)"

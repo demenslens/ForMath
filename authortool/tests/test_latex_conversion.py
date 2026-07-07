@@ -160,9 +160,6 @@ class TestAstToLatexDisplay(unittest.TestCase):
         latex = self.assertProducesLatex('3*(-2)')
         self.assertIn(r'\left(-2\right)', latex)
 
-    # Bekende bug (#7 in STATUS.md): haakjes rond breuk/wortel onder een macht
-    # gaan verloren. expectedFailure tot de rendering gefixt is (dan → XPASS).
-    @unittest.expectedFailure
     def test_power_of_fraction(self):
         # Regressie: (1/4)^3 moet \left(\frac{1}{4}\right)^{3} geven,
         # niet \frac{1}{4}^{3} (waarin alleen de noemer verheven zou worden).
@@ -170,8 +167,6 @@ class TestAstToLatexDisplay(unittest.TestCase):
         self.assertIn(r'\left(\frac{1}{4}\right)', latex)
         self.assertIn('^{3}', latex)
 
-    # Bekende bug (#7 in STATUS.md): zie test_power_of_fraction.
-    @unittest.expectedFailure
     def test_power_of_fraction_in_division(self):
         # Origineel bug-rapport: (1/4)^3:(3/4)^2
         latex = self.assertProducesLatex('(1/4)^3:(3/4)^2')
@@ -183,8 +178,6 @@ class TestAstToLatexDisplay(unittest.TestCase):
         latex = self.assertProducesLatex('(3+5)^2')
         self.assertIn(r'\left(3+5\right)', latex)
 
-    # Bekende bug (#7 in STATUS.md): zie test_power_of_fraction.
-    @unittest.expectedFailure
     def test_power_of_sqrt(self):
         # (sqrt(5))^2
         latex = self.assertProducesLatex('(sqrt(5))^2')
