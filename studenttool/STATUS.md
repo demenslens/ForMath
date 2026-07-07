@@ -4,6 +4,38 @@ Samenvatting van waar het werk staat op 2026-06-15, zodat een nieuwe chat-sessie
 de draad oppakt zonder de hele geschiedenis over te doen. Diepere details staan in
 de losse documenten in `studenttool/` (zie "Documenten" onderaan).
 
+## Update 2026-07-07 — verankering-kaders + inhoud-gedreven regelhoogte
+
+BROWSER-GEVERIFIEERD door de auteur (o.a. 511-017, 511-023, 511-004, 511-027).
+Cache-buster **werkblad.js v182**, **verankering.js v12**.
+
+Commits (op `main`):
+
+| commit | wat |
+|---|---|
+| `184a2d2` | **`treesEqual`-naambotsing opgelost.** werkblad.js én matcher.browser.js declareerden allebei een globale `treesEqual`; werkblad (later geladen) overschreef 'm, dus de matcher deed in de **browser** een volgorde-gevóélige vergelijking i.p.v. z'n eigen volgorde-ONafhankelijke multiset-versie. Het node-harnas testte `M.treesEqual` (de goede) → groen, terwijl de browser de foute draaide. Verklaart chronische "werkt in Node, spookt in de browser". Fix: werkblad's variant → `treesEqualMJ`. |
+| `c2ab99b` | Haakjes om een breuk/wortel-base onder een macht in de kader-tokens (`genLatexTokens`/`genStudentTokens`) — anders viel het kader op `(2/3)²` verkeerd. |
+| `a88b3a4` | Wortelteken in het hint-kader (de omvattende `\sqrt`-offset wordt meegenomen; baseline = cijferregel, top = overstreep, diepte = die van de `\sqrt`-structuur zodat de `DEPTH_SIZE_CORR`-fudge gelijk is aan een macht-box). **Inhoud-gedreven regelhoogte:** `hideMFChrome` klemde `.ML__container` op `height:44px` → nu `min-height:44px`, zodat hoge gestapelde breuken (511-023/004) de rij verhógen i.p.v. buurregels te overlappen. Plus het kader-meetinstrument. |
+| `5207907` | `genLatexTokens` herkent de MathJSON-operator **`Root`** (n-de-machtswortel, `["Root",1,3]`=∛1) — een ³√ kreeg anders geen groen hoog-kader. |
+| `43edac1` | 511-027 `tekst` → `(2/3)^2` (disambiguatie, matcht de `latex_display`). |
+
+**Terugkerend patroon (belangrijk voor later):** de studenttool moet de MathJSON die
+de authortool exporteert **exact aankunnen**. Dat sloeg deze sessie twee keer toe —
+de haakjes onder een macht én de `Root`-operator. Voeg je opgave-typen toe, let dan
+op `genLatexTokens` / `genStudentTokens` (+ de `PREC`-tabel) in `verankering.js`.
+
+**Meet-instrument:** `window.__boxDebug = true` in de console + kaders aan → twee
+logs: `[offsets]` (losse MathLive-elementen met bounds) en `[kader]` (de
+daadwerkelijk getekende box per mathblock, mét marge + diepte-fudge). Uitleg +
+tekening in `box_coordinaten_uitleg.md`. Kader-tunen gaat zo met echte pixels
+i.p.v. gokken.
+
+**Nog open (Fable 5-review 2026-07-05, zwaar / niet-urgent):** #4 de ~48
+window-globals in een IIFE wikkelen (werkblad.js/matcher.browser.js delen één
+namespace); #5 verankering-fragiliteit (empirische pixel-fudges `DEPTH_SIZE_CORR`,
+shadow-DOM-afhankelijkheid, `setTimeout`-races). Zie
+`../beoordeling_fable5_2026-07-05/`.
+
 ## Update 2026-07-02…04 — LF-keten + matcher-fix (v161–v167, verankering v10, matcher v7)
 
 Alles hieronder is BROWSER-GEVERIFIEERD op 511_023 en staat op GitHub (t/m commit
