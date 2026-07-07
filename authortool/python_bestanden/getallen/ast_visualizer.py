@@ -557,6 +557,24 @@ def node_to_expr(node):
 
 # ─── MathBlock ID toewijzing ─────────────────────────────────────────────────
 
+def _block_letter(i):
+    """Letter-prefix voor het i-de blok op een step (0-indexed), bijectief
+    base-26: A..Z, AA, AB, … AZ, BA, …
+
+    Cruciaal: het resultaat bevat NOOIT een cijfer, zodat een block-ID
+    (`letter + step`) door json_exporter met `\\d+$` correct in step wordt
+    teruggelezen. De oude fallback `N{i}` (bijv. `N26`) stopte cijfers in de
+    letter → block 26 op step 1 werd "N261" → step las als 261.
+    """
+    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    n = i + 1  # 1-indexed voor bijectieve base-26
+    s = ''
+    while n > 0:
+        n, r = divmod(n - 1, 26)
+        s = letters[r] + s
+    return s
+
+
 def assign_block_ids(layout_root, max_depth):
     """
     Wijs aan elke operatie-node een block ID toe: letter + stap-nummer.
@@ -661,13 +679,12 @@ def assign_block_ids(layout_root, max_depth):
     for step in by_step:
         by_step[step].sort(key=lambda n: x_pos.get(id(n), 0))
 
-    # Stap 5: letters toewijzen
-    letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    # Stap 5: letters toewijzen (A..Z, AA, AB, … via _block_letter — nooit een
+    # cijfer in de letter, zodat json_exporter het step-nummer terugleest)
     block_ids = {}
     for step in sorted(by_step.keys()):
         for i, node in enumerate(by_step[step]):
-            letter = letters[i] if i < len(letters) else f"N{i}"
-            block_ids[id(node)] = f"{letter}{step}"
+            block_ids[id(node)] = f"{_block_letter(i)}{step}"
 
     return block_ids
 

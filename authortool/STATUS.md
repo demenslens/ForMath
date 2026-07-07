@@ -18,6 +18,16 @@ pipeline-details: `ARCHITECTUUR.md`. Afgeronde onderzoeken: `archief/`.
   mist de studenttool-eigen converter (`latexToMathJs`/`latexToDuo` in
   werkblad.js) dezelfde haakjes-logica (apart studenttool-punt).
 
+- **`letters/`-tak geschrapt + block-letter-fix (#6).** De gedivergeerde kopie
+  `python_bestanden/letters/` is verwijderd (zie `ARCHITECTUUR.md` §1); alle
+  soorten vallen via `SOORT_TO_DIR` terug op de getallen-pipeline. Dit lost de
+  HOOG-bevinding uit de review op (o.a. de waarde-omklappende haakjes-divergentie
+  in `letters/json_exporter.py`). Daarnaast de block-ID-fallback voor >26 blokken
+  op één step gefixt: `_block_letter(i)` geeft A..Z, AA, AB, … (nooit een cijfer in
+  de letter), zodat json_exporter het step-nummer met `\d+$` blijft teruglezen. De
+  oude `N{i}`-fallback maakte van block 26 op step 1 "N261" → step las als 261.
+  Getest in `tests/test_block_ids.py`.
+
 ## Update 2026-07-07 — testinfra-vangnet hersteld
 
 - **`pytest tests/` draait weer kaal groen** (39 passed, 30 skipped, 3 xfailed):
@@ -80,7 +90,7 @@ de actuele stand staat hieronder.*
 ```
 cd authortool && python3 -m pytest tests/ -q
 ```
-→ **42 passed, 30 skipped** (Python 3.14). `conftest.py` regelt de
+→ **47 passed, 30 skipped** (Python 3.14). `conftest.py` regelt de
 sys.path; de skips zijn obsolete `test_klasse`-klassen (te porten) en de 4
 standalone scripts staan in `collect_ignore` (los draaibaar via
 `python3 tests/<naam>.py`).

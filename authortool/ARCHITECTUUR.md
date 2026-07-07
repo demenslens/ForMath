@@ -7,18 +7,18 @@ werkt die zowel de visualisatie als de export aanstuurt. Die logica is subtiel
 beschreven; deze doc vult dat gat. Zie ook `CLAUDE.md` (authortool-instructies) en
 `../CLAUDE.md` (gedeelde kernbegrippen).
 
-## 1. Mapstructuur: getallen/ en letters/ zijn parallel
+## 1. Mapstructuur: één pipeline (getallen/)
 
-`python_bestanden/getallen/` (reken-opgaven) en `python_bestanden/letters/`
-(algebra) zijn **identieke, parallelle kopieën** van dezelfde modules. Op dit
-moment draait de web-UI voor álle soorten dezelfde pipeline (de `getallen/`-versie
-is de bron; `letters/` is een kopie). **Wijzig een module nooit in één van beide
-zonder de andere te synchroniseren** — bij voorkeur: bewerk `getallen/` en kopieer
-naar `letters/`:
+De AST-pipeline staat in `python_bestanden/getallen/`. Tot 2026-07-07 was er een
+parallelle kopie `python_bestanden/letters/` (algebra), maar die is **geschrapt**:
+het was een gedivergeerde kopie van `getallen/` (o.a. een ontbrekende haakjes-fix
+die de waarde omklapte) en de letters/algebra-pipeline wordt later wezenlijk anders
+opgezet — een kopie had dus geen waarde en was een stille-divergentie-risico.
 
-```
-cp python_bestanden/getallen/ast_visualizer.py python_bestanden/letters/ast_visualizer.py
-```
+Alle `soort_opgave`-waarden vallen nu via `SOORT_TO_DIR` (en de fallback) terug op
+de getallen-pipeline; zie `server.py`. Komt er straks een echte algebra-pipeline,
+dan krijgt die een eigen sub-directory en laadt `pipeline_dir_for()` de juiste set
+per soort.
 
 ## 2. De pipeline (LaTeX → AST → SVG + JSON)
 

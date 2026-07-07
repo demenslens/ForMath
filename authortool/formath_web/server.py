@@ -22,13 +22,13 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)
 PIPELINE_PARENT = os.path.join(PROJECT_DIR, 'python_bestanden')
 
 # Mapping van soort_opgave-keuzewaarde naar pipeline-directory.
-# Voorlopig wijzen 'rekenen_letters' en 'simpele_vergelijkingen' nog naar
-# letters/ (een kopie van getallen/) — we passen die pas aan als we de
-# letters-pipeline daadwerkelijk gaan ontwikkelen.
+# De aparte letters/-tak (een gedivergeerde kopie van getallen/) is per
+# 2026-07-07 geschrapt: alle soorten vallen via de fallback terug op de
+# getallen-pipeline (DEFAULT_PIPELINE). De letters/algebra-pipeline wordt later
+# opnieuw gebouwd — en dan wezenlijk anders dan getallen, dus een kopie had geen
+# waarde.
 SOORT_TO_DIR = {
-    'rekenen_getallen':       'getallen',
-    'rekenen_letters':        'letters',
-    'simpele_vergelijkingen': 'letters',
+    'rekenen_getallen': 'getallen',
 }
 DEFAULT_PIPELINE = 'getallen'
 
@@ -37,10 +37,9 @@ def pipeline_dir_for(soort_opgave):
     name = SOORT_TO_DIR.get(soort_opgave, DEFAULT_PIPELINE)
     return os.path.join(PIPELINE_PARENT, name)
 
-# Voor dit moment laden we alleen de default pipeline (getallen) bij het
-# opstarten van de server. De letters-pipeline is nog identiek aan getallen,
-# dus dezelfde modules werken — switchen wordt later toegevoegd zodra de
-# pipelines echt verschillen.
+# We laden de default pipeline (getallen) bij het opstarten van de server. Er is
+# nu maar één pipeline; per-soort switchen wordt later toegevoegd zodra er een
+# aparte (letters/algebra-)pipeline bestaat.
 PIPELINE_DIR = pipeline_dir_for(DEFAULT_PIPELINE)
 
 sys.path.insert(0, BASE_DIR)
@@ -611,10 +610,10 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             if latex_display != latex:
                 print(f"[DISP]  LaTeX display: {latex_display}")
 
-            # NB: voor nu gebruiken alle soorten dezelfde pipeline (de letters/
-            # directory is een identieke kopie). Als de letters-pipeline straks
-            # afwijkt moet hier per soort_opgave een andere set functies geladen
-            # worden — zie SOORT_TO_DIR / pipeline_dir_for() bovenaan.
+            # NB: alle soorten gebruiken nu de getallen-pipeline (de aparte
+            # letters/-tak is geschrapt). Als er straks een echte letters/
+            # algebra-pipeline komt, moet hier per soort_opgave een andere set
+            # functies geladen worden — zie SOORT_TO_DIR / pipeline_dir_for().
 
             # Stap 1: LaTeX → platte expressie
             expression = latex_to_expression(latex)
@@ -1373,7 +1372,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 if __name__ == '__main__':
     print(f"\n{'='*50}")
     print(f"  ForMath Web Server (AST Pipeline)")
-    print(f"  Build: 2026-05-08 (pipeline-tak getallen/letters)")
+    print(f"  Build: 2026-05-08 (pipeline: getallen)")
     print(f"  http://localhost:{PORT}")
     print(f"{'='*50}\n")
 
