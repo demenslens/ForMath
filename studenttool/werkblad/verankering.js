@@ -214,7 +214,20 @@
         gen(args[0], path.concat(0), 0); emit('}', mbHere, 'sqrt'); return;
       }
       if (opNaam === 'Divide') { emit('\\frac{', mbHere, 'frac'); gen(args[0], path.concat(0), 0); emit('}{', mbHere, 'frac'); gen(args[1], path.concat(1), 0); emit('}', mbHere, 'frac'); return; }
-      if (opNaam === 'Power') { gen(args[0], path.concat(0), myPrec); emit('^', mbHere, 'power'); emit('{', mbHere, 'power'); gen(args[1], path.concat(1), myPrec); emit('}', mbHere, 'power'); return; }
+      if (opNaam === 'Power') {
+        // Base met haakjes als hij samengesteld rendert (breuk/wortel/macht),
+        // zodat de macht niet aan één deel lijkt te binden. Spiegelt de
+        // authortool-latex-fix; zonder dit valt het kader op (2/3)^2 verkeerd
+        // (tokenstroom \frac{2}{3}^2 vs MathLive-render \left(\frac{2}{3}\right)^2).
+        // Add/Multiply-bases wikkelen zichzelf al via de precedentie-check.
+        var pb = args[0], pbOp = Array.isArray(pb) ? pb[0] : null;
+        var wrapPB = pbOp === 'Divide' || pbOp === 'Sqrt' || pbOp === 'NthRoot'
+                     || pbOp === 'Power' || (pbOp === 'Rational' && pb[2] !== 1);
+        if (wrapPB) emit('(', mbHere, 'paren');
+        gen(pb, path.concat(0), myPrec);
+        if (wrapPB) emit(')', mbHere, 'paren');
+        emit('^', mbHere, 'power'); emit('{', mbHere, 'power'); gen(args[1], path.concat(1), myPrec); emit('}', mbHere, 'power'); return;
+      }
       if (opNaam === 'Negate') {
         emit('-', null, 'op'); var child = args[0];
         var childPrec = Array.isArray(child) ? (PREC[child[0]] || 0) : 5;
@@ -262,7 +275,15 @@
         emit('\\frac{', label, 'frac'); gen(node.args[0], 0, label); emit('}{', label, 'frac'); gen(node.args[1], 0, label); emit('}', label, 'frac'); return;
       }
       if (node.op === 'Power') {
-        gen(node.args[0], myPrec, label); emit('^', label, 'power'); emit('{', label, 'power'); gen(node.args[1], myPrec, label); emit('}', label, 'power'); return;
+        // Base met haakjes als hij samengesteld rendert (breuk/wortel/macht) —
+        // idem genLatexTokens; Add/Multiply wikkelen zichzelf via precedentie.
+        var sb = node.args[0], sbOp = sb ? sb.op : null;
+        var wrapSB = sbOp === 'Divide' || sbOp === 'Frac' || sbOp === 'Sqrt'
+                     || sbOp === 'NthRoot' || sbOp === 'Power';
+        if (wrapSB) emit('(', label, 'paren');
+        gen(node.args[0], myPrec, label);
+        if (wrapSB) emit(')', label, 'paren');
+        emit('^', label, 'power'); emit('{', label, 'power'); gen(node.args[1], myPrec, label); emit('}', label, 'power'); return;
       }
       if (node.op === 'Sqrt') { emit('\\sqrt{', label, 'sqrt'); gen(node.args[0], 0, label); emit('}', label, 'sqrt'); return; }
       if (node.op === 'NthRoot') { emit('\\sqrt[', label, 'sqrt'); gen(node.args[1], 0, label); emit(']{', label, 'sqrt'); gen(node.args[0], 0, label); emit('}', label, 'sqrt'); return; }
