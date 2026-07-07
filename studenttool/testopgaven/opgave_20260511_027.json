@@ -4,7 +4,7 @@
     "auteur": "H.N.Lensing",
     "expressie": {
       "tekst": "-1/9+2/3^2×13/6+((root(3,1)-1/2)^3:(1+1/2)^3)+1/9",
-      "latex_display": "-\\frac19+\\frac{2}{3}^2\\times\\frac{13}{6}+\\left(\\left(\\sqrt[3]{1}-\\frac{1}{2}\\right)^3:\\left(1+\\frac{1}{2}\\right)^3\\right)+\\frac19",
+      "latex_display": "-\\frac19+\\left(\\frac{2}{3}\\right)^2\\times\\frac{13}{6}+\\left(\\left(\\sqrt[3]{1}-\\frac{1}{2}\\right)^3:\\left(1+\\frac{1}{2}\\right)^3\\right)+\\frac19",
       "mathml": "",
       "ast": {
         "tree": [

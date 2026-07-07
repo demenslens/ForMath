@@ -4,6 +4,20 @@ Samenvatting van waar het authortool-werk staat, zodat een nieuwe chat-sessie de
 draad oppakt zonder de hele geschiedenis over te doen. Architectuur en
 pipeline-details: `ARCHITECTUUR.md`. Afgeronde onderzoeken: `archief/`.
 
+## Update 2026-07-07 — testinfra-vangnet + latex-haakjes-fix
+
+- **Latex-haakjes onder een macht opgelost (was open punt 1).** `_node_to_latex`
+  (`ast_to_latex_display` in `server.py`) wikkelde alleen een POWER-base in
+  `\left(...\right)`; nu ook FRACTION en ROOT. `(1/4)^3` →
+  `\left(\frac{1}{4}\right)^{3}`, `(√5)^2` → `\left(\sqrt{5}\right)^{2}`. De 3
+  `test_latex_conversion`-tests staan weer op gewoon-groen (waren xfail).
+  Data: 511_027's opgeslagen `latex_display` had de auteur-vorm `\frac{2}{3}^2`
+  (de export respécteert auteur-LaTeX, dus her-exporteren corrigeert 'm niet) →
+  gericht vervangen door `\left(\frac{2}{3}\right)^2`. **Nog te browser-
+  verifiëren:** of het grijze kader mid-oplossing nu goed valt; zo niet, dan
+  mist de studenttool-eigen converter (`latexToMathJs`/`latexToDuo` in
+  werkblad.js) dezelfde haakjes-logica (apart studenttool-punt).
+
 ## Update 2026-07-07 — testinfra-vangnet hersteld
 
 - **`pytest tests/` draait weer kaal groen** (39 passed, 30 skipped, 3 xfailed):
@@ -50,25 +64,23 @@ BROWSER-GEVERIFIEERD door de auteur op 520-001 en 511-027.
 
 ## Open punten
 
-1. **Latex-haakjes rond wortel/breuk onder een macht (nog open).**
-   `ast_to_latex_display` rendert `(√5)²` als `\sqrt{5}^{2}` (haakjes weg) en
-   `(2/3)²` als `2²/3` — de grijze kader dekt dan het verkeerde deel. Dit is de
-   **secundaire 511-027-anomalie** uit
-   `../studenttool/hint_lokalisatie_anomalien.md`. Bewaakt als `expectedFailure`
-   in `tests/test_latex_conversion.py` (`test_power_of_sqrt`,
-   `test_power_of_fraction`, `test_power_of_fraction_in_division`) — zodra de
-   rendering gefixt is, slaan die om naar XPASS.
+- **Nog te browser-verifiëren:** of het grijze kader op `(2/3)²` (mathblock A2 in
+  511-027) mid-oplossing nu goed valt na de latex-haakjes-fix + data-correctie
+  (zie update boven). Zo niet, dan mist de studenttool-eigen converter
+  (`latexToMathJs`/`latexToDuo` in werkblad.js) dezelfde haakjes-logica — dat is
+  dan een studenttool-punt, niet de authortool.
 
-*Opgelost 2026-07-07 (zie update boven): de pytest-infra (collectie + sys.path +
-verouderde imports) en de `validate_opgave.py`-crash. De CLAUDE.md-claim "169
-tests passing" is achterhaald; de actuele stand staat hieronder.*
+*Opgelost 2026-07-07 (zie updates boven): de latex-haakjes-rendering, de
+pytest-infra (collectie + sys.path + verouderde imports) en de
+`validate_opgave.py`-crash. De CLAUDE.md-claim "169 tests passing" is achterhaald;
+de actuele stand staat hieronder.*
 
 ## Tests draaien
 
 ```
 cd authortool && python3 -m pytest tests/ -q
 ```
-→ **39 passed, 30 skipped, 3 xfailed** (Python 3.14). `conftest.py` regelt de
+→ **42 passed, 30 skipped** (Python 3.14). `conftest.py` regelt de
 sys.path; de skips zijn obsolete `test_klasse`-klassen (te porten) en de 4
 standalone scripts staan in `collect_ignore` (los draaibaar via
 `python3 tests/<naam>.py`).
