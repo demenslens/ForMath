@@ -1171,7 +1171,7 @@
   }
 
   // ── Compare two subtrees: are they structurally + numerically equal? ──
-  function treesEqual(a, b){
+  function treesEqualMJ(a, b){
     // Both numbers
     if(typeof a === 'number' && typeof b === 'number') return a === b;
     // Both leaves — evaluate and compare
@@ -1186,7 +1186,7 @@
     // Both arrays
     if(a.length !== b.length) return false;
     for(var i = 0; i < a.length; i++){
-      if(!treesEqual(a[i], b[i])) return false;
+      if(!treesEqualMJ(a[i], b[i])) return false;
     }
     return true;
   }
@@ -1202,7 +1202,7 @@
 
     // Both are leaves (numbers or strings)
     if(!Array.isArray(refTree) && !Array.isArray(studentTree)){
-      if(!treesEqual(refTree, studentTree)){
+      if(!treesEqualMJ(refTree, studentTree)){
         diffs.push({path: path, studentPath: studentPath, ref: refTree, student: studentTree, mathblockId: pathToMathblock(path)});
       }
       return diffs;
@@ -1242,7 +1242,7 @@
       for(var ri = 0; ri < refChildren; ri++){
         for(var si = 0; si < stuChildren; si++){
           if(stuUsed[si]) continue;
-          if(treesEqual(refTree[ri + 1], studentTree[si + 1])){
+          if(treesEqualMJ(refTree[ri + 1], studentTree[si + 1])){
             pairing[ri] = si;
             stuUsed[si] = true;
             break;
