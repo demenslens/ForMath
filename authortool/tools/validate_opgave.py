@@ -290,12 +290,16 @@ def _check_internal_consistency(opgave: Dict[str, Any], r: Report) -> None:
                       f"Step {st.get('step')} verwijst naar onbekende mathblock '{bid}'",
                       f"steps[{idx}].mathblocks")
 
-    # Check 2.6: Elke ID in duo (hoog/laag) bestaat
+    # Check 2.6: Elke ID in duo (hoog/laag) bestaat.
+    # hoog/laag zijn lijsten van {mathblock, output_expressie}-dicts, niet kale
+    # id-strings; haal het mathblock-id eruit (robuust voor beide vormen).
+    def _mb_id(x):
+        return x.get("mathblock") if isinstance(x, dict) else x
     for idx, d in enumerate(duo):
         if not isinstance(d, dict):
             continue
         for bucket in ("hoog", "laag"):
-            for bid in d.get(bucket, []):
+            for bid in (_mb_id(e) for e in d.get(bucket, [])):
                 if bid not in ids_set:
                     r.add("consistency", ERROR, "unknown_mathblock_id_in_duo",
                           f"DUO step {d.get('step')} {bucket} verwijst naar "
@@ -311,7 +315,7 @@ def _check_internal_consistency(opgave: Dict[str, Any], r: Report) -> None:
         if not isinstance(d, dict):
             continue
         step_n = d.get("step")
-        hoog_set = set(d.get("hoog", []))
+        hoog_set = {_mb_id(e) for e in d.get("hoog", [])}
         if step_n in steps_by_num:
             if hoog_set != steps_by_num[step_n]:
                 r.add("consistency", ERROR, "duo_hoog_mismatch",
