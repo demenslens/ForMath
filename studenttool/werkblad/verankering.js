@@ -282,8 +282,33 @@
       if (node.op === 'num') { var s = String(node.raw); for (var i = 0; i < s.length; i++) emit(s[i], label, 'digit'); return; }
       if (node.op === 'sym') { emit(String(node.raw), label, 'op'); return; }
       var myPrec = PREC[node.op] || 0;
-      if (node.op === 'Divide' || node.op === 'Frac') {
+      if (node.op === 'Frac') {
+        // Atomaire breuk-WAARDE → \frac, zoals op het scherm.
         emit('\\frac{', label, 'frac'); gen(node.args[0], 0, label); emit('}{', label, 'frac'); gen(node.args[1], 0, label); emit('}', label, 'frac'); return;
+      }
+      if (node.op === 'Divide') {
+        // Deling-OPERATIE → ':' zoals op het scherm (was: óók \frac — die
+        // renderdivergentie maakte elke scherm-':' een mismatch-eiland; zie
+        // verankering_review_fable5.md §0/§3). Haakjes spiegelen het scherm:
+        // om een Add-operand, en rechts óók om een geneste deling/product
+        // (a:(b:c), a:(b×c) — zonder haakjes had de parse links-assoc gelezen,
+        // dus de student HAD daar haakjes staan). BEKENDE GRENS: parseDuo
+        // classificeert een \frac met samengestelde teller/noemer óók als
+        // 'Divide' (alleen kale a/b wordt 'Frac'); zo'n breuk rendert hier dus
+        // als ':' — één extra mismatch-token dat de LCS overslaat.
+        var dL = node.args[0], dR = node.args[1];
+        var wDL = dL && dL.op === 'Add';
+        var wDR = dR && (dR.op === 'Add' || dR.op === 'Multiply' || dR.op === 'Divide');
+        // parentPrec 0 doorgeven: wDL/wDR zetten de haakjes al; anders zou een
+        // Add-operand zichzelf via de precedentie-check nogmaals wikkelen.
+        if (wDL) emit('(', label, 'paren');
+        gen(dL, 0, label);
+        if (wDL) emit(')', label, 'paren');
+        emit(':', label, 'op');
+        if (wDR) emit('(', label, 'paren');
+        gen(dR, 0, label);
+        if (wDR) emit(')', label, 'paren');
+        return;
       }
       if (node.op === 'Power') {
         // Base met haakjes als hij samengesteld rendert (breuk/wortel/macht) —
@@ -301,7 +326,9 @@
       if (node.op === 'Negate') {
         emit('-', null, 'op'); var c = node.args[0];
         var cP = c ? (PREC[c.op] || 0) : 5;
-        var w = cP < PREC.Negate && !(c && (c.op === 'Divide' || c.op === 'Sqrt' || c.op === 'Frac'));
+        // 'Divide' NIET meer uitzonderen: die rendert nu als ':' en heeft op
+        // het scherm haakjes onder een minteken (-\left(a:b\right)).
+        var w = cP < PREC.Negate && !(c && (c.op === 'Sqrt' || c.op === 'Frac'));
         if (w) emit('(', null, 'paren'); gen(c, PREC.Negate, label); if (w) emit(')', null, 'paren'); return;
       }
       if (node.op === 'Add') {
@@ -511,6 +538,257 @@
     };
   }
 
+  // ══════════════════════════════════════════════════════════════════════
+  // VELD-PARSE-TOKENBRON (achter window.__veldParse; verankering_review §1)
+  // ══════════════════════════════════════════════════════════════════════
+  // Idee: laat de hint-tokens uit DEZELFDE bron komen als het scherm — de
+  // geparste veld-latex (getypeerde matcher-boom, Frac = breukweergave,
+  // Divide = ':') — i.p.v. uit de AST, die élke Divide als \frac rendert
+  // (renderdivergentie → mismatch-eilanden → labelgaten). Twee stappen:
+  //   (1) labelVeldBoom draagt mathblock-labels + AST-paden over van
+  //       currentTree/nodeMap naar de veld-boom (parallelle wandeling);
+  //   (2) genVeldTokens tokeniseert de gelabelde veld-boom zoals het SCHERM
+  //       rendert. Elk token draagt zijn volledige AST-pad mee, zodat een
+  //       latere verfijning tot teller/noemer-niveau kan pinpointen.
+
+  // ── (1) Label-overdracht: AST (tree+node_map) → veld-boom ───────────────
+  // Correspondentie per knoop (AST ↔ veld):
+  //   getal n≥0                 ↔ num
+  //   getal n<0                 ↔ Negate(num)         (parse maakt unaire min)
+  //   ["Rational",n,d]          ↔ Frac / Negate(Frac) (n<0) / num (bv. d=1)
+  //   ["Divide",a,b]            ↔ Divide ÓF Frac — de AST codeert beide
+  //                               weergaven als Divide; het VELD kent de vorm
+  //   ["Negate"|"Sqrt"|"Power"] ↔ zelfde op
+  //   ["Root"|"NthRoot",rad,i]  ↔ NthRoot [rad,i]     (zelfde argvolgorde)
+  //   ["Simplify"|"MixedNumber",x] → doorzichtig (pad +0), als genLatexTokens
+  //   Add/Multiply (n-air)      ↔ Add/Multiply — LET OP: parseDuo VLAKT
+  //     geneste same-op-groepen af ((a+b)+c → Add[a,b,c]). De wandeling
+  //     hergroepeert de veld-args AST-gestuurd (needCount) en herbouwt de
+  //     groep als genest knooppunt (_groep), zodat genVeldTokens de
+  //     schermhaakjes terugzet. AANNAME: de volgorde van de termen op het
+  //     scherm volgt de AST (prefill/reductie); herordent de student, dan
+  //     desynct de wandeling of labelt ze positioneel.
+  // Desync (op/arity-mismatch buiten deze gevallen): die tak blijft
+  // ONGELABELD (liever geen label dan een fout label); de rest gaat door.
+  // Muteert de veld-boom in place (_pad/_mb/_groep) en geeft {boom, stats}.
+  function labelVeldBoom(veldBoom, tree, nodeMap) {
+    var padToMb = {};
+    (nodeMap || []).forEach(function (nm) { padToMb[nm.path.join(',')] = nm.mathblock_id; });
+    function mbForPath(path) {
+      for (var len = path.length; len >= 0; len--) {
+        var key = path.slice(0, len).join(',');
+        if (padToMb[key]) return padToMb[key];
+      }
+      return null;
+    }
+    var stats = { gelabeld: 0, desyncs: [] };
+    function zetLabel(v, path) {
+      if (!v) return;
+      v._pad = path; v._mb = mbForPath(path); stats.gelabeld++;
+    }
+    function desync(path, verwacht, kreeg) {
+      stats.desyncs.push('[' + path.join(',') + '] AST=' + verwacht + ' veld=' + kreeg);
+    }
+    // Doorzichtige AST-wrappers overslaan (zelfde afhandeling als genLatexTokens)
+    function unwrap(ast, path) {
+      while (Array.isArray(ast) && (ast[0] === 'Simplify' || ast[0] === 'MixedNumber')) {
+        ast = ast[1]; path = path.concat(0);
+      }
+      return { ast: ast, path: path };
+    }
+    // Hoeveel veld-args verbruikt dit AST-arg ná parseDuo's afvlakking?
+    function needCount(ast, parentOp) {
+      var u = unwrap(ast, []);
+      if (Array.isArray(u.ast) && u.ast[0] === parentOp) {
+        var som = 0;
+        for (var i = 1; i < u.ast.length; i++) som += needCount(u.ast[i], parentOp);
+        return som;
+      }
+      return 1;
+    }
+    function walk(astIn, veld, padIn) {
+      if (veld == null) return;
+      var u = unwrap(astIn, padIn);
+      var ast = u.ast, pad = u.path;
+      // ── bladeren ──
+      if (typeof ast === 'number') {
+        if (ast < 0 && veld.op === 'Negate' && veld.args[0] && veld.args[0].op === 'num') {
+          zetLabel(veld, pad); zetLabel(veld.args[0], pad); return;
+        }
+        if (veld.op === 'num') { zetLabel(veld, pad); return; }
+        return desync(pad, 'getal', veld.op);
+      }
+      if (!Array.isArray(ast)) {
+        if (veld.op === 'num' || veld.op === 'sym') { zetLabel(veld, pad); return; }
+        return desync(pad, String(ast), veld.op);
+      }
+      var op = ast[0], args = ast.slice(1);
+      if (op === 'Rational') {
+        // Blad in de AST; in het veld Frac (met num-kinderen), num (d=1 of
+        // decimaal getypt) of Negate daaromheen. Alles krijgt het Rational-pad.
+        var kern = veld;
+        if (args[0] < 0 && veld.op === 'Negate' && veld.args[0]) {
+          zetLabel(veld, pad); kern = veld.args[0];
+        }
+        if (kern.op === 'Frac' || kern.op === 'num') {
+          zetLabel(kern, pad);
+          (kern.args || []).forEach(function (k) { zetLabel(k, pad); });
+          return;
+        }
+        return desync(pad, 'Rational', veld.op);
+      }
+      if (op === 'Negate') {
+        if (veld.op === 'Negate') { zetLabel(veld, pad); walk(args[0], veld.args[0], pad.concat(0)); return; }
+        return desync(pad, 'Negate', veld.op);
+      }
+      if (op === 'Divide') {
+        // Weergave-agnostisch: het veld bepaalt of dit een ':' (Divide) of
+        // een \frac (Frac) is; de labels lopen in beide gevallen paarsgewijs.
+        if (veld.op === 'Divide' || veld.op === 'Frac') {
+          zetLabel(veld, pad);
+          walk(args[0], veld.args[0], pad.concat(0));
+          walk(args[1], veld.args[1], pad.concat(1));
+          return;
+        }
+        return desync(pad, 'Divide', veld.op);
+      }
+      if (op === 'Sqrt') {
+        if (veld.op === 'Sqrt') { zetLabel(veld, pad); walk(args[0], veld.args[0], pad.concat(0)); return; }
+        return desync(pad, 'Sqrt', veld.op);
+      }
+      if (op === 'Root' || op === 'NthRoot') {
+        if (veld.op === 'NthRoot' || veld.op === 'Sqrt') {
+          zetLabel(veld, pad);
+          walk(args[0], veld.args[0], pad.concat(0));
+          if (veld.args[1] != null) walk(args[1], veld.args[1], pad.concat(1));
+          return;
+        }
+        return desync(pad, op, veld.op);
+      }
+      if (op === 'Power') {
+        if (veld.op === 'Power') {
+          zetLabel(veld, pad);
+          walk(args[0], veld.args[0], pad.concat(0));
+          walk(args[1], veld.args[1], pad.concat(1));
+          return;
+        }
+        return desync(pad, 'Power', veld.op);
+      }
+      if (op === 'Add' || op === 'Multiply') {
+        if (veld.op !== op) return desync(pad, op, veld.op);
+        zetLabel(veld, pad);
+        // AST-gestuurde hergroepering van door parseDuo afgevlakte groepen.
+        var nieuw = [], vi = 0, va = veld.args;
+        for (var i = 0; i < args.length; i++) {
+          var need = needCount(args[i], op);
+          if (vi + need > va.length) {
+            desync(pad.concat(i), op + '-arg (' + need + ' termen)', 'nog ' + (va.length - vi) + ' veld-args');
+            break;   // rest ongelabeld laten; overgebleven args hieronder doorschuiven
+          }
+          if (need === 1) {
+            walk(args[i], va[vi], pad.concat(i));
+            nieuw.push(va[vi]); vi += 1;
+          } else {
+            // Afgevlakte groep → herbouw als genest knooppunt; _groep laat
+            // genVeldTokens de schermhaakjes om deze groep terugzetten.
+            var groep = { op: op, args: va.slice(vi, vi + need), _groep: true };
+            walk(args[i], groep, pad.concat(i));
+            nieuw.push(groep); vi += need;
+          }
+        }
+        for (; vi < va.length; vi++) nieuw.push(va[vi]);   // extra termen: wel renderen
+        veld.args = nieuw;
+        return;
+      }
+      return desync(pad, op, veld.op);
+    }
+    walk(tree, veldBoom, []);
+    return { boom: veldBoom, stats: stats };
+  }
+
+  // ── (2) Tokenstroom uit de gelabelde veld-boom ──────────────────────────
+  // Rendert zoals het SCHERM: Frac → \frac{...}{...}, Divide → A : B met
+  // haakjes om samengestelde operanden (de \left(...\right) van het veld
+  // komen hier als kale '(' — de offset-uitlijning normaliseert via _norm).
+  // Ongelabelde knopen erven mb/pad van hun dichtstbijzijnde gelabelde
+  // voorouder; tokenvorm {latex, mb, kind, path}.
+  function genVeldTokens(boom) {
+    var PREC = { Add: 1, Negate: 3, Multiply: 2, Divide: 2, Power: 4, Sqrt: 4, NthRoot: 4, Frac: 5, num: 5, sym: 5 };
+    var tokens = [];
+    function gen(node, parentPrec, erfMb, erfPad) {
+      if (!node) return;
+      var mb = (node._mb != null) ? node._mb : erfMb;
+      var pad = (node._pad != null) ? node._pad : erfPad;
+      function emit(latex, kind) {
+        tokens.push({ latex: latex, mb: mb || null, kind: kind || 'op', path: pad || null });
+      }
+      if (node.op === 'num') { var s = String(node.raw); for (var i = 0; i < s.length; i++) emit(s[i], 'digit'); return; }
+      if (node.op === 'sym') { emit(String(node.raw), 'op'); return; }
+      var myPrec = PREC[node.op] || 0;
+      if (node.op === 'Frac') {
+        emit('\\frac{', 'frac'); gen(node.args[0], 0, mb, pad); emit('}{', 'frac'); gen(node.args[1], 0, mb, pad); emit('}', 'frac'); return;
+      }
+      if (node.op === 'Divide') {
+        // Zelfde schermregels als genStudentTokens' Divide-tak: haakjes om een
+        // Add-operand; rechts óók om een geneste deling/product (links-assoc).
+        var dL = node.args[0], dR = node.args[1];
+        var wDL = dL && dL.op === 'Add';
+        var wDR = dR && (dR.op === 'Add' || dR.op === 'Multiply' || dR.op === 'Divide');
+        // parentPrec 0 doorgeven: wDL/wDR zetten de haakjes al; anders zou een
+        // Add-operand zichzelf via de precedentie-check nogmaals wikkelen.
+        if (wDL) emit('(', 'paren');
+        gen(dL, 0, mb, pad);
+        if (wDL) emit(')', 'paren');
+        emit(':', 'op');
+        if (wDR) emit('(', 'paren');
+        gen(dR, 0, mb, pad);
+        if (wDR) emit(')', 'paren');
+        return;
+      }
+      if (node.op === 'Power') {
+        // Base met haakjes als hij samengesteld rendert — idem genLatexTokens;
+        // Add/Multiply wikkelen zichzelf via de precedentie-check.
+        var b = node.args[0], bOp = b ? b.op : null;
+        var wB = bOp === 'Divide' || bOp === 'Frac' || bOp === 'Sqrt' || bOp === 'NthRoot' || bOp === 'Power';
+        if (wB) emit('(', 'paren');
+        gen(b, myPrec, mb, pad);
+        if (wB) emit(')', 'paren');
+        emit('^', 'power'); emit('{', 'power'); gen(node.args[1], myPrec, mb, pad); emit('}', 'power'); return;
+      }
+      if (node.op === 'Sqrt') { emit('\\sqrt{', 'sqrt'); gen(node.args[0], 0, mb, pad); emit('}', 'sqrt'); return; }
+      if (node.op === 'NthRoot') {
+        emit('\\sqrt[', 'sqrt'); gen(node.args[1], 0, mb, pad); emit(']{', 'sqrt');
+        gen(node.args[0], 0, mb, pad); emit('}', 'sqrt'); return;
+      }
+      if (node.op === 'Negate') {
+        // Het minteken krijgt de mb van de Negate-knoop zelf: voor een
+        // negatieve breuk is dat het Rational-blok (zoals genLatexTokens);
+        // voor een echte Negate valt mbForPath terug op de optelling erboven
+        // (didactiek: het minteken hoort bij de optelling erboven).
+        emit('-', 'op');
+        var c = node.args[0]; var cP = c ? (PREC[c.op] || 0) : 5;
+        var w = c && (cP < PREC.Negate && c.op !== 'Sqrt' && c.op !== 'Frac');
+        if (w) emit('(', 'paren'); gen(c, PREC.Negate, mb, pad); if (w) emit(')', 'paren'); return;
+      }
+      if (node.op === 'Add' || node.op === 'Multiply') {
+        // _groep: door labelVeldBoom herbouwde (afgevlakte) same-op-groep —
+        // die had op het scherm haakjes; zet ze terug.
+        var wrap = myPrec < parentPrec || node._groep === true;
+        if (wrap) emit('(', 'paren');
+        for (var k = 0; k < node.args.length; k++) {
+          var a = node.args[k];
+          if (node.op === 'Multiply') { if (k > 0) emit('\\times ', 'op'); }
+          else if (k > 0 && !(a && a.op === 'Negate')) emit('+', 'op');
+          gen(a, myPrec, mb, pad);
+        }
+        if (wrap) emit(')', 'paren'); return;
+      }
+      emit('?' + node.op + '?', 'op');
+    }
+    gen(boom, 0, null, null);
+    return tokens;
+  }
+
   window.VERANKERING = {
     COLORS: COLORS,
     mathblockBounds: mathblockBounds,
@@ -523,6 +801,8 @@
     spanBounds: spanBounds,
     genLatexTokens: genLatexTokens,
     genStudentTokens: genStudentTokens,
+    labelVeldBoom: labelVeldBoom,
+    genVeldTokens: genVeldTokens,
     anchorOffsets: anchorOffsets,
     anchorStudentOffsets: anchorStudentOffsets
   };

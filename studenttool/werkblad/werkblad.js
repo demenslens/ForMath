@@ -119,6 +119,31 @@
     return s;
   }
 
+  // Als replaceFracs, maar GETYPEERD: \frac{A}{B} → frac((A),(B)) — de
+  // functievorm die parseDuo (matcher) als 'Frac' normaliseert, óók bij een
+  // samengestelde teller/noemer. De ((A)/(B))-vorm herkent parseDuo alleen
+  // bij kale cijfers als breuk; al het andere werd 'Divide', waardoor de
+  // weergaveclassificatie (breuk vs ':'-deling) verloren ging. Alleen
+  // gebruikt door de veld-parse-verankering (window.__veldParse).
+  function replaceFracsTyped(s){
+    s = normalizeFracShorthand(s);
+    var maxIter = 50;
+    while(s.indexOf('\\frac') !== -1 && maxIter-- > 0){
+      var idx = s.indexOf('\\frac');
+      var firstOpen = s.indexOf('{', idx + 5);
+      if(firstOpen === -1) break;
+      var first = extractBraceContent(s, firstOpen);
+      if(!first) break;
+      var secondOpen = s.indexOf('{', first.end + 1);
+      if(secondOpen === -1) break;
+      var second = extractBraceContent(s, secondOpen);
+      if(!second) break;
+      var replacement = 'frac((' + first.content + '),(' + second.content + '))';
+      s = s.slice(0, idx) + replacement + s.slice(second.end + 1);
+    }
+    return s;
+  }
+
   // Normalize \frac shorthand: \frac followed by tokens without braces
   function normalizeFracShorthand(s){
     // Match \frac not immediately followed by {
@@ -369,6 +394,53 @@
     s = s.replace(/\-\-/g, '+');
     s = s.replace(/\s+/g, ' ').trim();
     dbg('[latexToDuo] "' + latex + '" → "' + s + '"');
+    return s;
+  }
+
+  // latexNaarTypedDuo — zoals latexToDuo, maar met BEHOUD van de weergave-
+  // classificatie op álle niveaus: élke \frac wordt frac((A),(B)) (→ parseDuo
+  // 'Frac', ook met samengestelde teller/noemer), ':' blijft ':' (→ 'Divide').
+  // Alleen voor de veld-parse-verankering (window.__veldParse). De matcher-
+  // flow blijft op latexToDuo: dáár betekent 'Frac' uitsluitend een atomaire
+  // breuk-WAARDE — dat onderscheid stuurt de "is M uitgevoerd?"-check en mag
+  // niet verschuiven.
+  function latexNaarTypedDuo(latex){
+    var s = normalizeLatex(latex);
+    s = s.replace(/\\left/g, '').replace(/\\right/g, '');
+    s = s.replace(/\\bigl/g, '').replace(/\\bigr/g, '');
+    s = s.replace(/\\,/g, ' ').replace(/\\;/g, ' ').replace(/\\!/g, '');
+    s = s.replace(/\\quad/g, ' ').replace(/\\qquad/g, ' ');
+    s = replaceSqrts(s);
+    s = replaceFracsTyped(s);            // \frac{A}{B} → frac((A),(B)) — getypeerd
+    s = s.replace(/\[/g, '(').replace(/\]/g, ')');
+    s = s.replace(/\\cdot/g, '*').replace(/\\times/g, '*').replace(/\\div/g, '/');
+    s = s.replace(/\\pm/g, '+');
+    // ':' blijft ':' — parseDuoTextTyped maakt er verderop de deling-OPERATIE van.
+    var tcMaxIter = 20;
+    while(s.indexOf('\\textcolor') !== -1 && tcMaxIter-- > 0){
+      var tcIdx = s.indexOf('\\textcolor');
+      var firstOpen = s.indexOf('{', tcIdx + 10);
+      if(firstOpen === -1) break;
+      var colorBrace = extractBraceContent(s, firstOpen);
+      if(!colorBrace) break;
+      var secondOpen = s.indexOf('{', colorBrace.end + 1);
+      if(secondOpen === -1) break;
+      var contentBrace = extractBraceContent(s, secondOpen);
+      if(!contentBrace) break;
+      s = s.slice(0, tcIdx) + contentBrace.content + s.slice(contentBrace.end + 1);
+    }
+    s = s.replace(/\\operatorname\{([^}]*)\}/g, '$1');
+    s = s.replace(/\\[a-zA-Z]+/g, '');
+    s = s.replace(/\{/g, '(').replace(/\}/g, ')');
+    s = s.replace(/(\d)\(/g, '$1*(');
+    s = s.replace(/\)\(/g, ')*(');
+    s = s.replace(/\(\)/g, '');
+    s = s.replace(/\+\-/g, '-');
+    s = s.replace(/\-\+/g, '-');
+    s = s.replace(/\+\+/g, '+');
+    s = s.replace(/\-\-/g, '+');
+    s = s.replace(/\s+/g, ' ').trim();
+    dbg('[latexNaarTypedDuo] "' + latex + '" → "' + s + '"');
     return s;
   }
 
@@ -1806,7 +1878,7 @@
     var offsets = V.collectOffsets(mf);
     var mbPerOffset = V.anchorOffsets(offsets, tokens);
     var _id = function(x){ return (x && typeof x === 'object') ? x.mathblock : x; };
-    return {
+    var out = {
       remainingHoog: (remainingHoog || []).map(_id),
       remainingLaag: (remainingLaag || []).map(_id),
       tokens: tokens.map(function(t, i){ return i + ':' + t.latex + '/' + t.kind + '/' + (t.mb || '-'); }),
@@ -1817,6 +1889,31 @@
              + ' mb=' + (mbPerOffset[idx] || '-');
       }).filter(Boolean)
     };
+    // Veld-parse-vergelijking (verankering_review §1): dezelfde blob toont óók
+    // de tokens uit de geparste veld-latex (latex/kind/mb/pad) én de offset-
+    // toekenning via díé bron — ONGEACHT of window.__veldParse aan staat,
+    // zodat oud en nieuw naast elkaar te leggen zijn. Puur read-only.
+    try {
+      var vp = maakVeldParseTokens(ast);
+      if (vp) {
+        var vMb = V.anchorOffsets(offsets, vp.tokens);
+        out.veldParse = {
+          duoTekst: vp.duoTekst,
+          stats: vp.stats,
+          tokens: vp.tokens.map(function(t, i){
+            return i + ':' + t.latex + '/' + t.kind + '/' + (t.mb || '-')
+                 + '/[' + (t.path ? t.path.join(',') : '') + ']';
+          }),
+          offsets: offsets.map(function(o, idx){
+            if(!(o.bounds && o.bounds.width > 0)) return null;
+            return idx + ':' + JSON.stringify(o.latex) + ' mb=' + (vMb[idx] || '-');
+          }).filter(Boolean)
+        };
+      } else {
+        out.veldParse = { fout: 'veld-parse niet beschikbaar (module/latex/parse)' };
+      }
+    } catch(e){ out.veldParse = { fout: e && e.message }; }
+    return out;
   };
 
   function updateStepTracking(){
@@ -4003,6 +4100,31 @@
   // Tekent een kader om de mathblocks die deze step "hoog" zijn (aan de beurt),
   // structureel verankerd via de AST. Staat naast de bestaande logica; raakt de
   // LF-flow nog niet. Aanroepen via window.__toonHint() of de tijdelijke knop.
+
+  // Veld-parse-tokenbron voor de hint-verankering (verankering_review §1):
+  // actieve veld-latex → getypeerde DUO-tekst (latexNaarTypedDuo) →
+  // matcher-boom (Frac/Divide = de weergaveclassificatie van het SCHERM) →
+  // mathblock-labels uit currentTree/nodeMap (labelVeldBoom) → tokens
+  // (genVeldTokens). Geeft null bij elke hapering; de caller valt dan terug
+  // op de oude genLatexTokens-bron. Zie verankering.js voor de aannames.
+  function maakVeldParseTokens(astVoorHint){
+    try {
+      var V = window.VERANKERING, M = window.MATCHER;
+      if (!V || !V.labelVeldBoom || !M || !M.parseDuo) return null;
+      var lx = getEditorLatex();
+      if (!lx) return null;
+      var duoTekst = latexNaarTypedDuo(lx);
+      var boom = M.parseDuo(duoTekst);
+      if (!boom) return null;
+      var res = V.labelVeldBoom(boom, astVoorHint.tree, astVoorHint.node_map);
+      var tokens = V.genVeldTokens(res.boom);
+      return { tokens: tokens, duoTekst: duoTekst, boom: res.boom, stats: res.stats };
+    } catch(e){
+      dbg('[veldParse] mislukt: ' + (e && e.message));
+      return null;
+    }
+  }
+
   function toonHintKaders(prioriteit, skipClear){
     if (!window.VERANKERING) { dbg('[hint] VERANKERING-module niet geladen'); return {reden:'VERANKERING niet geladen'}; }
     var V = window.VERANKERING;
@@ -4034,22 +4156,40 @@
         : ast;
     var tak = (prioriteit === 'laag') ? 'laag' : 'hoog';
     var kleur = (prioriteit === 'laag') ? V.COLORS.LAAG : V.COLORS.HOOG;
-    // NB: de hint-kaders lezen (voorlopig) de statische remainingHoog/Laag. Ze uit
-    // readyMathblocks voeden (zodat blootgelegde bewerkingen als C6 óók omkaderd
-    // worden) botst op het GEPARKEERDE verankeringsprobleem op geëvolueerde regels
-    // (zie ~r3997: "kaders mismatchten op regel 2"): C6's box verbrokkelt dan tot
-    // losse cijfers. De DUO-integriteit zelf zit in de matcher (pinpointFromMatcher,
-    // route B), niet hier. Proactief omkaderen van blootgelegde ops = follow-up,
-    // gekoppeld aan dat verankeringsprobleem.
-    var bron = (prioriteit === 'laag') ? (remainingLaag || []) : (remainingHoog || []);
-    var teTonen = bron.map(function(x){ return (x && typeof x === 'object') ? x.mathblock : x; });
+    // Draw-set: achter window.__veldParse volgt de te-omkaderen set de LEVENDE
+    // boom via readyMathblocks() (Fable-review §3.1) — zo worden blootgelegde
+    // bewerkingen (bv. C6 na C5) óók omkaderd. Dit kon eerder niet omdat de
+    // verankering brak op geëvolueerde regels; met de veld-parse-verankering is
+    // dat opgelost. Vlag uit → de oude statische remainingHoog/Laag.
+    var teTonen;
+    if (window.__veldParse) {
+      var _ready = readyMathblocks();
+      if (_ready.length) {
+        teTonen = _ready.filter(function(x){ return x.tak === tak; })
+                        .map(function(x){ return x.mathblock; });
+      } else {                                   // afleiding leeg → statische fallback
+        var _bronF = (prioriteit === 'laag') ? (remainingLaag || []) : (remainingHoog || []);
+        teTonen = _bronF.map(function(x){ return (x && typeof x === 'object') ? x.mathblock : x; });
+      }
+    } else {
+      var bron = (prioriteit === 'laag') ? (remainingLaag || []) : (remainingHoog || []);
+      teTonen = bron.map(function(x){ return (x && typeof x === 'object') ? x.mathblock : x; });
+    }
     var _uniqMb = function(arr){ var s={}; arr.forEach(function(x){ if(x!=null){ s[x]=(s[x]||0)+1; } }); return s; };
     if (!teTonen.length) {
       st('ok', 'Geen ' + tak + '-mathblocks deze step');
       return {reden:'teTonen leeg', tak:tak, teTonen:teTonen};
     }
 
-    var tokens = V.genLatexTokens(astVoorHint);
+    // VELD-PARSE-TOKENBRON (achter window.__veldParse; verankering_review §1):
+    // tokens uit dezelfde bron als het scherm — de geparste veld-latex —
+    // i.p.v. uit de AST-rendering (die elke Divide als \frac rendert →
+    // mismatch-eilanden → labelgaten). Met de vlag UIT, of bij elke hapering
+    // in de veld-parse, is het gedrag exact het oude (genLatexTokens).
+    var veldParse = window.__veldParse ? maakVeldParseTokens(astVoorHint) : null;
+    var tokens = (veldParse && veldParse.tokens && veldParse.tokens.length)
+        ? veldParse.tokens
+        : V.genLatexTokens(astVoorHint);
     var offsets = V.collectOffsets(mf);
     var mbPerOffset = V.anchorOffsets(offsets, tokens);
     var delta = V.computeDelta(mf, offsets);
@@ -4141,6 +4281,8 @@
     // console-filters en de atomMap-ruis (i.p.v. losse dbg-regels die verdrinken).
     return {
       tak: tak,
+      bron: (veldParse && tokens === veldParse.tokens) ? 'veldparse' : 'ast',
+      veldParseStats: veldParse ? veldParse.stats : null,
       teTonen: teTonen,
       tokensMbs: _uniqMb(tokens.map(function(t){ return t.mb; })),
       offsetMbs: _uniqMb(mbPerOffset),
