@@ -1593,6 +1593,83 @@
     return {type: 0, resolved: resolved};
   }
 
+  // ── MathJSON → matcher-boomvorm ──
+  // De matcher (matcher.browser.js) werkt intern met {op,args,raw}-knopen uit
+  // parseDuo. Route B voedt checkStep echter met de LEVENDE currentTree en de
+  // afgeleide outputTree's — en die staan in MathJSON (["Op", arg, ...]).
+  // MathJSON-arrays hebben geen .op/.args → locateBoundary/diffPath/treesEqual
+  // crashten ("undefined is not an object"). Deze converter zet MathJSON om
+  // naar EXACT de vorm die parseDuo voor dezelfde DUO-tekst oplevert (zelfde
+  // afvlakking, zelfde bladvormen) — anders falen de structurele vergelijkingen
+  // stil. Spiegelbeeld van genLatexTokens (verankering.js) voor de knoopvormen:
+  //   getal              → {op:'num',raw:n}; negatief getal → Negate(num)
+  //   ["Rational",n,d]   → Frac (breuk-WAARDE, zoals a/b in DUO-tekst);
+  //                        negatieve teller → Negate(Frac); d===1 → kaal getal
+  //   ["Divide",a,b]     → Divide (deling-OPERATIE, zoals ':' in DUO-tekst)
+  //   ["Add"/"Multiply"] → afgevlakt zoals flatten() in de matcher
+  //   ["Simplify",x] / ["MixedNumber",x] → transparant naar x (onzichtbaar in
+  //                        de tekst, net als in genLatexTokens)
+  //   ["Root",r,i] / ["NthRoot",r,i] → NthRoot(r,i)
+  // Groepsmarkering: een geneste Add-in-Add/Multiply-in-Multiply is in de
+  // DUO-tekst een gehaakte groep; parseDuo geeft de afgevlakte leden een
+  // gedeeld group-id (grp, non-enumerable — zie setGrp in de matcher). Die
+  // markering is nodig voor geneste manifolds (findGroupInTree, bv. A5 in
+  // 511_004) — zonder grp resolvet zo'n manifold stil nooit.
+  function mathjsonNaarMatcher(node){
+    var grpTeller = 0;
+    function setGrp(o, g){
+      if(o == null) return;
+      Object.defineProperty(o, 'grp', {
+        value: g, writable: true, enumerable: false, configurable: true
+      });
+    }
+    function num(n){
+      if(n < 0) return { op:'Negate', args:[ { op:'num', args:[], raw: -n } ] };
+      return { op:'num', args:[], raw: n };
+    }
+    function conv(nd){
+      if(typeof nd === 'number') return num(nd);
+      if(!Array.isArray(nd)) return { op:'sym', args:[], raw: String(nd) };
+      var op = nd[0];
+      if(op === 'Simplify' || op === 'MixedNumber') return conv(nd[1]);
+      if(op === 'Rational'){
+        var n = nd[1], d = nd[2];
+        if(d === 1) return num(n);
+        var frac = { op:'Frac', args:[ { op:'num', args:[], raw: Math.abs(n) },
+                                       { op:'num', args:[], raw: d } ] };
+        return (n < 0) ? { op:'Negate', args:[frac] } : frac;
+      }
+      if(op === 'Negate') return { op:'Negate', args:[ conv(nd[1]) ] };
+      if(op === 'Add' || op === 'Multiply'){
+        // Afvlakken zoals matcher-flatten: Add(a, Add(b,c)) → Add(a,b,c);
+        // de gespliceete groep krijgt een grp (leden zonder grp erven hem).
+        var args = [];
+        for(var i = 1; i < nd.length; i++){
+          var c = conv(nd[i]);
+          if(c && c.op === op){
+            var g = ++grpTeller;
+            for(var j = 0; j < c.args.length; j++){
+              if(c.args[j] && c.args[j].grp == null) setGrp(c.args[j], g);
+            }
+            args = args.concat(c.args);
+          }
+          else { args.push(c); }
+        }
+        return { op: op, args: args };
+      }
+      if(op === 'Divide' || op === 'Power'){
+        return { op: op, args: [ conv(nd[1]), conv(nd[2]) ] };
+      }
+      if(op === 'Sqrt') return { op:'Sqrt', args:[ conv(nd[1]) ] };
+      if(op === 'Root' || op === 'NthRoot'){
+        return { op:'NthRoot', args:[ conv(nd[1]), conv(nd[2]) ] };
+      }
+      // Onbekende knoop: opaque blad (canonicalValue → null, geen crash).
+      return { op:'opaque', args:[], raw: JSON.stringify(nd) };
+    }
+    return (node == null) ? null : conv(node);
+  }
+
   // ── PINPOINTING via de matcher (window.MATCHER.checkStep) ──
   // Spiegelt het pinResult-contract van pinpointFromPatterns:
   //   {type:0, resolved}              — niets fout (evt. blokken opgelost)
@@ -1620,13 +1697,16 @@
         // exact de boom, ongeacht de volgorde die de leerling kiest. De statische DUO
         // is nog slechts kruiscontrole. Zie ONTWERP_duo_integriteit_dynamisch.md.
         var _r = readyMathblocks();
+        // currentTree/outputTree staan in MathJSON; checkStep rekent op de
+        // matcher-vorm ({op,args,raw}) — converteer beide vóór de aanroep.
         var _mk = function(tak){
           return _r.filter(function(x){ return x.tak === tak && x.outputTree; })
-                   .map(function(x){ return { mathblock: x.mathblock, outputTree: x.outputTree }; });
+                   .map(function(x){ return { mathblock: x.mathblock,
+                                              outputTree: mathjsonNaarMatcher(x.outputTree) }; });
         };
         var _synth = { step: currentStep, hoog: _mk('hoog'), laag: _mk('laag') };
         res = window.MATCHER.checkStep(currentOpgave, currentStep, duoText,
-                                       { step: _synth, inputTree: currentTree });
+                                       { step: _synth, inputTree: mathjsonNaarMatcher(currentTree) });
       }
     }
     catch(e){ dbg('[pinpointMatcher] checkStep wierp:', e.message); return null; }
