@@ -1537,7 +1537,26 @@
 
     var duoText = latexToDuo(currLatex);
     var res;
-    try { res = window.MATCHER.checkStep(currentOpgave, currentStep, duoText); }
+    try {
+      if(window.__duoStatic){
+        // Escape-hatch (debug/vergelijk): forceer de OUDE statische DUO-referentie.
+        res = window.MATCHER.checkStep(currentOpgave, currentStep, duoText);
+      } else {
+        // Route B (STANDAARD): geldige bewerkingen + referentie-boom uit de LEVENDE
+        // currentTree, zodat blootgelegde bewerkingen na een laag-reductie óók geldig
+        // zijn. De DUO-integriteit is zo per constructie gewaarborgd — de set volgt
+        // exact de boom, ongeacht de volgorde die de leerling kiest. De statische DUO
+        // is nog slechts kruiscontrole. Zie ONTWERP_duo_integriteit_dynamisch.md.
+        var _r = readyMathblocks();
+        var _mk = function(tak){
+          return _r.filter(function(x){ return x.tak === tak && x.outputTree; })
+                   .map(function(x){ return { mathblock: x.mathblock, outputTree: x.outputTree }; });
+        };
+        var _synth = { step: currentStep, hoog: _mk('hoog'), laag: _mk('laag') };
+        res = window.MATCHER.checkStep(currentOpgave, currentStep, duoText,
+                                       { step: _synth, inputTree: currentTree });
+      }
+    }
     catch(e){ dbg('[pinpointMatcher] checkStep wierp:', e.message); return null; }
     if(!res || res.error){ dbg('[pinpointMatcher] geen resultaat:', res && res.error); return null; }
 
@@ -1711,6 +1730,64 @@
   }
 
   // Update step tracking using resolvedBlocks (set by tree engine)
+  // Route B (DUO-integriteit) — leidt de "klaar om te doen"-mathblocks af uit de
+  // LEVENDE currentTree i.p.v. de statische DUO. Een operatie is klaar als z'n
+  // subboom nog maar één bewerking bevat (alle operanden zijn al numerieke
+  // bladeren). hoog = op met de huidige step; laag = op uit een latere step (mag
+  // vroeg). outputTree = currentTree met díé op gereduceerd. Zo blijft de set
+  // geldige bewerkingen exact de boom volgen, ongeacht de volgorde van de leerling.
+  // Zie ONTWERP_duo_integriteit_dynamisch.md.
+  function readyMathblocks(){
+    if(!currentTree || !Array.isArray(nodeMap)) return [];
+    var out = [];
+    nodeMap.forEach(function(ne){
+      if(ne.type !== 'operation') return;
+      if(resolvedBlocks.indexOf(ne.mathblock_id) !== -1) return;
+      // Klaar = er ligt géén ANDERE (nog onopgeloste) operatie genest ONDER M.
+      // Spiegelt de authortool-laag-check ("alle operatie-kinderen al opgelost")
+      // op de levende nodeMap — robuuster dan opCount op een losse subboom.
+      var genest = nodeMap.some(function(o){
+        return o.type === 'operation'
+            && o.mathblock_id !== ne.mathblock_id
+            && o.path.length > ne.path.length
+            && isPrefix(ne.path, o.path);
+      });
+      if(genest) return;                                    // nog niet klaar
+      var mb = findMathblock(ne.mathblock_id);
+      if(!mb) return;
+      var leaf = outputToLeaf(mb.output);
+      out.push({
+        mathblock: ne.mathblock_id,
+        outputTree: (leaf !== null) ? setSubtree(currentTree, ne.path, leaf) : null,
+        tak: (mb.step === currentStep) ? 'hoog' : 'laag',
+        step: mb.step
+      });
+    });
+    return out;
+  }
+
+  // Handmatige diagnose: roep window.__duoNow() aan (bv. DIRECT NA LADEN, vóór
+  // enige LF) voor een appels-met-appels-vergelijking van de afgeleide hoog/laag
+  // met de statische DUO van de huidige step.
+  window.__duoNow = function(){
+    var r = readyMathblocks();
+    var ids = function(a){ return (a||[]).map(function(x){ return x.mathblock; }); };
+    var s = getStepData(currentStep) || {};
+    // Zelf-diagnose: toon óók de rauwe staat, zodat één paste laat zien WAAR het
+    // eventueel misgaat (is C5 opgelost? overleeft C6's operatie-entry? ligt er nog
+    // iets genest onder C6?). ops = alle operatie-nodes die nog in nodeMap staan.
+    var ops = (Array.isArray(nodeMap) ? nodeMap : [])
+      .filter(function(e){ return e.type === 'operation'; })
+      .map(function(e){ return e.mathblock_id + '@[' + e.path.join(',') + ']'; });
+    console.log('[duoNow] step ' + currentStep +
+      '\n  resolvedBlocks:', (resolvedBlocks || []).slice(),
+      '\n  operatie-nodes in nodeMap:', ops,
+      '\n  AFGELEID  hoog:', ids(r.filter(function(x){return x.tak==='hoog';})),
+      ' laag:', ids(r.filter(function(x){return x.tak==='laag';})),
+      '\n  STATISCH  hoog:', ids(s.hoog), ' laag:', ids(s.laag));
+    return r;
+  };
+
   function updateStepTracking(){
     // Remove resolved blocks from remaining lists.
     // LET OP: remainingHoog/Laag bevatten OBJECTEN {mathblock, output_expressie}
@@ -1722,6 +1799,20 @@
     remainingLaag = remainingLaag.filter(function(x){ return resolvedBlocks.indexOf(_mbId(x)) === -1; });
 
     dbg('[stepTracking] After LF — hoog remaining:', remainingHoog, 'laag remaining:', remainingLaag, 'resolved:', resolvedBlocks);
+
+    // Route B — DIAGNOSE (zet window.__duoDebug = true). Vergelijkt de uit
+    // currentTree AFGELEIDE hoog/laag met de STATISCHE DUO van deze step. Verandert
+    // nog niets aan de flow; dient om te verifiëren dat de afleiding klopt (en dat
+    // ze blootgelegde bewerkingen bevat die de statische DUO mist) vóór we omzetten.
+    if(window.__duoDebug){
+      var _ready = readyMathblocks();
+      var _ids = function(a){ return (a||[]).map(function(x){ return x.mathblock; }); };
+      var _stat = getStepData(currentStep) || {};
+      console.log('[duoB] step ' + currentStep +
+        '\n  AFGELEID  hoog:', _ids(_ready.filter(function(r){return r.tak==='hoog';})),
+        ' laag:', _ids(_ready.filter(function(r){return r.tak==='laag';})),
+        '\n  STATISCH  hoog:', _ids(_stat.hoog), ' laag:', _ids(_stat.laag));
+    }
 
     // If all hoog are done, advance to next step
     if(remainingHoog.length === 0){
@@ -3912,6 +4003,13 @@
         : ast;
     var tak = (prioriteit === 'laag') ? 'laag' : 'hoog';
     var kleur = (prioriteit === 'laag') ? V.COLORS.LAAG : V.COLORS.HOOG;
+    // NB: de hint-kaders lezen (voorlopig) de statische remainingHoog/Laag. Ze uit
+    // readyMathblocks voeden (zodat blootgelegde bewerkingen als C6 óók omkaderd
+    // worden) botst op het GEPARKEERDE verankeringsprobleem op geëvolueerde regels
+    // (zie ~r3997: "kaders mismatchten op regel 2"): C6's box verbrokkelt dan tot
+    // losse cijfers. De DUO-integriteit zelf zit in de matcher (pinpointFromMatcher,
+    // route B), niet hier. Proactief omkaderen van blootgelegde ops = follow-up,
+    // gekoppeld aan dat verankeringsprobleem.
     var bron = (prioriteit === 'laag') ? (remainingLaag || []) : (remainingHoog || []);
     var teTonen = bron.map(function(x){ return (x && typeof x === 'object') ? x.mathblock : x; });
     var _uniqMb = function(arr){ var s={}; arr.forEach(function(x){ if(x!=null){ s[x]=(s[x]||0)+1; } }); return s; };

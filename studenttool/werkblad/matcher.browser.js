@@ -908,10 +908,13 @@ function vormToestand(opgave, mbId, studentSub, onbewerkt, canon) {
 // toestand: ONBEWERKT / BEZIG / CANONIEK / AFWIJKEND, met de student-waarde.
 function checkStep(opgave, stepNr, studentText, opts) {
   opts = opts || {};
-  const step = getStep(opgave, stepNr);
+  // Route B (dynamische DUO): een aanroeper mag de step, de referentie-boom en
+  // per-bewerking de output-boom rechtstreeks meegeven (afgeleid van currentTree),
+  // i.p.v. de statische DUO-tekst te laten parsen. Defaults = het oude gedrag.
+  const step = opts.step || getStep(opgave, stepNr);
   if (!step) return { error: 'geen step ' + stepNr };
 
-  const inputTree = parseDuo(step.input_expressie);
+  const inputTree = opts.inputTree || parseDuo(step.input_expressie);
   const studentTree = parseDuo(studentText);
   if (!inputTree) return { error: 'input_expressie niet te parsen' };
   if (!studentTree) return { error: 'student-invoer niet te parsen' };
@@ -922,7 +925,7 @@ function checkStep(opgave, stepNr, studentText, opts) {
 
   const resultaten = [];
   for (const g of geldige) {
-    const outTree = parseDuo(g.output_expressie);
+    const outTree = g.outputTree || parseDuo(g.output_expressie);
     // Lokaliseer M's onbewerkte grens-subtree (node_map-bewust).
     const loc = locateBoundary(opgave, g.mathblock, inputTree, outTree);
     const onbewerkt = loc.node;
