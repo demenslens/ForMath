@@ -4074,13 +4074,14 @@
             if (lab === bid) eigen++; else vreemd++;
           });
           if (eigen > 0 && vreemd === 0) {
-            // Onderkant (baseline) = cijferregel behouden (valt samen met bijv.
-            // de 3^2-baseline). Bovenkant omhoog t/m de overstreep (de \sqrt-
-            // offset-top), zodat de hoogte overeenkomt met de macht-box. Links
-            // t/m het wortelteken, 3px naar binnen.
+            // Bovenkant omhoog t/m de overstreep (de \sqrt-offset-top). Links t/m
+            // het wortelteken, 3px naar binnen. Onderkant net iets ONDER de
+            // cijferbaseline (+3px), zodat de punt van het wortelteken — die onder
+            // de baseline uitsteekt en niet in de offset-bounds zit — nog binnen
+            // het kader valt.
             var newLeft = Math.min(span.x, so.bounds.x + 3);
             var newTop  = Math.min(span.y, so.bounds.y);
-            var bottom  = span.y + span.height;
+            var bottom  = Math.max(span.y + span.height, so.bounds.y + so.bounds.height) + 3;
             span = { x: newLeft, y: newTop,
                      width: (span.x + span.width) - newLeft, height: bottom - newTop };
             // De box hangt nu aan de wortel-structuur (diepte van de \sqrt-offset,
