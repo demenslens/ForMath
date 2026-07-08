@@ -44,7 +44,14 @@
 
   // ── Offsets verzamelen ──────────────────────────────────────────────────
   function collectOffsets(mf, maxProbe) {
-    maxProbe = maxProbe || 200;
+    // Sondeer tot het WERKELIJKE laatste offset i.p.v. een vaste cap: bij een
+    // grote expressie (veel offsets) kapte de oude cap=200 de staart — juist de
+    // diepe NOEMER-ops — af, waardoor die geen label kregen. +2 marge.
+    if (maxProbe == null) {
+      var last = null;
+      try { last = mf.lastOffset; } catch (e) {}
+      maxProbe = (typeof last === 'number' && last > 0) ? last + 2 : 200;
+    }
     var out = [];
     for (var o = 0; o <= maxProbe; o++) {
       var info = null;
@@ -316,6 +323,33 @@
   // ── Offset → mathblock (hint) ───────────────────────────────────────────
   function _norm(s) { return s.replace(/\\times/g, '×').replace(/[{}\\]/g, '').trim(); }
 
+  // Een COMPOSITE-offset is een omvattende structuur (\frac{...}, \sqrt{...},
+  // macht) — geen los blad-teken. length>2 sluit losse operatoren als '^' uit.
+  function _isComposite(lx) { return /\\frac|\\sqrt|\^/.test(lx || '') && (lx || '').length > 2; }
+
+  // Composite-offsets erven het mathblock-label van hun blad-kinderen — maar
+  // ALLEEN als álle gelabelde bladeren binnen hun diepte-span hetzelfde mathblock
+  // dragen (EXCLUSIVITEIT). Zo krijgt de root-\frac, die teller- én noemer-
+  // blokken omvat, GEEN label → hij kan geen enkele box verticaal door de hele
+  // breuk oprekken (bug: ballooning kader). Een \frac die geheel binnen één
+  // mathblock ligt erft wél en levert de volle breukhoogte. Muteert `result`
+  // in-place; werkt voor hint (mb = string) én fout (mb = {mb,toestand}).
+  function _inheritComposites(offsets, result) {
+    var mbOf = function (r) { return (r && typeof r === 'object') ? r.mb : r; };
+    offsets.forEach(function (o, idx) {
+      if (result[idx] != null || o.latex === '' || !_isComposite(o.latex)) return;
+      var erf = null, mixed = false;
+      for (var k = idx + 1; k < offsets.length; k++) {
+        if (offsets[k].depth <= o.depth) break;                     // einde span
+        var r = result[k];
+        if (r == null || _isComposite(offsets[k].latex)) continue;  // alleen bladeren
+        if (erf == null) erf = r;
+        else if (mbOf(erf) !== mbOf(r)) { mixed = true; break; }
+      }
+      if (erf != null && !mixed) result[idx] = erf;
+    });
+  }
+
   // ── Robuuste volgorde-uitlijning offsets ↔ tokens (LCS) ─────────────────
   // De oude greedy vooruit-pointer liet een offset ZÓNDER token de eerstvolgende
   // gelijke cijfer-token "stelen"; in grote/diepe expressies (veel herhaalde
@@ -367,15 +401,7 @@
     offsets.forEach(function (o, idx) {
       if (tokIdx[idx] >= 0) result[idx] = visTokens[tokIdx[idx]].mb;
     });
-    offsets.forEach(function (o, idx) {
-      if (result[idx] != null || o.latex === '') return;
-      var isComposite = /\\frac|\\sqrt/.test(o.latex) && o.latex.length > 2;
-      if (!isComposite) return;
-      for (var k = idx + 1; k < offsets.length; k++) {
-        if (offsets[k].depth > o.depth && result[k] != null) { result[idx] = result[k]; break; }
-        if (offsets[k].depth <= o.depth) break;
-      }
-    });
+    _inheritComposites(offsets, result);
     return result;
   }
 
@@ -387,15 +413,7 @@
     offsets.forEach(function (o, idx) {
       if (tokIdx[idx] >= 0) result[idx] = { mb: visTokens[tokIdx[idx]].mb, toestand: visTokens[tokIdx[idx]].toestand };
     });
-    offsets.forEach(function (o, idx) {
-      if (result[idx] != null || o.latex === '') return;
-      var isComposite = /\\frac|\\sqrt/.test(o.latex) && o.latex.length > 2;
-      if (!isComposite) return;
-      for (var k = idx + 1; k < offsets.length; k++) {
-        if (offsets[k].depth > o.depth && result[k] != null) { result[idx] = result[k]; break; }
-        if (offsets[k].depth <= o.depth) break;
-      }
-    });
+    _inheritComposites(offsets, result);
     return result;
   }
 
@@ -419,11 +437,14 @@
   // Caret/grens-offsets (width<=0) tellen nooit mee. Lost de te-lage/verschoven
   // fout-boxen op bij samengestelde breuken en wortels (zie box_structuurmeting.md).
   function mathblockBounds(offsets, perOff, mb) {
-    // (1) blad-tokens (cijfers/operatoren) van mb
+    // (1) blad-tokens (cijfers/operatoren) van mb — géén composites: een
+    // omvattende \frac die (via erving) mb's label draagt heeft reuze-bounds en
+    // zou de box oprekken. Exclusieve structuren komen hieronder via fracBounds/
+    // otherStructBounds alsnog binnen (label-onafhankelijk, wél exclusief).
     var leafBounds = [];
     offsets.forEach(function (o, idx) {
       var lab = perOff[idx];
-      if (lab && lab.mb === mb && o.bounds && o.bounds.width > 0) leafBounds.push(o.bounds);
+      if (lab && lab.mb === mb && o.bounds && o.bounds.width > 0 && !_isComposite(o.latex)) leafBounds.push(o.bounds);
     });
     if (!leafBounds.length) return { bounds: [], rect: null, viaStructuur: false };
 

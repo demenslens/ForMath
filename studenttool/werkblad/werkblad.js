@@ -1788,6 +1788,37 @@
     return r;
   };
 
+  // Read-only anchoring-diagnose: geeft in één blob de tokenstroom én de
+  // zichtbare offsets (latex, diepte, y, hoogte, toegekend mathblock) van het
+  // actieve veld — zodat we exact zien waar labels/box-hoogte misgaan.
+  // Gebruik: JSON.stringify(window.__anchorDiag(), null, 2)
+  window.__anchorDiag = function(){
+    var V = window.VERANKERING;
+    var mf = document.querySelector('.rl.active .editor')
+          || document.querySelector('.rl.active math-field')
+          || (typeof mfRef !== 'undefined' ? mfRef : null)
+          || document.querySelector('math-field');
+    if(!V || !mf) return { fout: 'geen VERANKERING of actief veld' };
+    var ast = (currentTree && Array.isArray(nodeMap))
+        ? { tree: currentTree, node_map: nodeMap }
+        : (currentOpgave && currentOpgave.metadata.expressie.ast);
+    var tokens = V.genLatexTokens(ast);
+    var offsets = V.collectOffsets(mf);
+    var mbPerOffset = V.anchorOffsets(offsets, tokens);
+    var _id = function(x){ return (x && typeof x === 'object') ? x.mathblock : x; };
+    return {
+      remainingHoog: (remainingHoog || []).map(_id),
+      remainingLaag: (remainingLaag || []).map(_id),
+      tokens: tokens.map(function(t, i){ return i + ':' + t.latex + '/' + t.kind + '/' + (t.mb || '-'); }),
+      offsets: offsets.map(function(o, idx){
+        if(!(o.bounds && o.bounds.width > 0)) return null;
+        return idx + ':' + JSON.stringify(o.latex) + ' d=' + o.depth
+             + ' y=' + Math.round(o.bounds.y) + ' h=' + Math.round(o.bounds.height)
+             + ' mb=' + (mbPerOffset[idx] || '-');
+      }).filter(Boolean)
+    };
+  };
+
   function updateStepTracking(){
     // Remove resolved blocks from remaining lists.
     // LET OP: remainingHoog/Laag bevatten OBJECTEN {mathblock, output_expressie}
