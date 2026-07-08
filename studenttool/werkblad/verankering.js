@@ -316,18 +316,56 @@
   // ── Offset → mathblock (hint) ───────────────────────────────────────────
   function _norm(s) { return s.replace(/\\times/g, '×').replace(/[{}\\]/g, '').trim(); }
 
-  function anchorOffsets(offsets, tokens) {
-    var visTokens = tokens.filter(function (t) { return t.kind === 'digit' || t.kind === 'op' || t.kind === 'paren'; });
-    var ti = 0;
-    var result = offsets.map(function () { return null; });
+  // ── Robuuste volgorde-uitlijning offsets ↔ tokens (LCS) ─────────────────
+  // De oude greedy vooruit-pointer liet een offset ZÓNDER token de eerstvolgende
+  // gelijke cijfer-token "stelen"; in grote/diepe expressies (veel herhaalde
+  // cijfers) cascadeerde dat en verloren diepe mathblocks bijna al hun offsets
+  // → box om één los cijfer. Een LCS-uitlijning matcht beide reeksen in
+  // LEESVOLGORDE en tolereert ontbrekende/extra elementen aan weerskanten
+  // zónder cascade. Op parallelle reeksen (het gewone geval) geeft ze exact
+  // dezelfde 1:1 als de oude zip. Geeft een array parallel aan `offsets`: per
+  // offset-index de gematchte visToken-index, of -1. Composite/lege offsets
+  // doen niet mee (blijven -1) — die erven in de tweede pass van hun kinderen.
+  function _alignOffsetsToTokens(offsets, visTokens) {
+    var offItems = [];
     offsets.forEach(function (o, idx) {
       if (o.latex === '') return;
       var isComposite = /\\frac|\\sqrt|\^/.test(o.latex) && o.latex.length > 2;
       if (isComposite) return;
-      var mlSimple = _norm(o.latex);
-      for (var k = ti; k < visTokens.length; k++) {
-        if (_norm(visTokens[k].latex) === mlSimple) { result[idx] = visTokens[k].mb; ti = k + 1; break; }
+      offItems.push({ idx: idx, norm: _norm(o.latex) });
+    });
+    var tokNorm = visTokens.map(function (t) { return _norm(t.latex); });
+    var n = offItems.length, m = visTokens.length;
+    var dp = [];
+    for (var a = 0; a <= n; a++) { var row = new Array(m + 1); for (var b = 0; b <= m; b++) row[b] = 0; dp.push(row); }
+    for (var i = 1; i <= n; i++) {
+      for (var j = 1; j <= m; j++) {
+        dp[i][j] = (offItems[i - 1].norm === tokNorm[j - 1])
+          ? dp[i - 1][j - 1] + 1
+          : Math.max(dp[i - 1][j], dp[i][j - 1]);
       }
+    }
+    var tokIdxForOffset = offsets.map(function () { return -1; });
+    var ii = n, jj = m;
+    while (ii > 0 && jj > 0) {
+      if (offItems[ii - 1].norm === tokNorm[jj - 1]) {
+        tokIdxForOffset[offItems[ii - 1].idx] = jj - 1;
+        ii--; jj--;
+      } else if (dp[ii - 1][jj] >= dp[ii][jj - 1]) {
+        ii--;
+      } else {
+        jj--;
+      }
+    }
+    return tokIdxForOffset;
+  }
+
+  function anchorOffsets(offsets, tokens) {
+    var visTokens = tokens.filter(function (t) { return t.kind === 'digit' || t.kind === 'op' || t.kind === 'paren'; });
+    var result = offsets.map(function () { return null; });
+    var tokIdx = _alignOffsetsToTokens(offsets, visTokens);
+    offsets.forEach(function (o, idx) {
+      if (tokIdx[idx] >= 0) result[idx] = visTokens[tokIdx[idx]].mb;
     });
     offsets.forEach(function (o, idx) {
       if (result[idx] != null || o.latex === '') return;
@@ -344,16 +382,10 @@
   // ── Offset → {mb, toestand} (fout/correct) ──────────────────────────────
   function anchorStudentOffsets(offsets, tokens) {
     var visTokens = tokens.filter(function (t) { return t.kind === 'digit' || t.kind === 'op' || t.kind === 'paren'; });
-    var ti = 0;
     var result = offsets.map(function () { return null; });
+    var tokIdx = _alignOffsetsToTokens(offsets, visTokens);
     offsets.forEach(function (o, idx) {
-      if (o.latex === '') return;
-      var isComposite = /\\frac|\\sqrt|\^/.test(o.latex) && o.latex.length > 2;
-      if (isComposite) return;
-      var mlSimple = _norm(o.latex);
-      for (var k = ti; k < visTokens.length; k++) {
-        if (_norm(visTokens[k].latex) === mlSimple) { result[idx] = { mb: visTokens[k].mb, toestand: visTokens[k].toestand }; ti = k + 1; break; }
-      }
+      if (tokIdx[idx] >= 0) result[idx] = { mb: visTokens[tokIdx[idx]].mb, toestand: visTokens[tokIdx[idx]].toestand };
     });
     offsets.forEach(function (o, idx) {
       if (result[idx] != null || o.latex === '') return;
