@@ -398,21 +398,46 @@ function alignTarget(inputNode, studentNode, target) {
     // heeft — dan is waarde-matching ambigu (welke student-plek hoort bij wie?)
     // en moet de structurele/skelet-sort het doen (tweeling-geval, 511_023-varia).
     const vTarget = canonicalValue(ia[ti]);
+    const nogOngematcht = [];   // ook na pass 2 niet weggestreepte ANDERE args
     for (const i of ongematcht) {
       const vi = canonicalValue(ia[i]);
-      if (vi == null) continue;
-      if (vTarget != null && valuesEqual(vi, vTarget)) continue;   // twin-guard
+      if (vi == null) { nogOngematcht.push(i); continue; }
+      if (vTarget != null && valuesEqual(vi, vTarget)) { nogOngematcht.push(i); continue; }   // twin-guard
+      let gematcht2 = false;
       for (let k = 0; k < sa.length; k++) {
         if (usedStu[k]) continue;
         const vk = canonicalValue(sa[k]);
-        if (vk != null && valuesEqual(vi, vk)) { usedStu[k] = true; break; }
+        if (vk != null && valuesEqual(vi, vk)) { usedStu[k] = true; gematcht2 = true; break; }
       }
+      if (!gematcht2) nogOngematcht.push(i);
     }
     // Kandidaten voor target = niet-weggestreepte student-args.
     const want = skeleton(ia[ti]);
     const wantVal = isValueLeaf(ia[ti]) ? canonicalValue(ia[ti]) : null;
     const rest = [];
     for (let k = 0; k < sa.length; k++) if (!usedStu[k]) rest.push(k);
+
+    // DUBBELFOUT-DISAMBIGUATIE (alleen als target précies dit arg is): bij twee
+    // gelijktijdige fouten in dezelfde commutatieve knoop faalt het wegstrepen
+    // voor BEIDE plekken (pass 1: boom veranderd; pass 2: waarde veranderd) en
+    // blijven er >=2 kandidaten over. De sort hieronder besliste dan op
+    // toevallige index-volgorde en ankerde target op de subtree van de ÁNDERE
+    // fout — de rode fout-box spreidde over een groot deel van de expressie
+    // (528_001: B3 ankerde op heel 2×(3+21) i.p.v. op -(4)). Twee extra,
+    // zwakkere signalen ná de skelet/waarde-criteria:
+    //   (1) een GEREDUCEERDE plek is een waarde-blad -> verkies blad-kandidaten
+    //       boven samengestelde subtrees (die horen eerder bij een ander,
+    //       intern gewijzigd arg);
+    //   (2) LEESVOLGORDE: koppel de overgebleven input-args positioneel aan de
+    //       overgebleven student-args (broers-dubbelfout, bv. 21-(4)+7).
+    // De enkel-fout-flow raakt dit niet: daar blijft na wegstrepen precies één
+    // kandidaat over, of beslist het skelet-/waarde-criterium al.
+    let posPref = -1;
+    if (target === ia[ti] && rest.length > 1) {
+      const leftover = nogOngematcht.concat([ti]).sort((x, y) => x - y);
+      const slot = leftover.indexOf(ti);
+      if (slot >= 0 && slot < rest.length) posPref = rest[slot];  // rest is nog oplopend
+    }
 
     // Onder de overgebleven kandidaten: prioriteer skelet-gelijk + waarde-gelijk,
     // dan skelet-gelijk, dan de rest (de student heeft de plek mogelijk
@@ -425,7 +450,14 @@ function alignTarget(inputNode, studentNode, target) {
         const va = canonicalValue(sa[a]), vb = canonicalValue(sa[b]);
         const ma = va != null && valuesEqual(va, wantVal) ? 1 : 0;
         const mb = vb != null && valuesEqual(vb, wantVal) ? 1 : 0;
-        return mb - ma;
+        if (ma !== mb) return mb - ma;
+      }
+      if (target === ia[ti]) {
+        // Dubbelfout-tiebreakers (zie hierboven): blad-voorkeur, dan leesvolgorde.
+        const la = isValueLeaf(sa[a]) ? 1 : 0;
+        const lb = isValueLeaf(sa[b]) ? 1 : 0;
+        if (la !== lb) return lb - la;
+        if (posPref !== -1) return (b === posPref ? 1 : 0) - (a === posPref ? 1 : 0);
       }
       return 0;
     });
