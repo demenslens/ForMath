@@ -163,8 +163,13 @@
     return div;
   }
 
+  // Wist alleen de HINT-kaders. De fout-kaders (rood) dragen óók .__hlbox (drawBox
+  // zet dat) mét .__foutbox erbovenop; die sluiten we hier uit, anders veegt een
+  // hint-operatie (bv. het (her)tekenen van hint-kaders) een net-getekend
+  // fout-kader weg. De fout-kaders worden opgeruimd door clearFoutKaders (bij
+  // bewerken van de regel / bij een correcte LF).
   function clearBoxes(container) {
-    (container || document).querySelectorAll('.__hlbox').forEach(function (n) { n.remove(); });
+    (container || document).querySelectorAll('.__hlbox:not(.__foutbox)').forEach(function (n) { n.remove(); });
   }
 
   function spanBounds(boundsList) {

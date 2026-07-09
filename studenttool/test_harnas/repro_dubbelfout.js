@@ -162,6 +162,17 @@ check('beide-goed: A1 = CANONIEK', resVan(res4, 'A1').toestand === 'CANONIEK',
       'kreeg ' + resVan(res4, 'A1').toestand);
 check('beide-goed: B3 = CANONIEK', resVan(res4, 'B3').toestand === 'CANONIEK',
       'kreeg ' + resVan(res4, 'B3').toestand);
+
+/* ── SCENARIO 4b: A1 HERSTELD (CANONIEK) + B3 nog fout — de correctie-flow ── */
+const res4b = run('2*(3+20)-(4)+7');
+check('gemengd: A1 = CANONIEK', resVan(res4b, 'A1').toestand === 'CANONIEK',
+      'kreeg ' + resVan(res4b, 'A1').toestand);
+check('gemengd: B3 = AFWIJKEND met bruikbare studentSubtree (-4)',
+      resVan(res4b, 'B3').toestand === 'AFWIJKEND'
+        && resVan(res4b, 'B3').studentSubtree
+        && M.isValueLeaf(resVan(res4b, 'B3').studentSubtree),
+      resVan(res4b, 'B3').toestand + '/' + (resVan(res4b, 'B3').studentSubtree
+        ? M.fmt(resVan(res4b, 'B3').studentValue) : '(null studentSubtree)'));
 check('beide-goed: alleHoogKlaar', res4.alleHoogKlaar === true, String(res4.alleHoogKlaar));
 
 /* ── SCENARIO 5: onbewerkte input ─────────────────────────────────────────── */

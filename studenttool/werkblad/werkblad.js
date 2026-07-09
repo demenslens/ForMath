@@ -4405,11 +4405,12 @@
   // geopend door op z'n (groene of grijze) kader te klikken. De items zijn een
   // accordion: klik op de kop → de tekst ontvouwt. Onderaan een 'Sluit'-knop.
   // Bron: mathblocks[].hints.structureel.{wat,hoe,let_op} uit de opgave-JSON.
-  function toonMathblockHints(bid){
-    var mb = findMathblock(bid);
-    if(!mb){ st('er', 'Geen mathblock ' + bid); return; }
-    var s = (mb.hints && mb.hints.structureel) || {};
-
+  // Gedeelde popup voor mathblock-informatie (hints én feedback). titel = kop;
+  // items = [{label,tekst}] (lege tekst wordt overgeslagen); geenTekst = melding
+  // als niets te tonen is; accent = kleur voor kop+labels (hint = mustard, fout-
+  // feedback = err-rood). Eén 'Sluit'-knop; klik buiten de kaart sluit ook.
+  function _maakMbPopup(titel, items, geenTekst, accent){
+    accent = accent || 'var(--accent-ink,#6a4807)';
     var oud = document.getElementById('mbhint-overlay');
     if(oud) oud.remove();
 
@@ -4424,28 +4425,20 @@
       + 'max-height:80vh;overflow:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,0.25);'
       + 'font-family:"IBM Plex Sans",sans-serif;';
 
-    var titel = document.createElement('div');
-    titel.style.cssText = 'font-family:Fraunces,serif;font-size:17px;font-weight:600;'
-      + 'margin-bottom:14px;color:var(--accent-ink,#6a4807);';
-    var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
-    titel.textContent = 'Hint — ' + bid + (opBesch ? ' · ' + opBesch : '');
-    card.appendChild(titel);
+    var titelEl = document.createElement('div');
+    titelEl.style.cssText = 'font-family:Fraunces,serif;font-size:17px;font-weight:600;'
+      + 'margin-bottom:14px;color:' + accent + ';';
+    titelEl.textContent = titel;
+    card.appendChild(titelEl);
 
-    var items = [
-      { label:'Wat', tekst: s.wat },
-      { label:'Hoe', tekst: s.hoe },
-      { label:'Let op', tekst: s.let_op }
-    ];
     var enige = false;
-    items.forEach(function(it){
-      if(!it.tekst) return;
+    (items || []).forEach(function(it){
+      if(!it || !it.tekst) return;
       enige = true;
-      // Direct volledig tonen (geen accordion): label + tekst onder elkaar.
       var blok = document.createElement('div');
       blok.style.cssText = 'margin-bottom:12px;';
       var label = document.createElement('div');
-      label.style.cssText = 'font-size:14px;font-weight:600;color:var(--accent-ink,#6a4807);'
-        + 'margin-bottom:3px;';
+      label.style.cssText = 'font-size:14px;font-weight:600;color:' + accent + ';margin-bottom:3px;';
       label.textContent = it.label + ':';
       var tekst = document.createElement('div');
       tekst.style.cssText = 'font-size:13.5px;line-height:1.5;color:var(--ink-soft,#4d5260);';
@@ -4457,7 +4450,7 @@
     if(!enige){
       var geen = document.createElement('div');
       geen.style.cssText = 'font-size:13px;color:var(--ink-dim,#87889a);margin-bottom:10px;';
-      geen.textContent = 'Geen structurele hints voor dit mathblock.';
+      geen.textContent = geenTekst || 'Geen informatie voor dit mathblock.';
       card.appendChild(geen);
     }
 
@@ -4473,6 +4466,36 @@
     ov.appendChild(card);
     ov.onclick = function(e){ if(e.target === ov) ov.remove(); };
     document.body.appendChild(ov);
+  }
+
+  // Hint-popup (klik op een groen/grijs kader) — structurele hints Wat/Hoe/Let op.
+  function toonMathblockHints(bid){
+    var mb = findMathblock(bid);
+    if(!mb){ st('er', 'Geen mathblock ' + bid); return; }
+    var s = (mb.hints && mb.hints.structureel) || {};
+    var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
+    _maakMbPopup('Hint — ' + bid + (opBesch ? ' · ' + opBesch : ''),
+      [ { label:'Wat', tekst: s.wat },
+        { label:'Hoe', tekst: s.hoe },
+        { label:'Let op', tekst: s.let_op } ],
+      'Geen structurele hints voor dit mathblock.');
+  }
+
+  // Feedback-popup (klik op een ROOD fout-kader) — de feedback van het mathblock
+  // uit hints.feedback: bij_fout_algemeen + eventuele veelvoorkomende_fouten.
+  function toonMathblockFeedback(bid){
+    var mb = findMathblock(bid);
+    if(!mb){ st('er', 'Geen mathblock ' + bid); return; }
+    var fb = (mb.hints && mb.hints.feedback) || {};
+    var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
+    var items = [ { label:'Feedback', tekst: fb.bij_fout_algemeen } ];
+    (fb.veelvoorkomende_fouten || []).forEach(function(v, i){
+      var t = (typeof v === 'string') ? v
+            : (v && (v.feedback || v.tekst || v.uitleg)) || null;
+      if(t) items.push({ label:'Veelgemaakte fout ' + (i+1), tekst: t });
+    });
+    _maakMbPopup('Feedback — ' + bid + (opBesch ? ' · ' + opBesch : ''),
+      items, 'Geen feedback voor dit mathblock.', 'var(--err,#983018)');
   }
 
   // FASE 1b — FOUT-MARKERING via student-verankering (window.VERANKERING)
@@ -4539,7 +4562,16 @@
         else if (mbB.soort === 'structuur') { marge = V.HINT_MARGE; dArg = null; }
         else                                { marge = V.HINT_MARGE; dArg = (depths.length ? Math.min.apply(null, depths) : 0); }
         var box = V.drawBox(mf, span, FOUT_KLEUR, delta, dArg, marge);
-        if (box) box.classList.add('__foutbox');
+        if (box){
+          box.classList.add('__foutbox');
+          // PPTE: fout-kader klikbaar → popup met de feedback van dit mathblock
+          // (hints.feedback). r = fout.forEach-parameter, dus de closure vangt
+          // per kader het juiste mathblock.
+          box.style.pointerEvents = 'auto';
+          box.style.cursor = 'pointer';
+          box.setAttribute('data-mb', r.mathblock);
+          box.addEventListener('click', function(ev){ ev.stopPropagation(); toonMathblockFeedback(r.mathblock); });
+        }
         getekend++;
       }
     });
