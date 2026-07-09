@@ -869,6 +869,13 @@
     clearErrorOverlay();
     // Ook de structurele fout-kaders opruimen: de student herwerkt de regel.
     clearFoutKaders();
+    // Deblokkeer LF zodra de student de regel bewerkt. Zonder dit bleef
+    // lfBlocked hangen tot de HELE regel klopt (dat gebeurt pas in de eval
+    // hieronder bij isCorrect): na het herstellen van ÉÉN van meerdere fouten
+    // bleef LF geblokkeerd, evalueerde doLF niet opnieuw, en verscheen de
+    // resterende fout niet meer gekaderd. Een volgende LF her-evalueert nu en
+    // kadert de eventueel nog resterende fout(en) opnieuw.
+    lfBlocked = false;
     parseTimer = setTimeout(function(){
       _cnt.parseTimerFire++;
       var latexVal = getEditorLatex();
