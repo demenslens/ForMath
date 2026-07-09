@@ -4347,6 +4347,16 @@
       if (span){
         var d = depths.length ? Math.min.apply(null, depths) : 0;
         var box = V.drawBox(mf, span, kleur, delta, d, V.HINT_MARGE);
+        if (box){
+          // PPTE: kader klikbaar → popup met de structureel-hints van dit
+          // mathblock. drawBox zet standaard pointerEvents:none (voor de fout-
+          // kaders); voor hint-kaders zetten we 'm aan. bid = forEach-parameter,
+          // dus de closure vangt per kader het juiste mathblock.
+          box.style.pointerEvents = 'auto';
+          box.style.cursor = 'pointer';
+          box.setAttribute('data-mb', bid);
+          box.addEventListener('click', function(ev){ ev.stopPropagation(); toonMathblockHints(bid); });
+        }
         if (window.__boxDebug && box) {
           var kr = box.getBoundingClientRect();
           console.log('[kader] ' + bid + '  x=' + Math.round(kr.x) + ' y=' + Math.round(kr.y) +
@@ -4383,6 +4393,80 @@
   }
   window.__toonHintBeide = toonHintKadersBeide;
   window.__wisHint = function(){ if (window.VERANKERING) window.VERANKERING.clearBoxes(); };
+
+  // PPTE — popup met de structurele hints (Wat / Hoe / Let op) van ÉÉN mathblock,
+  // geopend door op z'n (groene of grijze) kader te klikken. De items zijn een
+  // accordion: klik op de kop → de tekst ontvouwt. Onderaan een 'Sluit'-knop.
+  // Bron: mathblocks[].hints.structureel.{wat,hoe,let_op} uit de opgave-JSON.
+  function toonMathblockHints(bid){
+    var mb = findMathblock(bid);
+    if(!mb){ st('er', 'Geen mathblock ' + bid); return; }
+    var s = (mb.hints && mb.hints.structureel) || {};
+
+    var oud = document.getElementById('mbhint-overlay');
+    if(oud) oud.remove();
+
+    var ov = document.createElement('div');
+    ov.id = 'mbhint-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:10000;display:flex;align-items:center;'
+      + 'justify-content:center;background:rgba(0,0,0,0.35);';
+
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--bg-panel,#fbfaf5);color:var(--ink,#1c1f26);'
+      + 'border:1px solid var(--rule-strong,#b8b09a);border-radius:10px;max-width:440px;width:90%;'
+      + 'max-height:80vh;overflow:auto;padding:18px 20px;box-shadow:0 12px 40px rgba(0,0,0,0.25);'
+      + 'font-family:"IBM Plex Sans",sans-serif;';
+
+    var titel = document.createElement('div');
+    titel.style.cssText = 'font-family:Fraunces,serif;font-size:17px;font-weight:600;'
+      + 'margin-bottom:14px;color:var(--accent-ink,#6a4807);';
+    var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
+    titel.textContent = 'Hint — ' + bid + (opBesch ? ' · ' + opBesch : '');
+    card.appendChild(titel);
+
+    var items = [
+      { label:'Wat', tekst: s.wat },
+      { label:'Hoe', tekst: s.hoe },
+      { label:'Let op', tekst: s.let_op }
+    ];
+    var enige = false;
+    items.forEach(function(it){
+      if(!it.tekst) return;
+      enige = true;
+      // Direct volledig tonen (geen accordion): label + tekst onder elkaar.
+      var blok = document.createElement('div');
+      blok.style.cssText = 'margin-bottom:12px;';
+      var label = document.createElement('div');
+      label.style.cssText = 'font-size:14px;font-weight:600;color:var(--accent-ink,#6a4807);'
+        + 'margin-bottom:3px;';
+      label.textContent = it.label + ':';
+      var tekst = document.createElement('div');
+      tekst.style.cssText = 'font-size:13.5px;line-height:1.5;color:var(--ink-soft,#4d5260);';
+      tekst.textContent = it.tekst;
+      blok.appendChild(label);
+      blok.appendChild(tekst);
+      card.appendChild(blok);
+    });
+    if(!enige){
+      var geen = document.createElement('div');
+      geen.style.cssText = 'font-size:13px;color:var(--ink-dim,#87889a);margin-bottom:10px;';
+      geen.textContent = 'Geen structurele hints voor dit mathblock.';
+      card.appendChild(geen);
+    }
+
+    var sluit = document.createElement('button');
+    sluit.type = 'button';
+    sluit.textContent = 'Sluit';
+    sluit.style.cssText = 'margin-top:8px;padding:8px 18px;border:1px solid var(--rule-strong,#b8b09a);'
+      + 'border-radius:7px;background:var(--accent-soft,#efe0b6);color:var(--accent-ink,#6a4807);'
+      + 'font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;';
+    sluit.onclick = function(){ ov.remove(); };
+    card.appendChild(sluit);
+
+    ov.appendChild(card);
+    ov.onclick = function(e){ if(e.target === ov) ov.remove(); };
+    document.body.appendChild(ov);
+  }
 
   // FASE 1b — FOUT-MARKERING via student-verankering (window.VERANKERING)
   // ══════════════════════════════════════
@@ -4471,22 +4555,8 @@
   // ══════════════════════════════════════
   // CHECK BUTTON — same as LF validation but without moving
   // ══════════════════════════════════════
-  document.getElementById('check-btn').onclick = function(){
-    if(beginUitkomst === null){ st('er','Geen opgave geladen'); return; }
-    var latexVal = getEditorLatex();
-    var currentResult = evaluateExpression(latexVal);
-    var isCorrect = resultsEqual(currentResult, beginUitkomst);
-    var rules = document.getElementById('rules');
-    var currentLine = rules.children[activeLineIndex];
-
-    if(isCorrect){
-      addMarginMark(currentLine, true);
-      st('ok','✓ Correct! (' + math.format(currentResult,{fraction:'ratio'}) + ')');
-    } else {
-      addMarginMark(currentLine, false);
-      st('er','✗ Fout' + (currentResult!==null?' (='+math.format(currentResult,{fraction:'ratio'})+', verwacht: '+math.format(beginUitkomst,{fraction:'ratio'})+')':'— kan niet evalueren'));
-    }
-  };
+  // 'Check'-knop vervallen (PPTE): de foutcontrole gebeurt nu volledig op LF
+  // (waarde-check + pinpoint + rode foutkaders). Zie doLF.
 
   // ══════════════════════════════════════
   // MATHLIVE HELPERS
@@ -4565,36 +4635,50 @@
   // ══════════════════════════════════════
   var hintsOverlay = document.getElementById('hints-overlay');
   var hintsBtn = document.getElementById('hints-btn');
+  var hintsPlusBtn = document.getElementById('hints-plus-btn');
   var hintsClose = document.getElementById('hints-close');
+
+  // De hint-kaders gebruiken de veld-parse-verankering (scherm-getrouw, correct op
+  // geëvolueerde regels). Zie verankering_review_fable5.md / de veld-parse-commit.
+  window.__veldParse = true;
+
+  // PPTE-statusbalk (Fase A): 'Hints' = de HOOG-mathblocks (groen) op de actuele
+  // regel (+ de tekst-popup, behouden); 'Hints+' = de LAAG-mathblocks (grijs).
+  // Onafhankelijke toggles: hoog en laag los aan/uit, ook tegelijk (skipClear
+  // tekent ze naast elkaar zonder elkaar te wissen).
+  var hintKadersHoog = false, hintKadersLaag = false;
+  function tekenHintKaders(){
+    if (window.VERANKERING) window.VERANKERING.clearBoxes();
+    if (hintKadersHoog) toonHintKaders('hoog', true);
+    if (hintKadersLaag) toonHintKaders('laag', true);
+    if (hintsBtn) hintsBtn.classList.toggle('active', hintKadersHoog);
+    if (hintsPlusBtn) hintsPlusBtn.classList.toggle('active', hintKadersLaag);
+  }
+  // Op regelwissel wissen (kaders horen bij de actuele regel). Naam behouden:
+  // wordt aangeroepen bij het activeren van een regel (zie ~r728).
+  function resetKadersToggle(){
+    hintKadersHoog = false; hintKadersLaag = false;
+    if (window.VERANKERING) window.VERANKERING.clearBoxes();
+    if (hintsBtn) hintsBtn.classList.remove('active');
+    if (hintsPlusBtn) hintsPlusBtn.classList.remove('active');
+  }
 
   hintsBtn.onclick = function(){
     if(!currentOpgave){ st('er','Geen opgave geladen'); return; }
-    renderHints();
-    hintsOverlay.classList.add('open');
+    hintKadersHoog = !hintKadersHoog;
+    tekenHintKaders();
+    // De hint-inhoud komt nu per mathblock: klik op een (groen) kader → popup
+    // met Wat/Hoe/Let op. De oude tekst-lijst-popup wordt daarom niet meer
+    // automatisch geopend.
+  };
+  hintsPlusBtn.onclick = function(){
+    if(!currentOpgave){ st('er','Geen opgave geladen'); return; }
+    hintKadersLaag = !hintKadersLaag;
+    tekenHintKaders();
   };
 
   hintsClose.onclick = function(){ hintsOverlay.classList.remove('open'); };
   hintsOverlay.onclick = function(e){ if(e.target === hintsOverlay) hintsOverlay.classList.remove('open'); };
-
-  // Aparte knop voor de visuele mathblock-kaders (los van de tekst-hint-popup).
-  // Toggle: klik toont de hoog-kaders, nogmaals klikken wist ze.
-  var kadersBtn = document.getElementById('kaders-btn');
-  function resetKadersToggle(){
-    kadersAan = false;
-    if (kadersBtn) kadersBtn.classList.remove('active');
-  }
-  if (kadersBtn){
-    kadersBtn.onclick = function(){
-      if (kadersAan){
-        if (window.VERANKERING) window.VERANKERING.clearBoxes();
-        resetKadersToggle();
-      } else {
-        toonHintKadersBeide();   // hoog (groen) + laag (grijs) tegelijk
-        kadersAan = true;
-        kadersBtn.classList.add('active');
-      }
-    };
-  }
 
   function renderHints(){
     var body = document.getElementById('hints-body');
