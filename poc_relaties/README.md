@@ -23,23 +23,42 @@ er ook maar iets aan de live-tools verandert.
 3. **Matcher-over-varianten** (headless): replay geaccepteerde regels tegen een
    variant; laat zien dat de ongewijzigde `checkStep` 'm accepteert.
 
-## Structuur (in aanbouw)
+## Structuur
 
 ```
 poc_relaties/
 ├── README.md                ← dit bestand
-├── data/                    ← sample-opgaven + relaties.json  (opgaven: JIJ levert)
-│   ├── opgave_20260709_001.json      (abc, +wortel)      ← aanleveren
-│   ├── opgave_20260709_002.json      (abc, -wortel)      ← aanleveren
-│   ├── (optioneel) 510-002 + distributie-variant
-│   └── relaties.json                  (wij schrijven)
-├── relatie_manager.py       ← vingerafdruk + validatie (standalone)
-├── harness.js               ← Node: fast-forward + matcher-over-varianten (echte matcher)
-└── ui/                      ← mini-UI: losstaande sandbox-HTML (hergebruikt matcher.browser.js)
+├── data/
+│   ├── opgave_20260709_001.json      (abc, +wortel → 3;  metadata.id "20260709_001")
+│   ├── opgave_20260709_002.json      (abc, -wortel → -2; metadata.id "20260709_002")
+│   ├── opgave_20260510_002.json      (voor de matcher-over-varianten-meting)
+│   └── relaties.json                  (abc_709; vingerafdruk gevuld door relatie_manager.py)
+├── relatie_manager.py       ← vingerafdruk (§2.2) + validatie (§1.2) + CLI; genereert ui/data.js
+├── reductie_helpers.js      ← kopieën/adaptaties uit werkblad.js (herkomst per functie in de kop)
+├── harness.js               ← Node: de drie bewijzen op de ECHTE matcher (vm-patroon)
+└── ui/
+    ├── index.html, poc.js   ← losstaande fork-demo (fork-kiezer + fast-forward)
+    └── data.js              ← GEGENEREERD (bron blijft data/*.json)
 ```
 
-## Volgende stap
+## Draaien
 
-Plaats **709-001 en 709-002** (en evt. de 510-002-distributievariant) in
-[`data/`](data/). Daarna bouwen we `relaties.json`, `relatie_manager.py`, de
-Node-harnas en de mini-UI.
+```
+cd poc_relaties
+python3 relatie_manager.py data/     # vult vingerafdruk, valideert, genereert ui/data.js
+node harness.js                      # de drie bewijzen (exit 0 = groen)
+open ui/index.html                   # fork-demo; file:// volstaat meestal
+```
+
+Blokkeert de browser de studenttool-scripts onder `file://`, start dan vanuit
+de **formath-map**: `python3 -m http.server 8001` →
+`http://localhost:8001/poc_relaties/ui/index.html`.
+
+## Uitkomst (2026-07-10)
+
+Alle drie de bewijzen groen (zie `node harness.js`). Twee bevindingen voor het
+ontwerp: (1) de teken-correctie in `doLF` vuurt niet voor `is_negative`-blokken
+met geheel-getal-output — de PoC veralgemeent haar (kop `reductie_helpers.js`);
+(2) een distributieve herschrijving geeft **categorie A met een váls
+`AFWIJKEND`**, niet `B-equiv` — de variant-replay-trigger moet breder (zie
+bewijs (c) in `harness.js`).

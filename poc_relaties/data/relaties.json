@@ -1,0 +1,32 @@
+{
+  "schema_versie": 1,
+  "relaties": [
+    {
+      "relatie_id": "abc_709",
+      "type": "vertakking",
+      "beschrijving": "Twee wortels via de abc-formule: x = (-(-2) ± √((-2)² - 4·2·(-12))) / (2·2). Gedeelde afleiding t/m de discriminant D = 100 (mathblock A3), daarna splitst ± in de +wortel (x₁ = 3) en de -wortel (x₂ = -2).",
+      "leden": [
+        {
+          "opgave": "20260709_001",
+          "rol": "+wortel"
+        },
+        {
+          "opgave": "20260709_002",
+          "rol": "-wortel"
+        }
+      ],
+      "gedeelde_prefix": {
+        "t_m_mathblock": "A3",
+        "mathblocks": [
+          "A1",
+          "A2",
+          "B2",
+          "A3"
+        ],
+        "fork_step": 3,
+        "vingerafdruk": "sha256:dc401153e70d"
+      },
+      "gelijke_uitkomst": false
+    }
+  ]
+}

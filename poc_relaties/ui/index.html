@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<title>PoC — fork-reconstructie gerelateerde opgaven (abc_709)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!--
+  Losstaande zandbak-UI voor het relatie-/fork-mechanisme.
+
+  OPENEN: dubbelklik dit bestand (file:// volstaat — de opgave-data zit in het
+  GEGENEREERDE data.js, want fetch() van lokale JSON is onder file:// geblokkeerd).
+  Lukt het laden van mathjs/matcher niet (sommige browsers blokkeren file://-
+  scripts buiten de map), start dan een servertje in de formath-MAP (één niveau
+  boven poc_relaties, zodat ../../studenttool/ bereikbaar is):
+      cd ~/Desktop/formath && python3 -m http.server 8001
+  en open http://localhost:8001/poc_relaties/ui/index.html
+
+  Read-only hergebruik: mathjs + matcher.browser.js komen rechtstreeks uit de
+  studenttool (relatieve paden); niets daar wordt gewijzigd. Fonts: geen externe
+  bronnen in de zandbak — Fraunces/IBM Plex vervangen door systeem-fallbacks.
+-->
+<style>
+  :root{
+    --bg:#f6f4ed; --bg-panel:#fbfaf5; --bg-sunken:#ede9dd;
+    --ink:#1c1f26; --ink-soft:#4d5260; --ink-dim:#87889a;
+    --rule:#dcd7c6; --rule-strong:#b8b09a;
+    --accent:#ae7a15; --accent-ink:#6a4807; --accent-soft:#efe0b6;
+    --ok:#2f6d3f; --err:#983018;
+    --f-display:Georgia,'Times New Roman',serif;
+    --f-ui:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--f-ui);
+       font-size:15px;line-height:1.5;padding:2rem 1rem 4rem}
+  main{max-width:880px;margin:0 auto}
+  h1{font-family:var(--f-display);font-size:1.7rem;margin-bottom:.25rem}
+  h2{font-family:var(--f-display);font-size:1.15rem;margin:0 0 .6rem}
+  .sub{color:var(--ink-soft);margin-bottom:1.5rem;max-width:60ch}
+  section{background:var(--bg-panel);border:1px solid var(--rule);
+          border-radius:8px;padding:1rem 1.25rem;margin-bottom:1.25rem}
+  .badge{display:inline-block;font-size:.75rem;padding:.1rem .5rem;
+         border-radius:999px;border:1px solid var(--rule-strong);
+         color:var(--ink-soft);vertical-align:middle}
+  .badge.ok{color:var(--ok);border-color:var(--ok)}
+  .badge.err{color:var(--err);border-color:var(--err)}
+  .badge.accent{color:var(--accent-ink);border-color:var(--accent);background:var(--accent-soft)}
+  code,.mono{font-family:var(--f-mono);font-size:.85em}
+  .expr{font-family:var(--f-mono);font-size:.95rem;background:var(--bg-sunken);
+        border:1px solid var(--rule);border-radius:6px;padding:.35rem .6rem;
+        display:inline-block;overflow-x:auto;max-width:100%}
+  table{border-collapse:collapse;width:100%;margin-top:.5rem}
+  th,td{border:1px solid var(--rule);padding:.4rem .6rem;text-align:left;
+        vertical-align:top;font-size:.9rem}
+  th{background:var(--bg-sunken);font-weight:600}
+  td .expr{padding:.15rem .4rem;font-size:.85rem;border:none;background:transparent}
+  button{font-family:var(--f-ui);font-size:.95rem;padding:.45rem 1rem;
+         border-radius:6px;border:1px solid var(--rule-strong);
+         background:var(--bg-panel);color:var(--ink);cursor:pointer}
+  button:hover:not(:disabled){border-color:var(--accent);color:var(--accent-ink)}
+  button.primair{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.primair:hover:not(:disabled){background:var(--accent-ink);color:#fff}
+  button:disabled{opacity:.45;cursor:default}
+  .knoppen{display:flex;gap:.75rem;flex-wrap:wrap;margin:.5rem 0}
+  .regel{display:flex;gap:.6rem;align-items:baseline;flex-wrap:wrap;
+         padding:.35rem 0;border-bottom:1px dashed var(--rule)}
+  .regel:last-child{border-bottom:none}
+  .regel .wie{min-width:11rem;color:var(--ink-soft);font-size:.85rem}
+  .melding{margin:.5rem 0;padding:.5rem .75rem;border-left:3px solid var(--accent);
+           background:var(--accent-soft);border-radius:0 6px 6px 0;font-size:.9rem}
+  .melding.ok{border-left-color:var(--ok);background:#e4eee6}
+  .melding.err{border-left-color:var(--err);background:#f3e2dc}
+  .dim{color:var(--ink-dim);font-size:.85rem}
+  #fout-banner{display:none}
+</style>
+</head>
+<body>
+<main>
+  <h1>PoC — fork-reconstructie <span class="badge accent" id="rel-id"></span></h1>
+  <p class="sub" id="rel-beschrijving"></p>
+
+  <section id="fout-banner"><div class="melding err" id="fout-tekst"></div></section>
+
+  <section id="sec-prefix">
+    <h2>1 · Gedeelde prefix &amp; vingerafdruk</h2>
+    <div id="prefix-info"></div>
+  </section>
+
+  <section id="sec-afleiding">
+    <h2>2 · Gedeelde afleiding (t/m de fork)</h2>
+    <p class="dim">Elke rij is één prefix-reductie, uitgevoerd op de <em>eigen</em> boom van elk lid
+       (reductiemodel: subboom → numeriek blad). De bewerkingen zijn identiek — alleen het
+       ±-teken vóór de wortel verschilt.</p>
+    <div id="afleiding"></div>
+  </section>
+
+  <section id="sec-fork">
+    <h2>3 · Fork — kies een tak <span class="dim">(je doet ze allebei)</span></h2>
+    <div class="knoppen" id="fork-knoppen"></div>
+    <div id="fork-status"></div>
+  </section>
+
+  <section id="sec-tak" style="display:none">
+    <h2>4 · <span id="tak-titel"></span></h2>
+    <div id="tak-ff"></div>
+    <div id="tak-regels"></div>
+    <div class="knoppen">
+      <button id="btn-volgende" class="primair">Voer volgende bewerking uit</button>
+      <button id="btn-wissel" style="display:none">Wissel naar de andere tak</button>
+    </div>
+    <div id="tak-klaar"></div>
+  </section>
+
+  <section id="sec-voltooid" style="display:none">
+    <h2>5 · Relatie voltooid</h2>
+    <div id="voltooid-tekst"></div>
+  </section>
+
+  <p class="dim">Zandbak-PoC · leest <code>matcher.browser.js</code> en <code>mathjs</code> read-only
+     uit <code>../../studenttool/</code> · data uit het gegenereerde <code>data.js</code> ·
+     reductie-helpers gekopieerd uit <code>werkblad.js</code> (herkomst in <code>../reductie_helpers.js</code>).</p>
+</main>
+
+<!-- read-only uit de studenttool; volgorde belangrijk: matcher leest window.math bij laden -->
+<script src="../../studenttool/node_modules/mathjs/lib/browser/math.js"></script>
+<script src="../../studenttool/werkblad/matcher.browser.js"></script>
+<!-- zandbak-bestanden -->
+<script src="data.js"></script>
+<script src="../reductie_helpers.js"></script>
+<script src="poc.js"></script>
+</body>
+</html>
