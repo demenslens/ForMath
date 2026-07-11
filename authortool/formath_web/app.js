@@ -142,6 +142,7 @@ const inspectorState = {
     },
     klasses: {},                    // { mathblock_id: "A1" | "B1" | "B2" }
     wortels: {},                    // { mathblock_id: 1 | 2 } — auteurskeuze aantal wortels op even-√
+    wortelsOrigineel: {},           // opgeslagen baseline voor dirty-detectie van de wortelkeuze
     classificatie: {},              // zie classificatie_schema.json — leeg = ongeclassificeerd
 };
 
@@ -813,6 +814,7 @@ function resetInspector() {
     rv.feedback_aan = true;
     for (const k of Object.keys(inspectorState.klasses)) delete inspectorState.klasses[k];
     for (const k of Object.keys(inspectorState.wortels)) delete inspectorState.wortels[k];
+    for (const k of Object.keys(inspectorState.wortelsOrigineel)) delete inspectorState.wortelsOrigineel[k];
     _updateZusterBar();
     if (rvSimplify) rvSimplify.checked = false;
     // Classificatie resetten (sticky defaults blijven bewaard)
@@ -1524,6 +1526,7 @@ function _renderHintsAccordion() {
                 if (radio.checked) {
                     inspectorState.wortels[meta.id] = parseInt(radio.value, 10);
                     _updateZusterBar();
+                    _updateHintsSavebar();
                 }
             });
         });
@@ -1658,10 +1661,21 @@ function _updateDirtyIndicators(changedMbId) {
     _updateHintsSavebar();
 }
 
+function _wortelkeuzeDirty() {
+    const cur = inspectorState.wortels || {};
+    const orig = inspectorState.wortelsOrigineel || {};
+    const keys = new Set([...Object.keys(cur), ...Object.keys(orig)]);
+    for (const k of keys) {
+        if (Number(cur[k]) !== Number(orig[k])) return true;
+    }
+    return false;
+}
+
 function _updateHintsSavebar() {
     if (!hintsSavebar) return;
     const dirty = _dirtyMbIds();
-    if (dirty.length === 0) {
+    const wortelDirty = _wortelkeuzeDirty();
+    if (dirty.length === 0 && !wortelDirty) {
         hintsSavebar.hidden = true;
         if (btnHintsSave) btnHintsSave.disabled = true;
         return;
@@ -1669,8 +1683,11 @@ function _updateHintsSavebar() {
     hintsSavebar.hidden = false;
     if (btnHintsSave) btnHintsSave.disabled = false;
     if (hintsDirtyCount) {
-        hintsDirtyCount.textContent = dirty.length + ' mathblock' +
-            (dirty.length === 1 ? '' : 's') + ' gewijzigd';
+        const stukjes = [];
+        if (dirty.length) stukjes.push(dirty.length + ' mathblock' +
+            (dirty.length === 1 ? '' : 's') + ' gewijzigd');
+        if (wortelDirty) stukjes.push('wortelkeuze gewijzigd');
+        hintsDirtyCount.textContent = stukjes.join(' + ');
     }
 }
 
@@ -1739,6 +1756,16 @@ async function saveHintsEdits() {
         mb.hints = _cloneHints(edits);
     }
 
+    // Wortelkeuze (aantal_wortels op even-√) in de in-memory JSON bijwerken,
+    // zodat /api/save_hints haar samen met de hints wegschrijft.
+    for (const mb of mbs) {
+        // inspectorState.wortels bevat alleen even-√-blokken (de toggle bestaat
+        // enkel daar), dus dit zet/voegt aantal_wortels uitsluitend daarop.
+        if (mb.operatie && inspectorState.wortels[mb.id] != null) {
+            mb.operatie.aantal_wortels = Number(inspectorState.wortels[mb.id]);
+        }
+    }
+
     // Stuur de bijgewerkte opgave naar de server.
     // Omdat we niet alleen hints-wijzigingen maar ook evt. andere velden
     // hebben, schrijven we de hele JSON opnieuw via een nieuw endpoint.
@@ -1755,7 +1782,7 @@ async function saveHintsEdits() {
         });
         const data = await r.json();
         if (data.success) {
-            setStatus('Hints opgeslagen voor <code class="mono">' +
+            setStatus('Opgeslagen voor <code class="mono">' +
                 escapeHtml(selectedOpgaveId) + '</code>', 'success');
             // Original updaten naar huidige edits (niet meer dirty)
             for (const id of Object.keys(hintsState.edits)) {
@@ -1765,6 +1792,9 @@ async function saveHintsEdits() {
             hintsAccordion.querySelectorAll('.hints-mb').forEach(el => {
                 el.classList.remove('is-dirty');
             });
+            // Wortelkeuze-baseline bijwerken (niet meer dirty) + balk verversen
+            inspectorState.wortelsOrigineel = { ...inspectorState.wortels };
+            _updateZusterBar();
             _updateHintsSavebar();
         } else {
             setStatus('Fout bij opslaan: ' + escapeHtml(data.error || 'onbekend'), 'error');
@@ -1782,7 +1812,12 @@ function discardHintsEdits() {
     for (const id of Object.keys(hintsState.original)) {
         hintsState.edits[id] = _cloneHints(hintsState.original[id]);
     }
+    // Wortelkeuze terug naar de opgeslagen baseline (in-place, referentie behouden)
+    for (const k of Object.keys(inspectorState.wortels)) delete inspectorState.wortels[k];
+    for (const k of Object.keys(inspectorState.wortelsOrigineel))
+        inspectorState.wortels[k] = inspectorState.wortelsOrigineel[k];
     _renderHintsAccordion();
+    _updateZusterBar();
     _updateHintsSavebar();
     setStatus('Wijzigingen ongedaan gemaakt.', 'info');
 }
@@ -2248,6 +2283,7 @@ async function selectOpgave(id, options = {}) {
             if (m.operatie && m.operatie.aantal_wortels != null)
                 inspectorState.wortels[m.id] = m.operatie.aantal_wortels;
         }
+        inspectorState.wortelsOrigineel = { ...inspectorState.wortels };
         _updateZusterBar();
         renderInspectorMathblocks(summary);
         // NIEUW: hints-editor vullen met de echte mathblocks uit de JSON

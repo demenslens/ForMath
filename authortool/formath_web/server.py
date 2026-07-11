@@ -1136,17 +1136,31 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 return
 
             hints_by_id = {}
+            wortels_by_id = {}
             for mb in new_mathblocks:
-                if isinstance(mb, dict) and 'id' in mb and 'hints' in mb:
-                    hints_by_id[mb['id']] = mb['hints']
+                if isinstance(mb, dict) and 'id' in mb:
+                    if 'hints' in mb:
+                        hints_by_id[mb['id']] = mb['hints']
+                    op = mb.get('operatie')
+                    if isinstance(op, dict) and 'aantal_wortels' in op:
+                        wortels_by_id[mb['id']] = op['aantal_wortels']
 
-            # Merge terug in de opgave JSON
+            # Merge terug in de opgave JSON (hints + de wortelkeuze op even-√)
             updated = 0
             for mb in opgave.get('mathblocks', []):
                 mb_id = mb.get('id')
                 if mb_id in hints_by_id:
                     mb['hints'] = hints_by_id[mb_id]
                     updated += 1
+                op = mb.get('operatie')
+                if mb_id in wortels_by_id and isinstance(op, dict):
+                    try:
+                        keuze = int(wortels_by_id[mb_id])
+                    except (TypeError, ValueError):
+                        keuze = None
+                    if keuze in (1, 2):
+                        op['aantal_wortels'] = keuze   # voegt toe of werkt bij
+                        updated += 1
 
             # Schrijf terug
             with open(json_path, 'w', encoding='utf-8') as f:
