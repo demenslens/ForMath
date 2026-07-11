@@ -36,6 +36,7 @@ const hintsPlaceholder = document.getElementById('hints-placeholder');
 const hintsSavebar     = document.getElementById('hints-savebar');
 const hintsDirtyCount  = document.getElementById('hints-dirty-count');
 const btnHintsSave     = document.getElementById('btn-hints-save');
+const zusterBar        = document.getElementById('zuster-bar');
 const hintsSubtitle    = document.getElementById('hints-subtitle');
 const inspectorAside   = document.getElementById('inspector');
 const inspectorRail    = document.getElementById('inspector-rail');
@@ -812,6 +813,7 @@ function resetInspector() {
     rv.feedback_aan = true;
     for (const k of Object.keys(inspectorState.klasses)) delete inspectorState.klasses[k];
     for (const k of Object.keys(inspectorState.wortels)) delete inspectorState.wortels[k];
+    _updateZusterBar();
     if (rvSimplify) rvSimplify.checked = false;
     // Classificatie resetten (sticky defaults blijven bewaard)
     resetClassificatie();
@@ -1519,7 +1521,10 @@ function _renderHintsAccordion() {
         // (persisteert via de export-body, net als 'klasse'; niet via hints-save)
         body.querySelectorAll('.wortelkeuze input[type="radio"]').forEach(radio => {
             radio.addEventListener('change', () => {
-                if (radio.checked) inspectorState.wortels[meta.id] = parseInt(radio.value, 10);
+                if (radio.checked) {
+                    inspectorState.wortels[meta.id] = parseInt(radio.value, 10);
+                    _updateZusterBar();
+                }
             });
         });
     }
@@ -1666,6 +1671,53 @@ function _updateHintsSavebar() {
     if (hintsDirtyCount) {
         hintsDirtyCount.textContent = dirty.length + ' mathblock' +
             (dirty.length === 1 ? '' : 's') + ' gewijzigd';
+    }
+}
+
+/**
+ * Toont de ±-wortel-balk alleen als er een fork (aantal_wortels:2) gekozen is
+ * op een geladen opgave.
+ */
+function _updateZusterBar() {
+    if (!zusterBar) return;
+    const heeftFork = Object.values(inspectorState.wortels).some(v => Number(v) === 2);
+    zusterBar.hidden = !(heeftFork && selectedOpgaveId);
+}
+
+/**
+ * Genereert de −wortel-zuster + vertakking-relatie voor de geladen +wortel-opgave.
+ * Leest de OPGESLAGEN opgave server-side; sla dus eerst op met 2 wortels.
+ */
+async function genereerZuster() {
+    if (!selectedOpgaveId) {
+        setStatus('Geen opgave geladen.', 'error');
+        return;
+    }
+    const btn = document.getElementById('btn-genereer-zuster');
+    if (btn) { btn.disabled = true; btn.textContent = 'Bezig…'; }
+    try {
+        const r = await fetch('/api/genereer_zuster', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selectedOpgaveId }),
+        });
+        const data = await r.json();
+        if (data.success) {
+            setStatus('−wortel-zuster <code class="mono">' + escapeHtml(data.zuster_id) +
+                '</code> + relatie <code class="mono">' + escapeHtml(data.relatie_id) +
+                '</code> gemaakt (vingerafdruk ' + escapeHtml(data.vingerafdruk || '') + ').',
+                'success');
+            await loadOpgavenLijst();
+        } else {
+            let msg = data.error || 'Genereren mislukt.';
+            if (data.relatie_fouten) msg += ' — ' + data.relatie_fouten.join('; ');
+            if (data.integrity_errors) msg += ' — ' + data.integrity_errors.join('; ');
+            setStatus(msg, 'error');
+        }
+    } catch (e) {
+        setStatus('Genereren mislukt: ' + e, 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Genereer −wortel-zuster + relatie'; }
     }
 }
 
@@ -2196,6 +2248,7 @@ async function selectOpgave(id, options = {}) {
             if (m.operatie && m.operatie.aantal_wortels != null)
                 inspectorState.wortels[m.id] = m.operatie.aantal_wortels;
         }
+        _updateZusterBar();
         renderInspectorMathblocks(summary);
         // NIEUW: hints-editor vullen met de echte mathblocks uit de JSON
         renderHintsEditor(mbs);

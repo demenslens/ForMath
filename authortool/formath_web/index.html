@@ -579,6 +579,21 @@
             cursor: pointer;
         }
         .wortelkeuze-opt input { margin: 0; }
+        /* ±-wortel: knop om de tweede wortel + relatie te genereren. */
+        .zuster-bar {
+            margin: 8px 0;
+            padding: 8px 10px;
+            background: #fbf6e8;
+            border: 1px solid #eadcae;
+            border-left: 3px solid #ae7a15;
+            border-radius: 4px;
+        }
+        .zuster-desc {
+            font-size: 11px;
+            color: #6a4807;
+            line-height: 1.35;
+            margin-bottom: 6px;
+        }
         .hints-field {
             margin-bottom: 8px;
         }
@@ -1353,6 +1368,16 @@
                     <button class="btn btn-ghost btn-small"
                             onclick="discardHintsEdits()" type="button">
                         Ongedaan maken
+                    </button>
+                </div>
+
+                <!-- ±-wortel: genereer de tweede wortel + relatie (alleen bij een fork) -->
+                <div class="zuster-bar" id="zuster-bar" hidden>
+                    <div class="zuster-desc">±-fork gekozen. Sla eerst op
+                        (export&nbsp;→&nbsp;overschrijven), genereer dan de −wortel-zuster.</div>
+                    <button class="btn btn-primary btn-small" id="btn-genereer-zuster"
+                            onclick="genereerZuster()" type="button">
+                        Genereer −wortel-zuster + relatie
                     </button>
                 </div>
 
