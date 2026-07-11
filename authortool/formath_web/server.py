@@ -572,6 +572,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             self._handle_delete_opgave()
         elif self.path == '/api/save_hints':
             self._handle_save_hints()
+        elif self.path == '/api/genereer_zuster':
+            self._handle_genereer_zuster()
         elif self.path == '/api/settings':
             self._handle_set_settings()
         # Folder-operaties (sub-ronde C)
@@ -1145,6 +1147,122 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             self._send_json({'success': True, 'updated': updated})
         except Exception as e:
             print(f"[FOUT] save_hints: {e}")
+            traceback.print_exc()
+            self._send_json({'success': False, 'error': str(e)})
+
+    # ── /api/genereer_zuster ──────────────────────────────────────────────────
+    def _handle_genereer_zuster(self):
+        """Genereer de −wortel-zuster + vertakking-relatie voor een +wortel-opgave.
+
+        Body: { id: "opgave_..." } — een opgave met een even-√ waarop de auteur
+        aantal_wortels:2 heeft gezet. De zuster ontstaat door het teken vóór de
+        fork-√ om te klappen en dezelfde pijplijn opnieuw te draaien; de relatie
+        wordt in relaties.json (in de output-root) bijgeschreven. Aparte stap —
+        raakt generate_formath_json niet (zie ONTWERP_relatie §2 / NOTULEN).
+        """
+        try:
+            from json_exporter import OUTPUT_DIR, generate_formath_json
+            from folder_manager import find_opgave_path
+            from json_validator import validate_structure_with_warnings
+            import wortel_zuster as wz
+            import relatie_manager as rm
+
+            content_length = int(self.headers.get('Content-Length', 0))
+            req = json.loads(self.rfile.read(content_length).decode('utf-8'))
+            bron_id = req.get('id', '')
+            if not bron_id:
+                self._send_json({'success': False, 'error': 'Geen id ontvangen'})
+                return
+
+            bron_path = find_opgave_path(bron_id, OUTPUT_DIR)
+            if not bron_path or not os.path.exists(bron_path):
+                self._send_json({'success': False, 'error': 'Opgave niet gevonden: ' + bron_id})
+                return
+            with open(bron_path, 'r', encoding='utf-8') as f:
+                bron = json.load(f)
+
+            # Gate: er moet een even-√ met aantal_wortels:2 zijn (de fork-keuze)
+            try:
+                wz.fork_even_wortel(bron, eis_twee=True)
+            except wz.WortelZusterFout as e:
+                self._send_json({'success': False, 'error': 'Geen ±-fork: %s' % e})
+                return
+
+            # Zuster genereren: teken vóór de fork-√ omklappen + pijplijn opnieuw
+            bron_tekst = bron.get('metadata', {}).get('expressie', {}).get('tekst', '')
+            try:
+                minus_tekst = wz.flip_fork_sign(bron_tekst, 'sqrt')
+            except wz.WortelZusterFout as e:
+                self._send_json({'success': False, 'error': 'Teken-flip faalt: %s' % e})
+                return
+
+            ast = parse_expression(minus_tekst)
+            normalized = normalize_ast(ast)
+            annotated, stats = detect_manifolds(normalized)
+            converted, _ = convert_to_manifolds(annotated, stats)
+            converted, _ = inject_simplify_ops(converted)
+            converted, _ = inject_mixed_number(converted)
+            latex_display = ast_to_latex_display(converted)
+
+            zuster, zuster_path = generate_formath_json(
+                converted, minus_tekst, '', latex_display=latex_display,
+                expression=minus_tekst)
+
+            # Zuster als fork-lid markeren + relevante metadata van de bron erven
+            wz.markeer_fork(zuster, 2)
+            bron_meta = bron.get('metadata', {})
+            for veld in ('randvoorwaarden', 'opdracht', 'soort_opgave', 'productie',
+                         'onderwijstype', 'onderwijsniveau', 'notitie', 'niveau', 'auteur'):
+                if veld in bron_meta:
+                    zuster['metadata'][veld] = bron_meta[veld]
+
+            # Structurele check; bij fouten de zuster weggooien en blokkeren
+            check = validate_structure_with_warnings(zuster)
+            if check['errors']:
+                try:
+                    os.remove(zuster_path)
+                except OSError:
+                    pass
+                self._send_json({'success': False, 'error': 'Zuster-integriteit faalt',
+                                 'integrity_errors': check['errors']})
+                return
+
+            # (Her)schrijf de zuster + SVG (zelfde patroon als export)
+            with open(zuster_path, 'w', encoding='utf-8') as f:
+                json.dump(zuster, f, indent=2, ensure_ascii=False)
+            tree = generate_ast_svg(converted, title=f"AST: {minus_tekst}",
+                                    expression=minus_tekst)
+            ET.indent(tree, space="  ")
+            with open(zuster_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
+                f.write(ET.tostring(tree.getroot(), encoding='unicode'))
+
+            # Relatie bouwen + valideren; pas dán relaties.json bijschrijven
+            relatie = wz.bouw_vertakking_relatie(bron, zuster)
+            opgaven_by_id = {bron['metadata']['id']: bron, zuster['metadata']['id']: zuster}
+            bev = rm.valideer_relatie(relatie, opgaven_by_id)
+            fouten = [b for b in bev if b['ernst'] == 'fout']
+            if fouten:
+                self._send_json({'success': False, 'error': 'Relatie-validatie faalt',
+                                 'relatie_fouten': [b['melding'] for b in fouten]})
+                return
+
+            relaties_pad = os.path.join(OUTPUT_DIR, 'relaties.json')
+            registry = rm.laad_registry(relaties_pad)
+            rm.voeg_relatie_toe(registry, relatie)
+            rm.schrijf_registry(relaties_pad, registry)
+
+            print(f"[ZUSTER] {bron_id} → {zuster['metadata']['id']}, "
+                  f"relatie {relatie['relatie_id']} ({relatie['gedeelde_prefix']['vingerafdruk']})")
+            self._send_json({
+                'success': True,
+                'zuster_id': zuster['metadata']['id'],
+                'zuster_filename': os.path.basename(zuster_path),
+                'relatie_id': relatie['relatie_id'],
+                'vingerafdruk': relatie['gedeelde_prefix']['vingerafdruk'],
+                'waarschuwingen': [b['melding'] for b in bev if b['ernst'] == 'waarschuwing'],
+            })
+        except Exception as e:
+            print(f"[FOUT] genereer_zuster: {e}")
             traceback.print_exc()
             self._send_json({'success': False, 'error': str(e)})
 

@@ -24,7 +24,8 @@ from simplify_injector import inject_simplify_ops
 from mixed_number_injector import inject_mixed_number
 import json_exporter
 import wortel_zuster as wz
-from relatie_manager import valideer_relatie
+from relatie_manager import (valideer_relatie, laad_registry, voeg_relatie_toe,
+                             schrijf_registry)
 
 ABC_PLUS = "(-(-2)+sqrt((-2)^2-4×2×(-12)))/(2×2)"
 VINGERAFDRUK = "sha256:dc401153e70d"
@@ -88,6 +89,21 @@ class TestWortelZuster(unittest.TestCase):
         minus = wz.flip_fork_sign(ABC_PLUS, "sqrt")
         self.assertIn("-sqrt", minus)
         self.assertEqual(wz.flip_fork_sign(minus, "sqrt"), ABC_PLUS)
+
+    def test_registry_schrijven_en_idempotent(self):
+        # De relaties.json-schrijfhelpers die het endpoint gebruikt.
+        bron, zuster = self._maak_paar()
+        rel = wz.bouw_vertakking_relatie(bron, zuster)
+        pad = os.path.join(self._tmp, "relaties.json")
+        reg = laad_registry(pad)                       # bestand bestaat nog niet
+        self.assertEqual(reg["relaties"], [])
+        voeg_relatie_toe(reg, rel)
+        schrijf_registry(pad, reg)
+        reg2 = laad_registry(pad)                       # teruggelezen van schijf
+        self.assertEqual(len(reg2["relaties"]), 1)
+        self.assertEqual(reg2["relaties"][0]["relatie_id"], rel["relatie_id"])
+        voeg_relatie_toe(reg2, rel)                     # zelfde id → vervangt
+        self.assertEqual(len(reg2["relaties"]), 1)
 
 
 if __name__ == "__main__":
