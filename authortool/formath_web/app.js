@@ -140,6 +140,7 @@ const inspectorState = {
         feedback_aan: true,              // 6. Feedback staat aan
     },
     klasses: {},                    // { mathblock_id: "A1" | "B1" | "B2" }
+    wortels: {},                    // { mathblock_id: 1 | 2 } — auteurskeuze aantal wortels op even-√
     classificatie: {},              // zie classificatie_schema.json — leeg = ongeclassificeerd
 };
 
@@ -678,6 +679,7 @@ async function confirmExport() {
                 mathml: '',
                 randvoorwaarden:    inspectorState.randvoorwaarden,
                 mathblock_klasses:  inspectorState.klasses,
+                mathblock_wortels:  inspectorState.wortels,
                 soort_opgave:       currentSoortOpgave,
                 productie:          currentProductie,
                 opdracht:           currentOpdracht,
@@ -809,6 +811,7 @@ function resetInspector() {
     rv.hints_aan = true;
     rv.feedback_aan = true;
     for (const k of Object.keys(inspectorState.klasses)) delete inspectorState.klasses[k];
+    for (const k of Object.keys(inspectorState.wortels)) delete inspectorState.wortels[k];
     if (rvSimplify) rvSimplify.checked = false;
     // Classificatie resetten (sticky defaults blijven bewaard)
     resetClassificatie();
@@ -1414,6 +1417,8 @@ function renderHintsEditor(mathblocks) {
             step: mb.step,
             symbool: (mb.operatie && mb.operatie.symbool) || '?',
             beschrijving: (mb.operatie && mb.operatie.beschrijving) || '',
+            index: (mb.operatie && mb.operatie.index),
+            aantal_wortels: (mb.operatie && mb.operatie.aantal_wortels),
         };
         hintsState.mathblocks.push(meta);
 
@@ -1509,6 +1514,14 @@ function _renderHintsAccordion() {
                 _updateDirtyIndicators(meta.id);
             });
         });
+
+        // Wortelkeuze-radio's → operationele keuze in inspectorState.wortels
+        // (persisteert via de export-body, net als 'klasse'; niet via hints-save)
+        body.querySelectorAll('.wortelkeuze input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                if (radio.checked) inspectorState.wortels[meta.id] = parseInt(radio.value, 10);
+            });
+        });
     }
 }
 
@@ -1531,6 +1544,10 @@ function _renderHintsBody(mbId) {
     };
 
     let html = '';
+
+    // Wortelkeuze — alleen op even-√ (operationele keuze, staat los van de hints)
+    const _meta = hintsState.mathblocks.find(m => m.id === mbId);
+    if (_isEvenWortel(_meta)) html += _renderWortelkeuze(mbId, _meta);
 
     // Type 1 — Structureel
     html += '<div class="hints-group">';
@@ -1559,6 +1576,37 @@ function _renderHintsBody(mbId) {
     html += '</div>';
 
     return html;
+}
+
+// ── Wortelkeuze op even-√ (1 of 2 wortels; ±-vertakking) ────────────────────
+// Even wortels zijn wiskundig ±. De auteur beperkt default tot 1 (+); kiest hij
+// 2, dan ontstaat een ±-vertakking (de −wortel-zuster + relatie worden in een
+// aparte stap gegenereerd). Persistentie volgt het klasse-patroon: de keuze
+// leeft in inspectorState.wortels en reist mee in de export-body.
+function _isEvenWortel(meta) {
+    if (!meta || meta.beschrijving !== 'worteltrekken') return false;
+    const idx = parseInt(meta.index, 10);
+    return Number.isFinite(idx) && idx % 2 === 0;
+}
+
+function _renderWortelkeuze(mbId, meta) {
+    const cur = inspectorState.wortels[mbId] ?? meta.aantal_wortels ?? 1;
+    const name = 'wortelkeuze-' + mbId;
+    return `
+        <div class="hints-group wortelkeuze">
+            <div class="hints-group-title">Wortelkeuze (even wortel)</div>
+            <div class="wortelkeuze-desc">Werk je één (+) of beide (±) wortels uit?
+                Bij 2 ontstaat een ±-vertakking.</div>
+            <label class="wortelkeuze-opt">
+                <input type="radio" name="${escapeHtml(name)}" value="1" ${Number(cur) === 1 ? 'checked' : ''}>
+                <span>1 wortel (+)</span>
+            </label>
+            <label class="wortelkeuze-opt">
+                <input type="radio" name="${escapeHtml(name)}" value="2" ${Number(cur) === 2 ? 'checked' : ''}>
+                <span>2 wortels (+ en −)</span>
+            </label>
+        </div>
+    `;
 }
 
 function _toggleHintsMb(mbId) {
@@ -2140,6 +2188,13 @@ async function selectOpgave(id, options = {}) {
             delete inspectorState.klasses[k];
         for (const m of mbs) {
             if (m.klasse) inspectorState.klasses[m.id] = m.klasse;
+        }
+        // Wortelkeuze (aantal_wortels op even-√) teruglezen uit operatie
+        for (const k of Object.keys(inspectorState.wortels))
+            delete inspectorState.wortels[k];
+        for (const m of mbs) {
+            if (m.operatie && m.operatie.aantal_wortels != null)
+                inspectorState.wortels[m.id] = m.operatie.aantal_wortels;
         }
         renderInspectorMathblocks(summary);
         // NIEUW: hints-editor vullen met de echte mathblocks uit de JSON

@@ -582,11 +582,23 @@ def _get_operation_info(node):
         symbool = "√" if str(idx_val) == "2" else f"√{idx_val}"
         if neg:
             symbool = f"-({symbool})"
-        return OrderedDict([
+        info = OrderedDict([
             ('symbool', symbool),
             ('beschrijving', 'worteltrekken'),
             ('index', idx_val),
         ])
+        # Even wortels zijn wiskundig ± (twee reële wortels); de authortool
+        # beperkt default tot 1 (+). De auteur kan dit per opgave op 2 zetten
+        # (dan ontstaat een ±-vertakking) — die keuze wordt bij export op het
+        # blok gepatcht (zie server.py, mathblock_wortels). Oneven wortels
+        # hebben één reële waarde en krijgen het veld niet.
+        try:
+            is_even = int(idx_val) % 2 == 0
+        except (TypeError, ValueError):
+            is_even = False
+        if is_even:
+            info['aantal_wortels'] = 1
+        return info
 
     elif t == 'MATROESJKA_OP':
         n_shells = node.get('shell_count', len(node.get('shells', [])))

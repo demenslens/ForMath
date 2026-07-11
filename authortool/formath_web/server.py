@@ -721,6 +721,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             overwrite_id       = request_data.get('overwrite_id')    # of None
             randvoorwaarden    = request_data.get('randvoorwaarden', {}) or {}
             mathblock_klasses  = request_data.get('mathblock_klasses', {}) or {}
+            mathblock_wortels  = request_data.get('mathblock_wortels', {}) or {}
             opdracht           = request_data.get('opdracht', '') or ''
             soort_opgave       = request_data.get('soort_opgave', 'rekenen_getallen')
             productie          = request_data.get('productie', 'enkelvoudig')
@@ -788,6 +789,22 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                     mb_id = mb.get('id')
                     if mb_id in mathblock_klasses:
                         mb['klasse'] = mathblock_klasses[mb_id]
+
+            # Auteurskeuze aantal wortels (1 of 2) op even-√-blokken. Volgt het
+            # klasse-patroon: niet uit de expressie afleidbaar, dus los meegestuurd
+            # en hier ná de herbouw op operatie.aantal_wortels gezet. Alleen zinvol
+            # op blokken die dat veld al hebben (even wortels, zie json_exporter).
+            if mathblock_wortels:
+                for mb in result.get('mathblocks', []):
+                    mb_id = mb.get('id')
+                    op = mb.get('operatie')
+                    if mb_id in mathblock_wortels and isinstance(op, dict) and 'aantal_wortels' in op:
+                        try:
+                            keuze = int(mathblock_wortels[mb_id])
+                        except (TypeError, ValueError):
+                            continue
+                        if keuze in (1, 2):
+                            op['aantal_wortels'] = keuze
 
             # ─── Integriteitscheck A (structureel) ──────────────────────────
             # Vóór we de uiteindelijke write doen: valideer de structuur.
