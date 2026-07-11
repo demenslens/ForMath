@@ -545,6 +545,15 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=BASE_DIR, **kwargs)
 
+    def end_headers(self):
+        # De authortool heeft geen cache-buster; zonder dit houdt de browser
+        # een oude app.js/app.css/index.html vast (klik doet dan niets omdat een
+        # nieuwe functie ontbreekt). No-cache op élke respons voorkomt dat.
+        self.send_header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        self.send_header('Pragma', 'no-cache')
+        self.send_header('Expires', '0')
+        super().end_headers()
+
     def do_GET(self):
         # API endpoints via GET
         if self.path == '/api/list_opgaven':
