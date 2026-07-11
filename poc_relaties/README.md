@@ -22,6 +22,10 @@ er ook maar iets aan de live-tools verandert.
    → één fork, zonder DAG".
 3. **Matcher-over-varianten** (headless): replay geaccepteerde regels tegen een
    variant; laat zien dat de ongewijzigde `checkStep` 'm accepteert.
+4. **±-wortel-zuster automatisch genereren** (`genereer_zuster.py`): gegeven een
+   +wortel-opgave met een even-wortel-fork, reproduceert de LIVE authortool-
+   pijplijn (teken omklappen + opnieuw draaien) de −wortel-zuster exact, en bouwt +
+   valideert de vertakking-relatie. Getoetst tegen de hand-gemaakte 709-002 als oracle.
 
 ## Structuur
 
@@ -34,6 +38,7 @@ poc_relaties/
 │   ├── opgave_20260510_002.json      (voor de matcher-over-varianten-meting)
 │   └── relaties.json                  (abc_709; vingerafdruk gevuld door relatie_manager.py)
 ├── relatie_manager.py       ← vingerafdruk (§2.2) + validatie (§1.2) + CLI; genereert ui/data.js
+├── genereer_zuster.py       ← ±-wortel-zuster + relatie genereren via de LIVE pijplijn (read-only)
 ├── reductie_helpers.js      ← kopieën/adaptaties uit werkblad.js (herkomst per functie in de kop)
 ├── harness.js               ← Node: de drie bewijzen op de ECHTE matcher (vm-patroon)
 └── ui/
@@ -46,6 +51,7 @@ poc_relaties/
 ```
 cd poc_relaties
 python3 relatie_manager.py data/     # vult vingerafdruk, valideert, genereert ui/data.js
+python3 genereer_zuster.py           # ±-wortel-zuster + relatie genereren + toetsen (exit 0 = groen)
 node harness.js                      # de drie bewijzen (exit 0 = groen)
 open ui/index.html                   # fork-demo; file:// volstaat meestal
 ```
