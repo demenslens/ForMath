@@ -698,12 +698,23 @@ async function confirmExport() {
         closeExportDialog();
 
         if (data.success) {
-            const action = overwriteId ? 'bijgewerkt' : 'opgeslagen';
-            setStatus(
-                'JSON ' + action + ': <code class="mono">' +
-                escapeHtml(data.filename) + '</code>',
-                'success'
-            );
+            if (data.fork) {
+                const u = data.uitkomsten || {};
+                setStatus(
+                    '±-fork opgeslagen: trunk <code class="mono">' + escapeHtml(data.trunk_id) +
+                    '</code> + takken <code class="mono">' + escapeHtml((data.tak_ids || []).join(', ')) +
+                    '</code> (+wortel ' + escapeHtml(String(u['+wortel'] ?? '')) +
+                    ', −wortel ' + escapeHtml(String(u['-wortel'] ?? '')) + ')',
+                    'success'
+                );
+            } else {
+                const action = overwriteId ? 'bijgewerkt' : 'opgeslagen';
+                setStatus(
+                    'JSON ' + action + ': <code class="mono">' +
+                    escapeHtml(data.filename) + '</code>',
+                    'success'
+                );
+            }
             // Integriteit-waarschuwingen (niet-blokkerend) tonen in een
             // status-bericht eronder. Deze dingen zijn niet kritiek maar
             // de gebruiker moet ze wel zien.
@@ -723,7 +734,7 @@ async function confirmExport() {
             // Bepaal het ID dat we straks willen selecteren
             // - bij overwrite: het bestaande ID
             // - bij nieuw: ID afgeleid uit de server-response (filename zonder .json)
-            let targetId = overwriteId;
+            let targetId = data.fork ? data.trunk_id : overwriteId;
             if (!targetId && data.filename) {
                 targetId = data.filename.replace(/\.json$/i, '');
             }
