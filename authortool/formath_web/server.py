@@ -633,6 +633,11 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
             # Stap 1: LaTeX → platte expressie
             expression = latex_to_expression(latex)
+            # ±-fork: preview alleen de +wortel-tak (bij export ontstaan 3 opgaven).
+            # De export gebruikt de originele latex (met ±) en splitst dan echt.
+            is_fork = '±' in expression
+            if is_fork:
+                expression = expression.replace('±', '+')
             print(f"[CONV]  Expressie: {expression}")
 
             # Stap 2: Parse → AST
@@ -703,6 +708,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
             self._send_json({
                 'success': True,
+                'fork': is_fork,
                 'svg': svg,
                 'ast': clean_ast,
                 'data': {

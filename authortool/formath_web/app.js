@@ -516,6 +516,12 @@ async function processExpression() {
         infoLatex.textContent = latexDisplay;
         pipelineInfo.hidden = false;
 
+        // ±-fork: de preview toont maar één tak; bij export ontstaan 3 opgaven.
+        if (data.fork) {
+            setStatus('±-fork herkend — preview toont de +wortel-tak. Bij export ' +
+                'ontstaan 3 opgaven (trunk + +wortel + −wortel).', 'info');
+        }
+
         // Header meta: mathblocks + steps (best-effort uit AST data)
         updateHeaderMeta(data);
 
