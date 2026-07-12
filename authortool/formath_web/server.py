@@ -1000,8 +1000,12 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             json_path = os.path.join(write_dir, 'opgave_%s.json' % basis_id)
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(opgave, f, indent=2, ensure_ascii=False)
-            # SVG uit de √-subexpressie (A1–A4). Het ±√-symbool op A4 is een
-            # kleine render-verfijning (volgt).
+            # SVG uit de √-subexpressie (A1–A4). Markeer de fork-√ zodat hij als
+            # ±-wortel (±^1/2) getekend wordt.
+            try:
+                pm_fork.vind_wortel(conv)['aantal_wortels'] = 2
+            except ValueError:
+                pass
             tree = generate_ast_svg(conv, title=f"AST: {wortel}", expression=wortel)
             ET.indent(tree, space="  ")
             with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:

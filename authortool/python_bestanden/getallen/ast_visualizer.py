@@ -78,7 +78,9 @@ def node_label(node):
     if t == "ROOT":
         idx = node.get("index", {}).get("value", 2)
         # Toon als "^1/2", "^1/3", "^1/4", etc. — exponent-notatie van wortel.
-        return f"^1/{idx}"
+        # Bij een ±-fork (even wortel, aantal_wortels:2) een ± ervoor.
+        pm = "±" if node.get("aantal_wortels") == 2 else ""
+        return f"{pm}^1/{idx}"
     if t == "UNARY_OP":
         op = node.get("operator", "?")
         return f"-{op}" if neg else op
