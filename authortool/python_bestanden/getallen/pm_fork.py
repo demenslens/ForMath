@@ -105,3 +105,76 @@ def vervang_wortel(ast_dict, waarde):
         return n
 
     return loop(ast_dict)
+
+
+# ── Assemblage: één ±-expressie → drie opgaven (trunk + twee takken) ─────────
+
+def _root_output(opgave):
+    """De output van het root-mathblock (het blok dat geen ander als input heeft)."""
+    gebruikt = set()
+    for mb in opgave.get('mathblocks', []):
+        for i in mb.get('input', []):
+            if i.get('type') == 'mathblock':
+                gebruikt.add(i.get('id'))
+    roots = [mb for mb in opgave['mathblocks'] if mb['id'] not in gebruikt]
+    return max(roots, key=lambda m: m['step'])['output']
+
+
+def wortel_na_pm(expr):
+    """Het 'sqrt(...)'-deel direct ná de ± (MVP: precies één ±, direct gevolgd
+    door sqrt(...)). Retourneert de substring incl. gebalanceerde haakjes."""
+    i = expr.find('±')
+    if i < 0:
+        raise ValueError('geen ± in expressie: %r' % expr)
+    if expr[i + 1:i + 6] != 'sqrt(':
+        raise ValueError('MVP: ± moet direct door sqrt( gevolgd worden: %r' % expr)
+    depth, k = 0, i + 1 + len('sqrt')   # k op de '(' van sqrt(
+    while k < len(expr):
+        if expr[k] == '(':
+            depth += 1
+        elif expr[k] == ')':
+            depth -= 1
+            if depth == 0:
+                break
+        k += 1
+    if depth != 0:
+        raise ValueError('ongebalanceerde haakjes na sqrt in %r' % expr)
+    return expr[i + 1:k + 1]            # 'sqrt(...)'
+
+
+def bouw_fork_opgaven(expr, run_pipeline, basis_id):
+    """Bouw uit een ±-expressie drie opgave-dicts: trunk + twee takken.
+
+    - run_pipeline(expr_str) -> opgave_dict (parse → pijplijn → generate_formath_json).
+    - basis_id = het id van de trunk (X); takken krijgen X+'a' / X+'b'.
+
+    De trunk rekent √D uit (de sqrt-subexpressie). De takken nemen √D als gewone
+    externe waarde (het door de trunk uitgerekende getal), met + resp. − teken. De
+    trunk krijgt een 'fork'-blok met verwijzingen; de takken een 'fork_ouder'.
+    """
+    wortel = wortel_na_pm(expr)
+
+    trunk = run_pipeline(wortel)                       # √D-subexpressie
+    wortelD = _root_output(trunk)                      # bv. '10'
+
+    tak_a = run_pipeline(expr.replace('±' + wortel, '+' + wortelD))
+    tak_b = run_pipeline(expr.replace('±' + wortel, '-' + wortelD))
+
+    id_a, id_b = basis_id + 'a', basis_id + 'b'
+    trunk['metadata']['id'] = basis_id
+    tak_a['metadata']['id'] = id_a
+    tak_b['metadata']['id'] = id_b
+
+    trunk['fork'] = {
+        'operator': '±',
+        'volledige_expressie': expr,
+        'rest_expressie': expr.replace(wortel, wortelD),   # (-(-2)±10):(2×2)
+        'takken': [
+            {'rol': '+wortel', 'teken': '+', 'opgave': 'opgave_' + id_a},
+            {'rol': '-wortel', 'teken': '-', 'opgave': 'opgave_' + id_b},
+        ],
+    }
+    tak_a['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '+wortel', 'teken': '+'}
+    tak_b['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '-wortel', 'teken': '-'}
+
+    return {'trunk': trunk, 'tak_a': tak_a, 'tak_b': tak_b}

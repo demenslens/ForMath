@@ -25,6 +25,17 @@ import pm_fork
 ABC_PM = '(-(-2)±sqrt((-2)^2-4×2×(-12)))/(2×2)'
 
 
+def _pipeline(expr):
+    """Draai de pijplijn op een expressie-string → opgave-dict."""
+    normalized = normalize_ast(parse_expression(expr))
+    annotated, stats = detect_manifolds(normalized)
+    converted, _ = convert_to_manifolds(annotated, stats)
+    converted, _ = inject_simplify_ops(converted)
+    converted, _ = inject_mixed_number(converted)
+    result, _ = json_exporter.generate_formath_json(converted, expr, '', expression=expr)
+    return result
+
+
 def _pipeline_root(ast_dict, expr):
     """Draai de pijplijn op een AST-dict en geef de output van het root-mathblock."""
     normalized = normalize_ast(ast_dict)
@@ -33,13 +44,7 @@ def _pipeline_root(ast_dict, expr):
     converted, _ = inject_simplify_ops(converted)
     converted, _ = inject_mixed_number(converted)
     result, _ = json_exporter.generate_formath_json(converted, expr, '', expression=expr)
-    gebruikt = set()
-    for mb in result['mathblocks']:
-        for i in mb['input']:
-            if i.get('type') == 'mathblock':
-                gebruikt.add(i['id'])
-    roots = [mb for mb in result['mathblocks'] if mb['id'] not in gebruikt]
-    return max(roots, key=lambda m: m['step'])['output']
+    return pm_fork._root_output(result)
 
 
 class TestPmFork(unittest.TestCase):
@@ -81,6 +86,27 @@ class TestPmFork(unittest.TestCase):
         tak_min = pm_fork.vervang_wortel(min_ast, int(wortelD))
         self.assertEqual(_pipeline_root(tak_plus, '(-(-2)+10):(2×2)'), '3')
         self.assertEqual(_pipeline_root(tak_min, '(-(-2)-10):(2×2)'), '-2')
+
+    def test_bouw_fork_opgaven(self):
+        drie = pm_fork.bouw_fork_opgaven(ABC_PM, _pipeline, '20260712_001')
+        trunk, a, b = drie['trunk'], drie['tak_a'], drie['tak_b']
+        # id's
+        self.assertEqual(trunk['metadata']['id'], '20260712_001')
+        self.assertEqual(a['metadata']['id'], '20260712_001a')
+        self.assertEqual(b['metadata']['id'], '20260712_001b')
+        # uitkomsten
+        self.assertEqual(pm_fork._root_output(trunk), '10')
+        self.assertEqual(pm_fork._root_output(a), '3')
+        self.assertEqual(pm_fork._root_output(b), '-2')
+        # fork-verwijzing in de trunk + back-refs in de takken
+        fk = trunk['fork']
+        self.assertEqual(fk['operator'], '±')
+        self.assertEqual(fk['volledige_expressie'], ABC_PM)
+        self.assertEqual([t['opgave'] for t in fk['takken']],
+                         ['opgave_20260712_001a', 'opgave_20260712_001b'])
+        self.assertEqual(a['fork_ouder']['opgave'], 'opgave_20260712_001')
+        self.assertEqual(a['fork_ouder']['teken'], '+')
+        self.assertEqual(b['fork_ouder']['teken'], '-')
 
 
 if __name__ == '__main__':
