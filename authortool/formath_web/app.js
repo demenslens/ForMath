@@ -707,9 +707,9 @@ async function confirmExport() {
             if (data.fork) {
                 const u = data.uitkomsten || {};
                 setStatus(
-                    '±-fork opgeslagen: trunk <code class="mono">' + escapeHtml(data.trunk_id) +
-                    '</code> + takken <code class="mono">' + escapeHtml((data.tak_ids || []).join(', ')) +
-                    '</code> (+wortel ' + escapeHtml(String(u['+wortel'] ?? '')) +
+                    '±-opgave <code class="mono">' + escapeHtml(data.opgave_id || data.trunk_id) +
+                    '</code> opgeslagen — ' + escapeHtml(data.oplossingsverzameling || '') +
+                    ' (+wortel ' + escapeHtml(String(u['+wortel'] ?? '')) +
                     ', −wortel ' + escapeHtml(String(u['-wortel'] ?? '')) + ')',
                     'success'
                 );

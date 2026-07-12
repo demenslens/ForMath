@@ -207,6 +207,39 @@ def bouw_fork_opgaven(expr, run_pipeline, basis_id):
     return {'trunk': trunk, 'tak_a': tak_a, 'tak_b': tak_b}
 
 
+def maak_pm_opgave(opgave, full_expr, latex_display, wortel, wortelD,
+                   a_expr, a_uit, b_expr, b_uit):
+    """Verbouw de √-subexpressie-opgave (A1–A4, A4=√/√D) tot de ±-opgave.
+
+    - A4 wordt een ±-worteltrekken-mathblock (aantal_wortels:2, output ±√D).
+    - de expressie (mathfield) wordt de volledige abc.
+    - er komt een 'splitsing'-sectie: ná A4 biedt de studenttool de twee takken
+      (+/− √D) als losse regels aan, met kant-en-klare expressies + uitkomsten.
+
+    Eén opgave, één id — geen sub-opgaven. Zie ONTWERP_pm_wortel_fork.md.
+    """
+    wb = _wortelblok(opgave)
+    if wb is None:
+        raise ValueError('geen √-blok in de opgave — kan geen ±-opgave maken')
+    idx = str(wb['operatie'].get('index', 2))
+    wb['operatie']['symbool'] = '±√' if idx == '2' else '±√' + idx
+    wb['operatie']['aantal_wortels'] = 2
+    wb['output'] = '±' + wortelD
+    exp = opgave['metadata']['expressie']
+    exp['tekst'] = full_expr
+    exp['latex_display'] = latex_display
+    opgave['splitsing'] = {
+        'na_mathblock': wb['id'],
+        'rest_expressie': full_expr.replace(wortel, wortelD),
+        'takken': [
+            {'teken': '+', 'expressie': a_expr, 'uitkomst': a_uit},
+            {'teken': '-', 'expressie': b_expr, 'uitkomst': b_uit},
+        ],
+        'oplossingsverzameling': 'S = {%s, %s}' % (a_uit, b_uit),
+    }
+    return opgave
+
+
 def bouw_parent_overzicht(sub_a, sub_b, basis_id, tekst, latex_display):
     """Bouw de parent-overzicht-opgave uit de twee volledige takken.
 

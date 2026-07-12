@@ -108,6 +108,24 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(a['fork_ouder']['teken'], '+')
         self.assertEqual(b['fork_ouder']['teken'], '-')
 
+    def test_pm_opgave_een_id_met_splitsing(self):
+        # Eén opgave: de √-subexpressie (A1-A4) → ±-opgave met splitsing.
+        basis = _pipeline('sqrt((-2)^2-4×2×(-12))')
+        self.assertEqual(pm_fork._root_output(basis), '10')
+        pm_fork.maak_pm_opgave(
+            basis, ABC_PM, ABC_PM, 'sqrt((-2)^2-4×2×(-12))', '10',
+            '(-(-2)+10):(2×2)', '3', '(-(-2)-10):(2×2)', '-2')
+        a4 = pm_fork._wortelblok(basis)
+        self.assertEqual(a4['operatie']['symbool'], '±√')
+        self.assertEqual(a4['operatie']['aantal_wortels'], 2)
+        self.assertEqual(a4['output'], '±10')
+        self.assertEqual(basis['metadata']['expressie']['tekst'], ABC_PM)
+        spl = basis['splitsing']
+        self.assertEqual(spl['na_mathblock'], a4['id'])
+        self.assertEqual(spl['oplossingsverzameling'], 'S = {3, -2}')
+        self.assertEqual([t['uitkomst'] for t in spl['takken']], ['3', '-2'])
+        self.assertEqual([t['teken'] for t in spl['takken']], ['+', '-'])
+
     def test_volledige_takken_en_parent_overzicht(self):
         # Subs = volledige takken (elk mét de √) → 3 en −2.
         plus = _pipeline(ABC_PM.replace('±', '+'))

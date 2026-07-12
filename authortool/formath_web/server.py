@@ -965,74 +965,57 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                     expression=expr, schrijf=False)
                 return converted, result
 
-            # Volledige takken: elk mét de √ (de wortel wordt in de subs uitgerekend).
-            conv_a, sub_a = pijplijn(expression.replace('±', '+'))
-            conv_b, sub_b = pijplijn(expression.replace('±', '-'))
-
-            basis_id = _generate_id()
-            id_a, id_b = basis_id + '_a', basis_id + '_b'
-            sub_a['metadata']['id'] = id_a
-            sub_b['metadata']['id'] = id_b
-            sub_a['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '+wortel', 'teken': '+'}
-            sub_b['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '-wortel', 'teken': '-'}
-
-            # Parent-overzicht (A6=S={..}, A5, B5, A4=± → subs). Mathfield = volledige abc.
-            latex = request_data.get('latex', '') or expression
+            # Eén opgave. De √-subexpressie → basis (A1–A4, A4=√/√D); daarop
+            # bouwen we de ±-opgave: A4 → ±√ (aantal_wortels:2) + een 'splitsing'
+            # die de studenttool ná A4 als twee regels aanbiedt.
             try:
-                parent = pm_fork.bouw_parent_overzicht(sub_a, sub_b, basis_id, expression, latex)
+                wortel = pm_fork.wortel_na_pm(expression)
             except ValueError as e:
                 self._send_json({'success': False, 'error': '±-fork: %s' % e})
                 return
+            conv, opgave = pijplijn(wortel)
+            wortelD = pm_fork._root_output(opgave)              # bv. '10'
+            a_expr, b_expr = pm_fork.tak_expressies(expression, wortel, wortelD)
+            _ca, tak_a = pijplijn(a_expr)
+            _cb, tak_b = pijplijn(b_expr)
+            a_uit = pm_fork._root_output(tak_a)                 # '3'
+            b_uit = pm_fork._root_output(tak_b)                 # '-2'
 
-            for opgave in (parent, sub_a, sub_b):
-                m = opgave['metadata']
-                m['randvoorwaarden'] = randvoorwaarden
-                m['opdracht'] = opdracht
-                m['soort_opgave'] = soort_opgave
-                m['productie'] = productie
-                m['onderwijstype'] = onderwijstype
-                m['onderwijsniveau'] = onderwijsniveau
-                m['notitie'] = notitie
+            latex = request_data.get('latex', '') or expression
+            pm_fork.maak_pm_opgave(opgave, expression, latex, wortel, wortelD,
+                                   a_expr, a_uit, b_expr, b_uit)
 
-            # Structurele check alleen op de subs (gewone reduceerbare opgaven); de
-            # parent is een overzicht en gaat bewust niet door CHECK-5.
-            for opgave in (sub_a, sub_b):
-                check = validate_structure_with_warnings(opgave)
-                if check['errors']:
-                    self._send_json({
-                        'success': False,
-                        'error': '±-fork integriteit faalt voor %s' % opgave['metadata']['id'],
-                        'integrity_errors': check['errors'],
-                    })
-                    return
+            basis_id = _generate_id()
+            opgave['metadata']['id'] = basis_id
+            m = opgave['metadata']
+            m['randvoorwaarden'] = randvoorwaarden
+            m['opdracht'] = opdracht
+            m['soort_opgave'] = soort_opgave
+            m['productie'] = productie
+            m['onderwijstype'] = onderwijstype
+            m['onderwijsniveau'] = onderwijsniveau
+            m['notitie'] = notitie
 
             write_dir = _current_write_dir()
-            # Subs: JSON + SVG (gewone opgaven).
-            for opgave, conv, _expr in ((sub_a, conv_a, expression.replace('±', '+')),
-                                        (sub_b, conv_b, expression.replace('±', '-'))):
-                oid = opgave['metadata']['id']
-                json_path = os.path.join(write_dir, 'opgave_%s.json' % oid)
-                with open(json_path, 'w', encoding='utf-8') as f:
-                    json.dump(opgave, f, indent=2, ensure_ascii=False)
-                tree = generate_ast_svg(conv, title=f"AST: {_expr}", expression=_expr)
-                ET.indent(tree, space="  ")
-                with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
-                    f.write(ET.tostring(tree.getroot(), encoding='unicode'))
-            # Parent: alleen JSON (de overzicht-SVG met het ±-blok volgt in stap 5).
-            with open(os.path.join(write_dir, 'opgave_%s.json' % basis_id), 'w', encoding='utf-8') as f:
-                json.dump(parent, f, indent=2, ensure_ascii=False)
+            json_path = os.path.join(write_dir, 'opgave_%s.json' % basis_id)
+            with open(json_path, 'w', encoding='utf-8') as f:
+                json.dump(opgave, f, indent=2, ensure_ascii=False)
+            # SVG uit de √-subexpressie (A1–A4). Het ±√-symbool op A4 is een
+            # kleine render-verfijning (volgt).
+            tree = generate_ast_svg(conv, title=f"AST: {wortel}", expression=wortel)
+            ET.indent(tree, space="  ")
+            with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
+                f.write(ET.tostring(tree.getroot(), encoding='unicode'))
 
-            print(f"[±-FORK] {expression} → parent {basis_id} + takken {id_a}/{id_b}")
+            print(f"[±-FORK] {expression} → opgave {basis_id} "
+                  f"(splitsing → {a_uit} / {b_uit})")
             self._send_json({
                 'success': True,
                 'fork': True,
+                'opgave_id': basis_id,
                 'trunk_id': basis_id,
-                'tak_ids': [id_a, id_b],
-                'uitkomsten': {
-                    'S': parent['fork']['oplossingsverzameling'],
-                    '+wortel': pm_fork._root_output(sub_a),
-                    '-wortel': pm_fork._root_output(sub_b),
-                },
+                'oplossingsverzameling': opgave['splitsing']['oplossingsverzameling'],
+                'uitkomsten': {'+wortel': a_uit, '-wortel': b_uit},
             })
         except Exception as e:
             print(f"[FOUT] ±-fork export: {e}")
