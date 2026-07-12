@@ -92,8 +92,8 @@ class TestPmFork(unittest.TestCase):
         trunk, a, b = drie['trunk'], drie['tak_a'], drie['tak_b']
         # id's
         self.assertEqual(trunk['metadata']['id'], '20260712_001')
-        self.assertEqual(a['metadata']['id'], '20260712_001a')
-        self.assertEqual(b['metadata']['id'], '20260712_001b')
+        self.assertEqual(a['metadata']['id'], '20260712_001_a')
+        self.assertEqual(b['metadata']['id'], '20260712_001_b')
         # uitkomsten
         self.assertEqual(pm_fork._root_output(trunk), '10')
         self.assertEqual(pm_fork._root_output(a), '3')
@@ -103,7 +103,7 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(fk['operator'], '±')
         self.assertEqual(fk['volledige_expressie'], ABC_PM)
         self.assertEqual([t['opgave'] for t in fk['takken']],
-                         ['opgave_20260712_001a', 'opgave_20260712_001b'])
+                         ['opgave_20260712_001_a', 'opgave_20260712_001_b'])
         self.assertEqual(a['fork_ouder']['opgave'], 'opgave_20260712_001')
         self.assertEqual(a['fork_ouder']['teken'], '+')
         self.assertEqual(b['fork_ouder']['teken'], '-')

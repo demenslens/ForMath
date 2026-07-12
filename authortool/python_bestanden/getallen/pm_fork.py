@@ -154,7 +154,7 @@ def voeg_fork_refs_toe(trunk, tak_a, tak_b, basis_id, expr, wortel, wortelD):
     Trunk krijgt een 'fork'-blok (operator, volledige/rest-expressie, tak-refs);
     elke tak een 'fork_ouder'. Retourneert (id_a, id_b) voor het gemak.
     """
-    id_a, id_b = basis_id + 'a', basis_id + 'b'
+    id_a, id_b = basis_id + '_a', basis_id + '_b'
     trunk['metadata']['id'] = basis_id
     tak_a['metadata']['id'] = id_a
     tak_b['metadata']['id'] = id_b
