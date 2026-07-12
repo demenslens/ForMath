@@ -84,6 +84,11 @@ def latex_to_expression(latex: str) -> str:
     """
     s = latex
 
+    # ── Stap 0: ± (plus/min) → de ±-fork ──
+    # Vroeg omzetten, vóór \sqrt: anders plakt '\pm\sqrt' aan elkaar tot
+    # '\pmsqrt' en mist de vervanging. De lookahead spaart \pmod e.d.
+    s = re.sub(r'\\pm(?![a-zA-Z])', '±', s)
+
     # ── Stap 1: \frac{a}{b} → breuk of deling ──
     # Herhaal tot er geen \frac meer in de string zit. Elke iteratie
     # vervangt één \frac, dus dit eindigt na precies n iteraties voor n
@@ -750,6 +755,13 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             # Pipeline (zelfde toelichting als in _handle_process: voor nu
             # gebruiken alle soorten dezelfde pipeline-modules)
             expression = latex_to_expression(latex)
+
+            # ±-fork: de auteur typte een ±-teken → produceer een trunk + twee
+            # takken (drie JSON's) i.p.v. één opgave (zie ONTWERP_pm_wortel_fork.md).
+            if '±' in expression:
+                self._handle_export_fork(expression, request_data)
+                return
+
             ast = parse_expression(expression)
             normalized = normalize_ast(ast)
             annotated, detection_stats = detect_manifolds(normalized)
@@ -908,6 +920,111 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
         except Exception as e:
             print(f"[FOUT] JSON export: {e}")
+            traceback.print_exc()
+            self._send_json({'success': False, 'error': str(e)})
+
+    # ── ±-fork export (drie JSON's: trunk + twee takken) ──────────────────────
+    def _handle_export_fork(self, expression, request_data):
+        """Produceer uit een ±-expressie een trunk + twee takken (drie JSON's).
+
+        De trunk rekent √D uit; de takken nemen √D als externe waarde (+/−). Zie
+        ONTWERP_pm_wortel_fork.md. Wordt aangeroepen vanuit _handle_export_json
+        zodra '±' in de (naar tekst omgezette) expressie zit.
+        """
+        try:
+            import pm_fork
+            from json_exporter import (generate_formath_json, _current_write_dir,
+                                        _generate_id)
+            from json_validator import validate_structure_with_warnings
+
+            expression = expression.replace(' ', '')  # ± sqrt → ±sqrt
+
+            randvoorwaarden = request_data.get('randvoorwaarden', {}) or {}
+            opdracht        = request_data.get('opdracht', '') or ''
+            soort_opgave    = request_data.get('soort_opgave', 'rekenen_getallen')
+            productie       = request_data.get('productie', 'enkelvoudig')
+            onderwijstype   = request_data.get('onderwijstype', '') or ''
+            onderwijsniveau = request_data.get('onderwijsniveau', '') or ''
+            notitie         = request_data.get('notitie', '') or ''
+
+            def pijplijn(expr):
+                normalized = normalize_ast(parse_expression(expr))
+                annotated, stats = detect_manifolds(normalized)
+                converted, _ = convert_to_manifolds(annotated, stats)
+                converted, _ = inject_simplify_ops(converted)
+                converted, _ = inject_mixed_number(converted)
+                latex_display = ast_to_latex_display(converted)
+                result, _ = generate_formath_json(
+                    converted, expr, '', latex_display=latex_display,
+                    expression=expr, schrijf=False)
+                return converted, result
+
+            try:
+                wortel = pm_fork.wortel_na_pm(expression)
+            except ValueError as e:
+                self._send_json({'success': False, 'error': '±-fork: %s' % e})
+                return
+
+            conv_t, trunk = pijplijn(wortel)                 # trunk = √D
+            wortelD = pm_fork._root_output(trunk)
+            a_expr, b_expr = pm_fork.tak_expressies(expression, wortel, wortelD)
+            conv_a, tak_a = pijplijn(a_expr)
+            conv_b, tak_b = pijplijn(b_expr)
+
+            basis_id = _generate_id()
+            pm_fork.voeg_fork_refs_toe(trunk, tak_a, tak_b, basis_id,
+                                       expression, wortel, wortelD)
+
+            # Auteur-metadata op alle drie (de trunk draagt de opgave, de takken
+            # zijn siblings die dezelfde randvoorwaarden nodig hebben).
+            for opgave in (trunk, tak_a, tak_b):
+                m = opgave['metadata']
+                m['randvoorwaarden'] = randvoorwaarden
+                m['opdracht'] = opdracht
+                m['soort_opgave'] = soort_opgave
+                m['productie'] = productie
+                m['onderwijstype'] = onderwijstype
+                m['onderwijsniveau'] = onderwijsniveau
+                m['notitie'] = notitie
+
+            for opgave in (trunk, tak_a, tak_b):
+                check = validate_structure_with_warnings(opgave)
+                if check['errors']:
+                    self._send_json({
+                        'success': False,
+                        'error': '±-fork integriteit faalt voor %s' % opgave['metadata']['id'],
+                        'integrity_errors': check['errors'],
+                    })
+                    return
+
+            write_dir = _current_write_dir()
+            for opgave, conv, _expr in ((trunk, conv_t, wortel),
+                                        (tak_a, conv_a, a_expr),
+                                        (tak_b, conv_b, b_expr)):
+                oid = opgave['metadata']['id']
+                json_path = os.path.join(write_dir, 'opgave_%s.json' % oid)
+                with open(json_path, 'w', encoding='utf-8') as f:
+                    json.dump(opgave, f, indent=2, ensure_ascii=False)
+                tree = generate_ast_svg(conv, title=f"AST: {_expr}", expression=_expr)
+                ET.indent(tree, space="  ")
+                with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
+                    f.write(ET.tostring(tree.getroot(), encoding='unicode'))
+
+            print(f"[±-FORK] {expression} → trunk {trunk['metadata']['id']} "
+                  f"+ takken {tak_a['metadata']['id']}/{tak_b['metadata']['id']}")
+            self._send_json({
+                'success': True,
+                'fork': True,
+                'trunk_id': trunk['metadata']['id'],
+                'tak_ids': [tak_a['metadata']['id'], tak_b['metadata']['id']],
+                'uitkomsten': {
+                    'trunk': wortelD,
+                    '+wortel': pm_fork._root_output(tak_a),
+                    '-wortel': pm_fork._root_output(tak_b),
+                },
+            })
+        except Exception as e:
+            print(f"[FOUT] ±-fork export: {e}")
             traceback.print_exc()
             self._send_json({'success': False, 'error': str(e)})
 

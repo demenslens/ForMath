@@ -361,7 +361,7 @@ def _eindverwerking_info(val):
 # ─── Hoofd-functie ──────────────────────────────────────────────────────────
 
 def generate_formath_json(converted_ast, latex, mathml='',
-                          latex_display=None, expression=None):
+                          latex_display=None, expression=None, schrijf=True):
     """
     Genereer uitgebreide forMath JSON en sla op in OUTPUT_DIR.
 
@@ -466,11 +466,16 @@ def generate_formath_json(converted_ast, latex, mathml='',
     except Exception as _e:
         print(f"⚠️  EXPORT-CHECK kon niet draaien voor {opgave_id}: {_e}")
 
-    # Opslaan (in de write_dir, niet in de root output_dir)
+    # Opslaan (in de write_dir, niet in de root output_dir). Bij schrijf=False
+    # (bv. de ±-fork, die zelf 3 bestanden met eigen namen wegschrijft) slaan we
+    # hier niets op en geven filepath=None terug.
     filename = f"opgave_{opgave_id}.json"
     filepath = os.path.join(write_dir, filename)
-    with open(filepath, 'w', encoding='utf-8') as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
+    if schrijf:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(result, f, indent=2, ensure_ascii=False)
+    else:
+        filepath = None
 
     return result, filepath
 

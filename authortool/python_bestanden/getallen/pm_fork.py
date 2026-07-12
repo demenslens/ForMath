@@ -142,29 +142,22 @@ def wortel_na_pm(expr):
     return expr[i + 1:k + 1]            # 'sqrt(...)'
 
 
-def bouw_fork_opgaven(expr, run_pipeline, basis_id):
-    """Bouw uit een ±-expressie drie opgave-dicts: trunk + twee takken.
+def tak_expressies(expr, wortel, wortelD):
+    """De +tak- en −tak-expressie: ±sqrt(...) → '+'/'-' de √D-waarde."""
+    return (expr.replace('±' + wortel, '+' + wortelD),
+            expr.replace('±' + wortel, '-' + wortelD))
 
-    - run_pipeline(expr_str) -> opgave_dict (parse → pijplijn → generate_formath_json).
-    - basis_id = het id van de trunk (X); takken krijgen X+'a' / X+'b'.
 
-    De trunk rekent √D uit (de sqrt-subexpressie). De takken nemen √D als gewone
-    externe waarde (het door de trunk uitgerekende getal), met + resp. − teken. De
-    trunk krijgt een 'fork'-blok met verwijzingen; de takken een 'fork_ouder'.
+def voeg_fork_refs_toe(trunk, tak_a, tak_b, basis_id, expr, wortel, wortelD):
+    """Zet de id's (X/Xa/Xb) en fork-verwijzingen op de drie opgaven (in-place).
+
+    Trunk krijgt een 'fork'-blok (operator, volledige/rest-expressie, tak-refs);
+    elke tak een 'fork_ouder'. Retourneert (id_a, id_b) voor het gemak.
     """
-    wortel = wortel_na_pm(expr)
-
-    trunk = run_pipeline(wortel)                       # √D-subexpressie
-    wortelD = _root_output(trunk)                      # bv. '10'
-
-    tak_a = run_pipeline(expr.replace('±' + wortel, '+' + wortelD))
-    tak_b = run_pipeline(expr.replace('±' + wortel, '-' + wortelD))
-
     id_a, id_b = basis_id + 'a', basis_id + 'b'
     trunk['metadata']['id'] = basis_id
     tak_a['metadata']['id'] = id_a
     tak_b['metadata']['id'] = id_b
-
     trunk['fork'] = {
         'operator': '±',
         'volledige_expressie': expr,
@@ -176,5 +169,23 @@ def bouw_fork_opgaven(expr, run_pipeline, basis_id):
     }
     tak_a['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '+wortel', 'teken': '+'}
     tak_b['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '-wortel', 'teken': '-'}
+    return id_a, id_b
 
+
+def bouw_fork_opgaven(expr, run_pipeline, basis_id):
+    """Bouw uit een ±-expressie drie opgave-dicts: trunk + twee takken.
+
+    - run_pipeline(expr_str) -> opgave_dict (parse → pijplijn → generate_formath_json).
+    - basis_id = het id van de trunk (X); takken krijgen X+'a' / X+'b'.
+
+    De trunk rekent √D uit (de sqrt-subexpressie). De takken nemen √D als gewone
+    externe waarde (het door de trunk uitgerekende getal), met + resp. − teken.
+    """
+    wortel = wortel_na_pm(expr)
+    trunk = run_pipeline(wortel)                       # √D-subexpressie
+    wortelD = _root_output(trunk)                      # bv. '10'
+    a_expr, b_expr = tak_expressies(expr, wortel, wortelD)
+    tak_a = run_pipeline(a_expr)
+    tak_b = run_pipeline(b_expr)
+    voeg_fork_refs_toe(trunk, tak_a, tak_b, basis_id, expr, wortel, wortelD)
     return {'trunk': trunk, 'tak_a': tak_a, 'tak_b': tak_b}
