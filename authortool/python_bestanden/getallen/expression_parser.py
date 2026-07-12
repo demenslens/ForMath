@@ -27,6 +27,7 @@ class TokenType(Enum):
     FRACTION = "FRACTION"
     PLUS = "PLUS"
     MINUS = "MINUS"
+    PLUSMINUS = "PLUSMINUS"  # ± : splitst de expressie in een plus-tak en een min-tak
     MULTIPLY = "MULTIPLY"
     DIVIDE = "DIVIDE"
     POWER = "POWER"          # ^ voor machten
@@ -175,7 +176,13 @@ class Lexer:
             if char == '-':
                 self.advance()
                 return Token(TokenType.MINUS, '-', pos)
-            
+
+            # ± : plus/min-fork (auteur typt het ±-teken; '+-' bewust NIET,
+            # dat gaf verwarring). Splitst later in een plus- en een min-tak.
+            if char == '±':
+                self.advance()
+                return Token(TokenType.PLUSMINUS, '±', pos)
+
             if char == '×' or char == '*':
                 self.advance()
                 return Token(TokenType.MULTIPLY, '×', pos)
@@ -309,6 +316,30 @@ class BinaryOpNode(ASTNode):
             'operator': self.operator,
             'left': self.left.to_dict(),
             'right': self.right.to_dict()
+        }
+        if getattr(self, '_bracketed', False):
+            d['_bracketed'] = True
+        return d
+
+
+@dataclass
+class PlusMinusNode(ASTNode):
+    """± fork-knoop: ``left ± right``.
+
+    Splitst in een plus-tak (``left + right``) en een min-tak (``left - right``).
+    Wordt vóór de reguliere pijplijn afgehandeld (zie split_plusminus); de rest
+    van de pijplijn ziet daarna gewone +/- BinaryOp-nodes. Het ontstaat alleen
+    als de auteur een ±-teken typt (bv. de abc-formule).
+    """
+    left: ASTNode
+    right: ASTNode
+
+    def to_dict(self) -> Dict[str, Any]:
+        d = {
+            'type': 'PLUSMINUS',
+            'operator': '±',
+            'left': self.left.to_dict(),
+            'right': self.right.to_dict(),
         }
         if getattr(self, '_bracketed', False):
             d['_bracketed'] = True
@@ -623,18 +654,22 @@ class Parser:
         Links-associatief: 1+2+3 = (1+2)+3
         """
         node = self.term()
-        
-        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS):
+
+        while self.current_token.type in (TokenType.PLUS, TokenType.MINUS, TokenType.PLUSMINUS):
             token = self.current_token
-            
+
             if token.type == TokenType.PLUS:
                 self.eat(TokenType.PLUS)
                 node = BinaryOpNode('+', node, self.term())
-            
+
             elif token.type == TokenType.MINUS:
                 self.eat(TokenType.MINUS)
                 node = BinaryOpNode('-', node, self.term())
-        
+
+            else:  # PLUSMINUS (±)
+                self.eat(TokenType.PLUSMINUS)
+                node = PlusMinusNode(node, self.term())
+
         return node
     
     def parse(self) -> ASTNode:
