@@ -111,13 +111,29 @@ def vervang_wortel(ast_dict, waarde):
 
 def _root_output(opgave):
     """De output van het root-mathblock (het blok dat geen ander als input heeft)."""
+    return _rootblok(opgave)['output']
+
+
+def _rootblok(opgave):
+    """Het root-mathblock (wordt door geen ander blok als input gebruikt)."""
     gebruikt = set()
     for mb in opgave.get('mathblocks', []):
         for i in mb.get('input', []):
             if i.get('type') == 'mathblock':
                 gebruikt.add(i.get('id'))
     roots = [mb for mb in opgave['mathblocks'] if mb['id'] not in gebruikt]
-    return max(roots, key=lambda m: m['step'])['output']
+    return max(roots, key=lambda m: m['step'])
+
+
+def _wortelblok(opgave):
+    for mb in opgave.get('mathblocks', []):
+        if mb['operatie'].get('beschrijving') == 'worteltrekken':
+            return mb
+    return None
+
+
+def _blok(opgave, mb_id):
+    return next((mb for mb in opgave['mathblocks'] if mb['id'] == mb_id), None)
 
 
 def wortel_na_pm(expr):
@@ -189,3 +205,97 @@ def bouw_fork_opgaven(expr, run_pipeline, basis_id):
     tak_b = run_pipeline(b_expr)
     voeg_fork_refs_toe(trunk, tak_a, tak_b, basis_id, expr, wortel, wortelD)
     return {'trunk': trunk, 'tak_a': tak_a, 'tak_b': tak_b}
+
+
+def bouw_parent_overzicht(sub_a, sub_b, basis_id, tekst, latex_display):
+    """Bouw de parent-overzicht-opgave uit de twee volledige takken.
+
+    De subs (sub_a=+wortel, sub_b=−wortel) reken elk de √ uit. De parent toont
+    het skelet: A6 (uitkomst = oplossingsverzameling S), A5, B5, en onder A5 het
+    ±-mathblock A4 met de twee sub-id's als input. De √ zelf staat NIET in de
+    parent (die zit in de subs). Zie ONTWERP_pm_wortel_fork.md.
+    """
+    id_a = basis_id + '_a'
+    id_b = basis_id + '_b'
+    wortel = _wortelblok(sub_a)
+    if wortel is None:
+        raise ValueError('geen √-blok in de +tak — kan geen parent-overzicht bouwen')
+    wortelD = wortel['output']                    # bv. '10'
+    root_a = _root_output(sub_a)                  # bv. '3'
+    root_b = _root_output(sub_b)                  # bv. '-2'
+    oplossing = 'S = {%s, %s}' % (root_a, root_b)
+
+    # A5 = het blok dat het √-blok gebruikt (de −b ± √D-optelling)
+    a5 = next((mb for mb in sub_a['mathblocks']
+               if any(i.get('type') == 'mathblock' and i.get('id') == wortel['id']
+                      for i in mb['input'])), None)
+    a6 = _rootblok(sub_a)                          # de deling (root)
+    # B5 = de mathblock-input van A6 die niet A5 is (de 2a-noemer)
+    b5_id = next((i['id'] for i in a6['input']
+                  if i.get('type') == 'mathblock' and (a5 is None or i['id'] != a5['id'])), None)
+    b5 = _blok(sub_a, b5_id) if b5_id else None
+    b_ext = next((i.get('waarde') for i in (a5['input'] if a5 else [])
+                  if i.get('type') == 'extern'), None)
+
+    mb_A4 = {
+        'id': wortel['id'],
+        'step': 1,
+        'operatie': {'symbool': '±', 'beschrijving': 'plus-min-wortel'},
+        'input': [
+            {'type': 'subopgave', 'opgave': 'opgave_' + id_a},
+            {'type': 'subopgave', 'opgave': 'opgave_' + id_b},
+        ],
+        'output': '±' + wortelD,
+    }
+    mathblocks = [mb_A4]
+    if b5:
+        mb_B5 = dict(b5, step=1)
+        mathblocks.append(mb_B5)
+    mb_A5 = {
+        'id': a5['id'] if a5 else 'A5',
+        'step': 2,
+        'operatie': dict(a5['operatie']) if a5 else {'symbool': '+', 'beschrijving': 'optelling'},
+        'input': ([{'type': 'extern', 'waarde': b_ext}] if b_ext is not None else [])
+                 + [{'type': 'mathblock', 'id': mb_A4['id']}],
+        'output': ('%s±%s' % (b_ext, wortelD)) if b_ext is not None else ('±' + wortelD),
+    }
+    mathblocks.append(mb_A5)
+    mb_A6 = {
+        'id': a6['id'],
+        'step': 3,
+        'operatie': dict(a6['operatie']),
+        'input': [{'type': 'mathblock', 'id': mb_A5['id']}]
+                 + ([{'type': 'mathblock', 'id': b5['id']}] if b5 else []),
+        'output': oplossing,
+    }
+    mathblocks.append(mb_A6)
+
+    per_step = {}
+    for mb in mathblocks:
+        per_step.setdefault(mb['step'], []).append(mb['id'])
+    steps = [{'step': s, 'mathblocks': ids} for s, ids in sorted(per_step.items())]
+    meta_bron = sub_a.get('metadata', {})
+
+    return {
+        'metadata': {
+            'id': basis_id,
+            'auteur': meta_bron.get('auteur', 'H.N.Lensing'),
+            'expressie': {'tekst': tekst, 'latex_display': latex_display,
+                          'mathml': '', 'ast': {'tree': [], 'node_map': []}},
+            'aantal_mathblocks': len(mathblocks),
+            'aantal_steps': max(per_step) if per_step else 0,
+            'niveau': meta_bron.get('niveau', 'Hoog'),
+        },
+        'mathblocks': mathblocks,
+        'externe_inputs': [],
+        'steps': steps,
+        'duo_verzameling': [],
+        'fork': {
+            'operator': '±',
+            'oplossingsverzameling': oplossing,
+            'takken': [
+                {'rol': '+wortel', 'teken': '+', 'opgave': 'opgave_' + id_a, 'uitkomst': root_a},
+                {'rol': '-wortel', 'teken': '-', 'opgave': 'opgave_' + id_b, 'uitkomst': root_b},
+            ],
+        },
+    }

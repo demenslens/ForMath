@@ -965,25 +965,26 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                     expression=expr, schrijf=False)
                 return converted, result
 
+            # Volledige takken: elk mét de √ (de wortel wordt in de subs uitgerekend).
+            conv_a, sub_a = pijplijn(expression.replace('±', '+'))
+            conv_b, sub_b = pijplijn(expression.replace('±', '-'))
+
+            basis_id = _generate_id()
+            id_a, id_b = basis_id + '_a', basis_id + '_b'
+            sub_a['metadata']['id'] = id_a
+            sub_b['metadata']['id'] = id_b
+            sub_a['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '+wortel', 'teken': '+'}
+            sub_b['fork_ouder'] = {'opgave': 'opgave_' + basis_id, 'rol': '-wortel', 'teken': '-'}
+
+            # Parent-overzicht (A6=S={..}, A5, B5, A4=± → subs). Mathfield = volledige abc.
+            latex = request_data.get('latex', '') or expression
             try:
-                wortel = pm_fork.wortel_na_pm(expression)
+                parent = pm_fork.bouw_parent_overzicht(sub_a, sub_b, basis_id, expression, latex)
             except ValueError as e:
                 self._send_json({'success': False, 'error': '±-fork: %s' % e})
                 return
 
-            conv_t, trunk = pijplijn(wortel)                 # trunk = √D
-            wortelD = pm_fork._root_output(trunk)
-            a_expr, b_expr = pm_fork.tak_expressies(expression, wortel, wortelD)
-            conv_a, tak_a = pijplijn(a_expr)
-            conv_b, tak_b = pijplijn(b_expr)
-
-            basis_id = _generate_id()
-            pm_fork.voeg_fork_refs_toe(trunk, tak_a, tak_b, basis_id,
-                                       expression, wortel, wortelD)
-
-            # Auteur-metadata op alle drie (de trunk draagt de opgave, de takken
-            # zijn siblings die dezelfde randvoorwaarden nodig hebben).
-            for opgave in (trunk, tak_a, tak_b):
+            for opgave in (parent, sub_a, sub_b):
                 m = opgave['metadata']
                 m['randvoorwaarden'] = randvoorwaarden
                 m['opdracht'] = opdracht
@@ -993,7 +994,9 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 m['onderwijsniveau'] = onderwijsniveau
                 m['notitie'] = notitie
 
-            for opgave in (trunk, tak_a, tak_b):
+            # Structurele check alleen op de subs (gewone reduceerbare opgaven); de
+            # parent is een overzicht en gaat bewust niet door CHECK-5.
+            for opgave in (sub_a, sub_b):
                 check = validate_structure_with_warnings(opgave)
                 if check['errors']:
                     self._send_json({
@@ -1004,9 +1007,9 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                     return
 
             write_dir = _current_write_dir()
-            for opgave, conv, _expr in ((trunk, conv_t, wortel),
-                                        (tak_a, conv_a, a_expr),
-                                        (tak_b, conv_b, b_expr)):
+            # Subs: JSON + SVG (gewone opgaven).
+            for opgave, conv, _expr in ((sub_a, conv_a, expression.replace('±', '+')),
+                                        (sub_b, conv_b, expression.replace('±', '-'))):
                 oid = opgave['metadata']['id']
                 json_path = os.path.join(write_dir, 'opgave_%s.json' % oid)
                 with open(json_path, 'w', encoding='utf-8') as f:
@@ -1015,18 +1018,20 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 ET.indent(tree, space="  ")
                 with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
                     f.write(ET.tostring(tree.getroot(), encoding='unicode'))
+            # Parent: alleen JSON (de overzicht-SVG met het ±-blok volgt in stap 5).
+            with open(os.path.join(write_dir, 'opgave_%s.json' % basis_id), 'w', encoding='utf-8') as f:
+                json.dump(parent, f, indent=2, ensure_ascii=False)
 
-            print(f"[±-FORK] {expression} → trunk {trunk['metadata']['id']} "
-                  f"+ takken {tak_a['metadata']['id']}/{tak_b['metadata']['id']}")
+            print(f"[±-FORK] {expression} → parent {basis_id} + takken {id_a}/{id_b}")
             self._send_json({
                 'success': True,
                 'fork': True,
-                'trunk_id': trunk['metadata']['id'],
-                'tak_ids': [tak_a['metadata']['id'], tak_b['metadata']['id']],
+                'trunk_id': basis_id,
+                'tak_ids': [id_a, id_b],
                 'uitkomsten': {
-                    'trunk': wortelD,
-                    '+wortel': pm_fork._root_output(tak_a),
-                    '-wortel': pm_fork._root_output(tak_b),
+                    'S': parent['fork']['oplossingsverzameling'],
+                    '+wortel': pm_fork._root_output(sub_a),
+                    '-wortel': pm_fork._root_output(sub_b),
                 },
             })
         except Exception as e:

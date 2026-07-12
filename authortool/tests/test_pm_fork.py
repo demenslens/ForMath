@@ -108,6 +108,26 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(a['fork_ouder']['teken'], '+')
         self.assertEqual(b['fork_ouder']['teken'], '-')
 
+    def test_volledige_takken_en_parent_overzicht(self):
+        # Subs = volledige takken (elk mét de √) → 3 en −2.
+        plus = _pipeline(ABC_PM.replace('±', '+'))
+        minus = _pipeline(ABC_PM.replace('±', '-'))
+        self.assertEqual(pm_fork._root_output(plus), '3')
+        self.assertEqual(pm_fork._root_output(minus), '-2')
+        self.assertIsNotNone(pm_fork._wortelblok(plus), 'de +tak moet zelf de √ bevatten')
+
+        parent = pm_fork.bouw_parent_overzicht(plus, minus, '20260712_001', ABC_PM, ABC_PM)
+        # A4 = ±-mathblock met de twee sub-id's als input
+        a4 = next(mb for mb in parent['mathblocks'] if mb['operatie']['symbool'] == '±')
+        self.assertEqual([i.get('opgave') for i in a4['input']],
+                         ['opgave_20260712_001_a', 'opgave_20260712_001_b'])
+        # Root (A6) toont de oplossingsverzameling
+        self.assertEqual(pm_fork._rootblok(parent)['output'], 'S = {3, -2}')
+        self.assertEqual(parent['fork']['oplossingsverzameling'], 'S = {3, -2}')
+        self.assertEqual([t['opgave'] for t in parent['fork']['takken']],
+                         ['opgave_20260712_001_a', 'opgave_20260712_001_b'])
+        self.assertEqual(parent['metadata']['expressie']['tekst'], ABC_PM)
+
 
 if __name__ == '__main__':
     unittest.main()
