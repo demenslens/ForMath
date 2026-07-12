@@ -66,3 +66,42 @@ def split_plusminus(ast_dict):
     plus_ast, _ = _vervang_plusminus(copy.deepcopy(ast_dict), '+')
     min_ast, _ = _vervang_plusminus(copy.deepcopy(ast_dict), '-')
     return True, plus_ast, min_ast
+
+
+def vind_wortel(ast_dict):
+    """De (enige) ROOT-knoop (worteltrekken) in de AST — de trunk-subboom.
+    MVP: precies één wortel (de abc heeft er één: √D)."""
+    gevonden = []
+
+    def loop(n):
+        if isinstance(n, dict):
+            if n.get('type') == 'ROOT':
+                gevonden.append(n)
+            for v in n.values():
+                loop(v)
+        elif isinstance(n, list):
+            for v in n:
+                loop(v)
+
+    loop(ast_dict)
+    if len(gevonden) != 1:
+        raise ValueError('verwacht precies 1 wortel (ROOT); gevonden %d' % len(gevonden))
+    return gevonden[0]
+
+
+def vervang_wortel(ast_dict, waarde):
+    """Kopie van de AST met de ROOT-knoop vervangen door NUMBER(waarde).
+
+    Zo wordt √D in een tak een gewone externe waarde (de door de trunk
+    uitgerekende uitkomst). Het teken (+/−) zit al in de tak (zie split_plusminus).
+    """
+    def loop(n):
+        if isinstance(n, dict):
+            if n.get('type') == 'ROOT':
+                return {'type': 'NUMBER', 'value': int(waarde)}
+            return {k: loop(v) for k, v in n.items()}
+        if isinstance(n, list):
+            return [loop(v) for v in n]
+        return n
+
+    return loop(ast_dict)

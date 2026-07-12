@@ -70,6 +70,18 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(_pipeline_root(plus_ast, ABC_PM.replace('±', '+')), '3')
         self.assertEqual(_pipeline_root(min_ast, ABC_PM.replace('±', '-')), '-2')
 
+    def test_drie_grafen_trunk_en_takken(self):
+        # Trunk = de √D-subboom (→ 10); takken nemen √D als externe waarde.
+        ast = parse_expression(ABC_PM)
+        wortel = pm_fork.vind_wortel(ast)
+        wortelD = _pipeline_root(wortel, 'sqrt((-2)^2-4×2×(-12))')
+        self.assertEqual(wortelD, '10')
+        _has, plus_ast, min_ast = pm_fork.split_plusminus(ast)
+        tak_plus = pm_fork.vervang_wortel(plus_ast, int(wortelD))
+        tak_min = pm_fork.vervang_wortel(min_ast, int(wortelD))
+        self.assertEqual(_pipeline_root(tak_plus, '(-(-2)+10):(2×2)'), '3')
+        self.assertEqual(_pipeline_root(tak_min, '(-(-2)-10):(2×2)'), '-2')
+
 
 if __name__ == '__main__':
     unittest.main()
