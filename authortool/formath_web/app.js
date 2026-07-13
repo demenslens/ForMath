@@ -516,10 +516,10 @@ async function processExpression() {
         infoLatex.textContent = latexDisplay;
         pipelineInfo.hidden = false;
 
-        // ±-fork: de preview toont maar één tak; bij export ontstaan 3 opgaven.
+        // ±-abc: de preview toont de ±-opgave zelf (A1-A4, ±√) mét sjabloon.
         if (data.fork) {
-            setStatus('±-fork herkend — preview toont de +wortel-tak. Bij export ' +
-                'ontstaan 3 opgaven (trunk + +wortel + −wortel).', 'info');
+            setStatus('±-abc herkend — de preview en de JSON tonen de ±-opgave ' +
+                '(A4 = ±√) met het sjabloon. Export maakt één opgave.', 'info');
         }
 
         // Header meta: mathblocks + steps (best-effort uit AST data)

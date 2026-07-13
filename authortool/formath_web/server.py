@@ -633,11 +633,10 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
             # Stap 1: LaTeX → platte expressie
             expression = latex_to_expression(latex)
-            # ±-fork: preview alleen de +wortel-tak (bij export ontstaan 3 opgaven).
-            # De export gebruikt de originele latex (met ±) en splitst dan echt.
-            is_fork = '±' in expression
-            if is_fork:
-                expression = expression.replace('±', '+')
+            # ±-abc: toon de ±-opgave zelf (A1-A4, ±√) mét sjabloon — niet de +tak.
+            if '±' in expression:
+                self._handle_process_fork(expression, latex)
+                return
             print(f"[CONV]  Expressie: {expression}")
 
             # Stap 2: Parse → AST
@@ -721,7 +720,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
             self._send_json({
                 'success': True,
-                'fork': is_fork,
+                'fork': False,
                 'svg': svg,
                 'ast': clean_ast,
                 'opgave': opgave_json,
@@ -943,90 +942,83 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             traceback.print_exc()
             self._send_json({'success': False, 'error': str(e)})
 
-    # ── ±-fork export (drie JSON's: trunk + twee takken) ──────────────────────
-    def _handle_export_fork(self, expression, request_data):
-        """Produceer uit een ±-expressie een trunk + twee takken (drie JSON's).
+    # ── ±-abc: gedeelde opgave-bouwer (Export + Process-preview) ──────────────
+    def _bouw_pm_opgave(self, expression, latex):
+        """Bouw de ±-abc-opgave (A1-A4, A4=±√, + sjabloon) uit een ±-expressie.
 
-        De trunk rekent √D uit; de takken nemen √D als externe waarde (+/−). Zie
-        ONTWERP_pm_wortel_fork.md. Wordt aangeroepen vanuit _handle_export_json
-        zodra '±' in de (naar tekst omgezette) expressie zit.
+        Retourneert (opgave, conv, a_uit, b_uit): de opgave, de √-subexpressie-AST
+        voor de SVG (fork-√ als ± gemarkeerd), en de twee spoor-uitkomsten. Werpt
+        ValueError als er geen (enkele) fork-√ is. Gedeeld door de export én de
+        Process-preview, zodat beide exact dezelfde ±-opgave tonen.
+        """
+        import pm_fork
+        from json_exporter import generate_formath_json
+
+        def pijplijn(expr):
+            normalized = normalize_ast(parse_expression(expr))
+            annotated, stats = detect_manifolds(normalized)
+            converted, _ = convert_to_manifolds(annotated, stats)
+            converted, _ = inject_simplify_ops(converted)
+            converted, _ = inject_mixed_number(converted)
+            latex_display = ast_to_latex_display(converted)
+            result, _ = generate_formath_json(
+                converted, expr, '', latex_display=latex_display,
+                expression=expr, schrijf=False)
+            return converted, result
+
+        wortel = pm_fork.wortel_na_pm(expression)      # ValueError als geen fork-√
+        conv, opgave = pijplijn(wortel)
+        wortelD = pm_fork._root_output(opgave)
+        a_expr, b_expr = pm_fork.tak_expressies(expression, wortel, wortelD)
+        _ca, tak_a = pijplijn(a_expr)
+        _cb, tak_b = pijplijn(b_expr)
+        a_uit = pm_fork._root_output(tak_a)
+        b_uit = pm_fork._root_output(tak_b)
+        pm_fork.maak_pm_opgave(opgave, expression, latex or expression, wortel,
+                               wortelD, a_expr, a_uit, b_expr, b_uit)
+        try:
+            pm_fork.vind_wortel(conv)['aantal_wortels'] = 2   # ±^1/2 in de SVG
+        except ValueError:
+            pass
+        return opgave, conv, a_uit, b_uit
+
+    # ── ±-abc export (ÉÉN opgave met sjabloon) ────────────────────────────────
+    def _handle_export_fork(self, expression, request_data):
+        """Produceer uit een ±-expressie ÉÉN abc-opgave (A1-A4, ±√ + sjabloon).
+
+        Aangeroepen vanuit _handle_export_json zodra '±' in de expressie zit.
         """
         try:
-            import pm_fork
-            from json_exporter import (generate_formath_json, _current_write_dir,
-                                        _generate_id)
-            from json_validator import validate_structure_with_warnings
-
-            expression = expression.replace(' ', '')  # ± sqrt → ±sqrt
-
-            randvoorwaarden = request_data.get('randvoorwaarden', {}) or {}
-            opdracht        = request_data.get('opdracht', '') or ''
-            soort_opgave    = request_data.get('soort_opgave', 'rekenen_getallen')
-            productie       = request_data.get('productie', 'enkelvoudig')
-            onderwijstype   = request_data.get('onderwijstype', '') or ''
-            onderwijsniveau = request_data.get('onderwijsniveau', '') or ''
-            notitie         = request_data.get('notitie', '') or ''
-
-            def pijplijn(expr):
-                normalized = normalize_ast(parse_expression(expr))
-                annotated, stats = detect_manifolds(normalized)
-                converted, _ = convert_to_manifolds(annotated, stats)
-                converted, _ = inject_simplify_ops(converted)
-                converted, _ = inject_mixed_number(converted)
-                latex_display = ast_to_latex_display(converted)
-                result, _ = generate_formath_json(
-                    converted, expr, '', latex_display=latex_display,
-                    expression=expr, schrijf=False)
-                return converted, result
-
-            # Eén opgave. De √-subexpressie → basis (A1–A4, A4=√/√D); daarop
-            # bouwen we de ±-opgave: A4 → ±√ (aantal_wortels:2) + een 'splitsing'
-            # die de studenttool ná A4 als twee regels aanbiedt.
+            from json_exporter import _current_write_dir, _generate_id
+            expression = expression.replace(' ', '')
+            latex = request_data.get('latex', '') or expression
             try:
-                wortel = pm_fork.wortel_na_pm(expression)
+                opgave, conv, a_uit, b_uit = self._bouw_pm_opgave(expression, latex)
             except ValueError as e:
                 self._send_json({'success': False, 'error': '±-fork: %s' % e})
                 return
-            conv, opgave = pijplijn(wortel)
-            wortelD = pm_fork._root_output(opgave)              # bv. '10'
-            a_expr, b_expr = pm_fork.tak_expressies(expression, wortel, wortelD)
-            _ca, tak_a = pijplijn(a_expr)
-            _cb, tak_b = pijplijn(b_expr)
-            a_uit = pm_fork._root_output(tak_a)                 # '3'
-            b_uit = pm_fork._root_output(tak_b)                 # '-2'
-
-            latex = request_data.get('latex', '') or expression
-            pm_fork.maak_pm_opgave(opgave, expression, latex, wortel, wortelD,
-                                   a_expr, a_uit, b_expr, b_uit)
 
             basis_id = _generate_id()
             opgave['metadata']['id'] = basis_id
             m = opgave['metadata']
-            m['randvoorwaarden'] = randvoorwaarden
-            m['opdracht'] = opdracht
-            m['soort_opgave'] = soort_opgave
-            m['productie'] = productie
-            m['onderwijstype'] = onderwijstype
-            m['onderwijsniveau'] = onderwijsniveau
-            m['notitie'] = notitie
+            m['randvoorwaarden'] = request_data.get('randvoorwaarden', {}) or {}
+            m['opdracht']        = request_data.get('opdracht', '') or ''
+            m['soort_opgave']    = request_data.get('soort_opgave', 'rekenen_getallen')
+            m['productie']       = request_data.get('productie', 'enkelvoudig')
+            m['onderwijstype']   = request_data.get('onderwijstype', '') or ''
+            m['onderwijsniveau'] = request_data.get('onderwijsniveau', '') or ''
+            m['notitie']         = request_data.get('notitie', '') or ''
 
             write_dir = _current_write_dir()
             json_path = os.path.join(write_dir, 'opgave_%s.json' % basis_id)
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(opgave, f, indent=2, ensure_ascii=False)
-            # SVG uit de √-subexpressie (A1–A4). Markeer de fork-√ zodat hij als
-            # ±-wortel (±^1/2) getekend wordt.
-            try:
-                pm_fork.vind_wortel(conv)['aantal_wortels'] = 2
-            except ValueError:
-                pass
-            tree = generate_ast_svg(conv, title=f"AST: {wortel}", expression=wortel)
+            tree = generate_ast_svg(conv, title=f"AST: {expression}", expression=expression)
             ET.indent(tree, space="  ")
             with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
                 f.write(ET.tostring(tree.getroot(), encoding='unicode'))
 
-            print(f"[±-FORK] {expression} → opgave {basis_id} "
-                  f"(splitsing → {a_uit} / {b_uit})")
+            print(f"[±-ABC] {expression} → opgave {basis_id} (sjabloon → {a_uit} / {b_uit})")
             self._send_json({
                 'success': True,
                 'fork': True,
@@ -1036,7 +1028,35 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 'uitkomsten': {'+wortel': a_uit, '-wortel': b_uit},
             })
         except Exception as e:
-            print(f"[FOUT] ±-fork export: {e}")
+            print(f"[FOUT] ±-abc export: {e}")
+            traceback.print_exc()
+            self._send_json({'success': False, 'error': str(e)})
+
+    # ── ±-abc Process-preview (toont de ±-opgave zelf, mét sjabloon) ──────────
+    def _handle_process_fork(self, expression, latex):
+        """Process-preview voor een ±-abc-expressie: toont de ±-opgave (A1-A4,
+        ±√) + de volledige JSON met het sjabloon — i.p.v. de +tak."""
+        try:
+            expression = expression.replace(' ', '')
+            try:
+                opgave, conv, _a, _b = self._bouw_pm_opgave(expression, latex)
+            except ValueError as e:
+                self._send_json({'success': False, 'error': '±-preview: %s' % e})
+                return
+            tree = generate_ast_svg(conv, title=f"AST: {expression}", expression=expression)
+            ET.indent(tree, space="  ")
+            svg = ET.tostring(tree.getroot(), encoding='unicode')
+            from manifold_converter import remove_all_annotations
+            self._send_json({
+                'success': True,
+                'fork': True,
+                'svg': svg,
+                'ast': remove_all_annotations(conv),
+                'opgave': opgave,
+                'data': {'tekst': expression, 'latex_display': latex},
+            })
+        except Exception as e:
+            print(f"[FOUT] ±-preview: {e}")
             traceback.print_exc()
             self._send_json({'success': False, 'error': str(e)})
 
