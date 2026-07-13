@@ -702,6 +702,19 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
             print(f"[OK] AST SVG gegenereerd ({len(svg)} bytes)")
 
+            # Volledige opgave-JSON opbouwen (zonder schrijven) zodat de auteur
+            # 'm meteen na Process kan zien én de mathblocks rechts kan tonen.
+            # Uit een kopie, zodat generate_formath_json 'converted' niet muteert.
+            import copy
+            from json_exporter import generate_formath_json
+            try:
+                opgave_json, _ = generate_formath_json(
+                    copy.deepcopy(converted), latex, '', latex_display=latex_display,
+                    expression=expression, schrijf=False)
+            except Exception as _e:
+                print(f"[WAARSCHUWING] volledige JSON bij Process mislukt: {_e}")
+                opgave_json = None
+
             # Verwijder interne annotaties voor clean JSON export
             from manifold_converter import remove_all_annotations
             clean_ast = remove_all_annotations(converted)
@@ -711,6 +724,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 'fork': is_fork,
                 'svg': svg,
                 'ast': clean_ast,
+                'opgave': opgave_json,
                 'data': {
                     'tekst': expression,
                     'latex_display': latex_display,

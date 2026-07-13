@@ -528,8 +528,17 @@ async function processExpression() {
         // Inspector: render mathblock-lijst voor klasse-keuze
         renderInspectorMathblocks(data.mathblocks || []);
 
-        // Onthoud voor export
-        lastProcessed = { latex, tekst, latex_display: latexDisplay, ast: data.ast };
+        // Volledige JSON + mathblocks rechts tonen, meteen na Process.
+        if (data.opgave) {
+            renderHintsEditor(data.opgave.mathblocks || []);
+        }
+
+        // Onthoud voor export (incl. de volledige JSON voor de JSON-view)
+        lastProcessed = { latex, tekst, latex_display: latexDisplay,
+                          ast: data.ast, opgave: data.opgave };
+
+        // Ververs de JSON-view als die openstaat.
+        if (typeof currentView !== 'undefined' && currentView === 'json') setView('json');
 
         // Parse zojuist gelukt — geen onbewerkte wijzigingen meer
         hasUnparsedChanges = false;
@@ -1440,6 +1449,8 @@ function renderHintsEditor(mathblocks) {
             beschrijving: (mb.operatie && mb.operatie.beschrijving) || '',
             index: (mb.operatie && mb.operatie.index),
             aantal_wortels: (mb.operatie && mb.operatie.aantal_wortels),
+            input: mb.input || [],
+            output: mb.output,
         };
         hintsState.mathblocks.push(meta);
 
@@ -1493,6 +1504,21 @@ function _cloneHints(h) {
     return out;
 }
 
+/**
+ * Compacte "gegevens per mathblock"-regel: input(s) met de operator ertussen,
+ * en de output. Bv. "4 × 5 = 20", "A2 + B2 = 100", "±√ A3 = ±10".
+ */
+function _mbDataLabel(meta) {
+    const parts = (meta.input || []).map(i =>
+        (i && i.type === 'mathblock') ? i.id : String((i && i.waarde) ?? ''));
+    const sym = meta.symbool || '';
+    let lhs;
+    if (parts.length >= 2) lhs = parts.join(' ' + sym + ' ');
+    else if (parts.length === 1) lhs = (sym ? sym + ' ' : '') + parts[0];
+    else lhs = sym;
+    return lhs + ' = ' + (meta.output ?? '');
+}
+
 function _renderHintsAccordion() {
     if (!hintsAccordion) return;
     hintsAccordion.innerHTML = '';
@@ -1515,6 +1541,7 @@ function _renderHintsAccordion() {
             </svg>
             <span class="hints-mb-id">${escapeHtml(meta.id)}</span>
             <span class="hints-mb-label">${escapeHtml(meta.beschrijving || meta.symbool)}</span>
+            <span class="hints-mb-data mono">${escapeHtml(_mbDataLabel(meta))}</span>
             <span class="hints-mb-dirty-dot" title="Gewijzigd"></span>
         `;
         header.addEventListener('click', () => _toggleHintsMb(meta.id));
@@ -2410,11 +2437,14 @@ function setView(v) {
     jsonView.hidden = isSvg;
 
     if (!isSvg) {
-        // Toon de JSON van de geselecteerde opgave, of van lastProcessed als die er is
-        const data = selectedOpgaveJson || (lastProcessed ? {
-            metadata: { expressie: { latex: lastProcessed.latex, tekst: lastProcessed.tekst } },
-            note: 'Nog niet geëxporteerd — dit is een preview.',
-        } : null);
+        // Toon de JSON van de geselecteerde opgave, of de volledige preview-JSON
+        // van de zojuist geparste expressie (lastProcessed.opgave).
+        const data = selectedOpgaveJson
+            || (lastProcessed && lastProcessed.opgave)
+            || (lastProcessed ? {
+                metadata: { expressie: { latex: lastProcessed.latex, tekst: lastProcessed.tekst } },
+                note: 'Nog niet geëxporteerd — dit is een preview.',
+            } : null);
         jsonView.textContent = data
             ? JSON.stringify(data, null, 2)
             : '(Geen opgave geselecteerd of geparsed.)';
