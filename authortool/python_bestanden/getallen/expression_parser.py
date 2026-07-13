@@ -327,9 +327,10 @@ class PlusMinusNode(ASTNode):
     """± fork-knoop: ``left ± right``.
 
     Splitst in een plus-tak (``left + right``) en een min-tak (``left - right``).
-    Wordt vóór de reguliere pijplijn afgehandeld (zie split_plusminus); de rest
-    van de pijplijn ziet daarna gewone +/- BinaryOp-nodes. Het ontstaat alleen
-    als de auteur een ±-teken typt (bv. de abc-formule).
+    In de ±-abc-route vervangt de server ± al vóór het parsen door +/- (twee
+    pijplijn-runs, zie pm_fork.maak_pm_opgave); de rest van de pijplijn ziet dan
+    gewone +/- BinaryOp-nodes. Het ontstaat alleen als de auteur een ±-teken typt
+    (bv. de abc-formule).
     """
     left: ASTNode
     right: ASTNode
