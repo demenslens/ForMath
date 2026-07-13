@@ -108,8 +108,8 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(a['fork_ouder']['teken'], '+')
         self.assertEqual(b['fork_ouder']['teken'], '-')
 
-    def test_pm_opgave_een_id_met_splitsing(self):
-        # Eén opgave: de √-subexpressie (A1-A4) → ±-opgave met splitsing.
+    def test_pm_opgave_een_id_met_sjabloon(self):
+        # Eén opgave: de √-subexpressie (A1-A4) → ±-opgave met sjabloon.
         basis = _pipeline('sqrt((-2)^2-4×2×(-12))')
         self.assertEqual(pm_fork._root_output(basis), '10')
         pm_fork.maak_pm_opgave(
@@ -120,11 +120,18 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(a4['operatie']['aantal_wortels'], 2)
         self.assertEqual(a4['output'], '±10')
         self.assertEqual(basis['metadata']['expressie']['tekst'], ABC_PM)
-        spl = basis['splitsing']
-        self.assertEqual(spl['na_mathblock'], a4['id'])
-        self.assertEqual(spl['oplossingsverzameling'], 'S = {3, -2}')
-        self.assertEqual([t['uitkomst'] for t in spl['takken']], ['3', '-2'])
-        self.assertEqual([t['teken'] for t in spl['takken']], ['+', '-'])
+        sj = basis['sjabloon']
+        self.assertEqual(sj['type'], 'abc_formule')
+        self.assertIn('S = {p, q}', sj['gevraagde'])
+        self.assertEqual(sj['additioneel_gegeven']['label'], 'D')
+        self.assertEqual(sj['additioneel_gegeven']['mathblock'], 'A3')
+        self.assertEqual(sj['oplossingsverzameling'], 'S = {3, -2}')
+        # stap 1 = D uitrekenen (t/m A3); stap 2 = ±√D (varianten); stap 3 = sporen
+        self.assertEqual(sj['stappen'][0]['t_m_mathblock'], 'A3')
+        self.assertEqual(sj['stappen'][0]['uitkomst'], '100')
+        self.assertEqual(sj['stappen'][1]['verwacht'], '±10')
+        self.assertIn('10,-10', sj['stappen'][1]['varianten'])
+        self.assertEqual([sp['uitkomst'] for sp in sj['stappen'][2]['sporen']], ['3', '-2'])
 
     def test_volledige_takken_en_parent_overzicht(self):
         # Subs = volledige takken (elk mét de √) → 3 en −2.

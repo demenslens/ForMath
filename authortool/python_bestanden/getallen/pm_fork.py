@@ -228,12 +228,33 @@ def maak_pm_opgave(opgave, full_expr, latex_display, wortel, wortelD,
     exp = opgave['metadata']['expressie']
     exp['tekst'] = full_expr
     exp['latex_display'] = latex_display
-    opgave['splitsing'] = {
-        'na_mathblock': wb['id'],
-        'rest_expressie': full_expr.replace(wortel, wortelD),
-        'takken': [
-            {'teken': '+', 'expressie': a_expr, 'uitkomst': a_uit},
-            {'teken': '-', 'expressie': b_expr, 'uitkomst': b_uit},
+
+    # A3 = de discriminant (het mathblock-input van de √); de student rekent D
+    # zelf uit (A1..A3) en trekt daarna zelf ±√D.
+    a3_id = next((i['id'] for i in wb['input'] if i.get('type') == 'mathblock'), None)
+    a3 = _blok(opgave, a3_id) if a3_id else None
+    d_waarde = a3['output'] if a3 else wortelD
+    # Toegestane vormen voor ±√D (nog géén S = {..}-notatie).
+    varianten = ['±' + wortelD, wortelD + ',-' + wortelD, '-' + wortelD + ',' + wortelD]
+
+    opgave['sjabloon'] = {
+        'type': 'abc_formule',
+        'gevraagde': 'Bepaal de oplossingsverzameling S = {p, q}.',
+        'additioneel_gegeven': {
+            'label': 'D',
+            'definitie': 'D = b² − 4ac',
+            'mathblock': a3_id,
+        },
+        'stappen': [
+            {'nr': 1, 'vraag': 'Bereken de discriminant D = b² − 4ac.',
+             't_m_mathblock': a3_id, 'uitkomst': d_waarde},
+            {'nr': 2, 'vraag': 'Trek de wortel uit D: bepaal ±√D.',
+             'mathblock': wb['id'], 'verwacht': '±' + wortelD, 'varianten': varianten},
+            {'nr': 3, 'vraag': 'Substitueer beide wortels in de abc-formule (twee sporen).',
+             'sporen': [
+                 {'wortel': wortelD, 'expressie': a_expr, 'uitkomst': a_uit},
+                 {'wortel': '-' + wortelD, 'expressie': b_expr, 'uitkomst': b_uit},
+             ]},
         ],
         'oplossingsverzameling': 'S = {%s, %s}' % (a_uit, b_uit),
     }

@@ -1032,7 +1032,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 'fork': True,
                 'opgave_id': basis_id,
                 'trunk_id': basis_id,
-                'oplossingsverzameling': opgave['splitsing']['oplossingsverzameling'],
+                'oplossingsverzameling': opgave['sjabloon']['oplossingsverzameling'],
                 'uitkomsten': {'+wortel': a_uit, '-wortel': b_uit},
             })
         except Exception as e:
