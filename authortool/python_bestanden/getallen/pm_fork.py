@@ -228,13 +228,11 @@ def _a5_a6_b5(opgave):
 def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     """Bouw de ±-abc-opgave uit de +variant- én −variant-graaf (elk A1–A6 + B5).
 
-    Op opgave_plus (in-place): de volledige abc-graaf waarin
-      - A4 een ±-worteltrekken-mathblock is (±√D),
-      - A5 en A6 DUBBELWAARDIG zijn (output_sporen {+,-} + hints_sporen {+,-}),
-        want alleen die twee verschillen per spoor,
-      - een piek-mathblock A9 de oplossingsverzameling S = {p, q} afdwingt
-        (twee inputs: de +/− uitkomst van A6),
-    plus een 'sjabloon' (het studenttool-contract). Eén opgave, één id.
+    Op opgave_plus (in-place): de volledige abc-graaf. A4 = ±√D (de fork). Alleen
+    A5 en A6 verschillen per spoor, dus die krijgen een BROER: A7 (−spoor van A5)
+    en A8 (−spoor van A6) — elk een echt mathblock met eigen hints. A4 voedt A5 (+)
+    én A7 (−); B5 voedt A6 én A8. Een piek-mathblock A9 (operatie 'S') neemt A6 en
+    A8 en dwingt de oplossingsverzameling S = {p, q} af. Plus een 'sjabloon'.
     """
     wb = _wortelblok(opgave_plus)
     if wb is None:
@@ -248,49 +246,60 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     exp['tekst'] = full_expr
     exp['latex_display'] = latex_display
 
-    a5p, a6p, _b5 = _a5_a6_b5(opgave_plus)
-    a5m, a6m, _b5m = _a5_a6_b5(opgave_min)
     a3_id = next((i['id'] for i in wb['input'] if i.get('type') == 'mathblock'), None)
     d_waarde = (_blok(opgave_plus, a3_id) or {}).get('output', wortelD)
 
-    a5_plus = a5p['output'] if a5p else '?'
-    a5_min = a5m['output'] if a5m else '?'
-    a6_plus = a6p['output'] if a6p else '?'
-    a6_min = a6m['output'] if a6m else '?'
+    a5p, a6p, b5p = _a5_a6_b5(opgave_plus)    # +spoor: A5, A6, B5
+    a5m, a6m, _b5m = _a5_a6_b5(opgave_min)    # bron voor de −spoor-broers A7, A8
 
-    # A5, A6 dubbelwaardig: per-spoor output én per-spoor hints (die verschillen).
+    # A5's √-input markeren als spoor '+'
     if a5p:
-        a5p['output_sporen'] = {'+': a5_plus, '-': a5_min}
-        a5p['output'] = '%s / %s' % (a5_plus, a5_min)
-        a5p['hints_sporen'] = {'+': a5p.get('hints', {}),
-                               '-': (a5m.get('hints', {}) if a5m else a5p.get('hints', {}))}
-        a5p.pop('hints', None)
-    if a6p:
-        a6p['output_sporen'] = {'+': a6_plus, '-': a6_min}
-        a6p['output'] = '%s / %s' % (a6_plus, a6_min)
-        a6p['hints_sporen'] = {'+': a6p.get('hints', {}),
-                               '-': (a6m.get('hints', {}) if a6m else a6p.get('hints', {}))}
-        a6p.pop('hints', None)
+        for i in a5p['input']:
+            if i.get('type') == 'mathblock' and i.get('id') == wb['id']:
+                i['spoor'] = '+'
 
-    # A9 = piek: dwingt de oplossingsverzameling af (twee inputs uit A6).
+    a7 = a8 = None
+    if a5p and a6p and b5p and a5m and a6m:
+        # A7 = −spoor van A5 (−b − √D), hangt aan de gedeelde A4 (spoor −)
+        a7 = copy.deepcopy(a5m)
+        a7['id'] = 'A7'
+        a7['step'] = a5p['step']
+        a7['input'] = [i for i in a7['input'] if i.get('type') == 'extern'] + \
+                      [{'type': 'mathblock', 'id': wb['id'], 'spoor': '-'}]
+        # A8 = −spoor van A6 (A7 : B5), gedeelde B5
+        a8 = copy.deepcopy(a6m)
+        a8['id'] = 'A8'
+        a8['step'] = a6p['step']
+        a8['input'] = [{'type': 'mathblock', 'id': 'A7'},
+                       {'type': 'mathblock', 'id': b5p['id']}]
+
+    a6_plus = a6p['output'] if a6p else '?'
+    a6_min = a8['output'] if a8 else '?'
     oplossing = 'S = {%s, %s}' % (a6_plus, a6_min)
     a9_step = (a6p['step'] if a6p else max(mb['step'] for mb in opgave_plus['mathblocks'])) + 1
     a9 = {
         'id': 'A9', 'step': a9_step,
         'operatie': {'symbool': 'S', 'beschrijving': 'oplossingsverzameling'},
         'input': [
-            {'type': 'mathblock', 'id': a6p['id'] if a6p else None, 'spoor': '+'},
-            {'type': 'mathblock', 'id': a6p['id'] if a6p else None, 'spoor': '-'},
+            {'type': 'mathblock', 'id': a6p['id'] if a6p else None},
+            {'type': 'mathblock', 'id': 'A8'},
         ],
         'output': oplossing,
     }
-    opgave_plus['mathblocks'].append(a9)
-    opgave_plus.setdefault('steps', []).append({'step': a9_step, 'mathblocks': ['A9']})
+
+    for blok in (a7, a8, a9):
+        if blok:
+            opgave_plus['mathblocks'].append(blok)
+
+    # steps herbouwen uit de blokken (A7 op A5's step, A8 op A6's step, A9 nieuw)
+    per_step = {}
+    for mb in opgave_plus['mathblocks']:
+        per_step.setdefault(mb['step'], []).append(mb['id'])
+    opgave_plus['steps'] = [{'step': s, 'mathblocks': ids} for s, ids in sorted(per_step.items())]
     opgave_plus['metadata']['aantal_mathblocks'] = len(opgave_plus['mathblocks'])
     opgave_plus['metadata']['aantal_steps'] = a9_step
 
     varianten = ['±' + wortelD, wortelD + ',-' + wortelD, '-' + wortelD + ',' + wortelD]
-    sporen_ids = [a5p['id'], a6p['id']] if (a5p and a6p) else []
     opgave_plus['sjabloon'] = {
         'type': 'abc_formule',
         'gevraagde': 'Bepaal de oplossingsverzameling S = {p, q}.',
@@ -302,8 +311,10 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
              'mathblock': wb['id'], 'verwacht': '±' + wortelD, 'varianten': varianten},
             {'nr': 3, 'vraag': 'Substitueer en werk beide sporen uit.',
              'sporen': [
-                 {'teken': '+', 'wortel': wortelD, 'mathblocks': sporen_ids, 'uitkomst': a6_plus},
-                 {'teken': '-', 'wortel': '-' + wortelD, 'mathblocks': sporen_ids, 'uitkomst': a6_min},
+                 {'teken': '+', 'wortel': wortelD,
+                  'mathblocks': [a5p['id'], a6p['id']] if (a5p and a6p) else [], 'uitkomst': a6_plus},
+                 {'teken': '-', 'wortel': '-' + wortelD,
+                  'mathblocks': ['A7', 'A8'], 'uitkomst': a6_min},
              ]},
         ],
         'oplossingsverzameling': oplossing,
