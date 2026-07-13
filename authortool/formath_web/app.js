@@ -1902,6 +1902,11 @@ let currentFormule = 'algemeen';
  */
 function onFormuleKeuze(soort) {
     currentFormule = soort || 'algemeen';
+    if (currentFormule !== 'abc' && currentFormule !== 'algemeen') {
+        setStatus('Soort "' + escapeHtml(currentFormule) + '" — sjabloon nog niet ' +
+            'geïmplementeerd (alleen Algemeen en abc formule doen nu iets).', 'info');
+        return;
+    }
     let latex;
     try { latex = mathField.getValue('latex'); } catch (e) { return; }
     if (!latex) return;

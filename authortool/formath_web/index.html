@@ -238,20 +238,14 @@
             font-weight: 600;
             line-height: 1;
         }
-        /* Formule-keuzemenu (rechts in de actie-balk) */
-        .formule-keuze {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 12px;
-            color: #4d5260;
-        }
-        .formule-keuze select {
+        /* Soort-keuzemenu naast 'Nieuw' (rechts in de actie-balk) */
+        .formule-keuze-select {
             font-size: 12px;
             padding: 3px 6px;
             border: 1px solid #ccc;
             border-radius: 4px;
             background: #fff;
+            margin-left: 4px;
         }
 
         /* ── Randvoorwaarden harmonica (derde sectie, mosterd) ───── */
@@ -1310,24 +1304,29 @@
                 <button id="btn-json" class="btn btn-secondary" onclick="openMetadataDialog()" disabled>
                     Opslaan
                 </button>
-                <button id="btn-clear" class="btn btn-ghost" onclick="clearAll()" disabled>
-                    Nieuw
-                </button>
                 <!-- Zichtbaar alleen als een opgave geselecteerd is -->
                 <button id="btn-edit" class="btn btn-ghost" onclick="toggleEdit()"
                         type="button" hidden>
                     Edit toestaan
                 </button>
 
-                <!-- Spacer: duwt het keuzemenu naar rechts -->
+                <!-- Spacer: duwt 'Nieuw' + het soort-keuzemenu naar rechts -->
                 <div class="action-spacer"></div>
 
-                <label class="formule-keuze">Formule
-                    <select id="formule-keuze" onchange="onFormuleKeuze(this.value)">
-                        <option value="algemeen">Algemeen</option>
-                        <option value="abc">abc formule</option>
-                    </select>
-                </label>
+                <!-- 'Nieuw' labelt het keuzemenu ernaast (soort nieuwe opgave). -->
+                <button id="btn-clear" class="btn btn-ghost" onclick="clearAll()" disabled>
+                    Nieuw
+                </button>
+                <select id="formule-keuze" class="formule-keuze-select"
+                        onchange="onFormuleKeuze(this.value)" aria-label="Soort nieuwe opgave">
+                    <option value="algemeen">Algemeen</option>
+                    <option value="abc">abc formule</option>
+                    <option value="pythagoras">stelling pythagoras</option>
+                    <option value="rente">samengestelde rente</option>
+                    <option value="standaardafwijking">standaard afwijking</option>
+                    <option value="slingertijd">slingertijd</option>
+                    <option value="snelheid">snelheid</option>
+                </select>
                 <div id="status" class="status"></div>
             </div>
         </section>
