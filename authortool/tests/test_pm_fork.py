@@ -173,6 +173,41 @@ class TestPmFork(unittest.TestCase):
             ast['tree'], nm, plus['mathblocks'], plus.get('duo_verzameling'))
         self.assertEqual(probs, [], f"export-check: {probs}")
 
+    def test_duo_compleet_over_alle_steps(self):
+        # De DUO moet ELKE step dekken (1..7) met beide sporen op de fork-steps
+        # en een aggregator voor de piek; geen mathblock mag ontbreken.
+        plus = _pipeline(ABC_PM.replace('±', '+'))
+        minus = _pipeline(ABC_PM.replace('±', '-'))
+        pm_fork.maak_pm_opgave(plus, minus, ABC_PM, ABC_PM)
+        duo = plus['duo_verzameling']
+        # alle steps 1..7 aanwezig
+        self.assertEqual(sorted({d['step'] for d in duo}), [1, 2, 3, 4, 5, 6, 7])
+        # elk mathblock komt voor in de DUO
+        duo_mb = {h['mathblock'] for d in duo
+                  for h in (d.get('hoog', []) + d.get('laag', []))}
+        for mb in plus['mathblocks']:
+            self.assertIn(mb['id'], duo_mb, f"{mb['id']} niet in duo")
+        # fork-steps hebben BEIDE sporen; step 5 −spoor draagt A5', step 6 A6'
+        def entry(step, spoor):
+            return next(d for d in duo
+                        if d['step'] == step and d.get('spoor') == spoor)
+        self.assertIn("A5'", [h['mathblock'] for h in entry(5, '-')['hoog']])
+        self.assertIn("A6'", [h['mathblock'] for h in entry(6, '-')['hoog']])
+        self.assertIn('B5', [h['mathblock'] for h in entry(5, '+')['hoog']])
+        # de gedeelde noemer B5 zit NIET in het −spoor (voorkomt dubbeltelling)
+        self.assertNotIn('B5', [h['mathblock'] for h in entry(5, '-')['hoog']])
+        # piek: aggregator-entry op step 7 met A7 → oplossingsverzameling
+        piek = entry(7, 'beide')
+        self.assertTrue(piek.get('aggregatie'))
+        self.assertEqual(piek['hoog'][0]['mathblock'], 'A7')
+        self.assertEqual(piek['hoog'][0]['output_expressie'], 'S = {3, -2}')
+        # de export-check keurt de complete opgave goed (incl. duo)
+        import export_validatie
+        ast = plus['metadata']['expressie']['ast']
+        probs = export_validatie.valideer_export(
+            ast['tree'], ast['node_map'], plus['mathblocks'], duo)
+        self.assertEqual(probs, [], f"export-check: {probs}")
+
     def test_volledige_takken_en_parent_overzicht(self):
         # Subs = volledige takken (elk mét de √) → 3 en −2.
         plus = _pipeline(ABC_PM.replace('±', '+'))

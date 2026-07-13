@@ -354,6 +354,47 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
                              'type': 'operation', 'spoor': 'beide',
                              'synthetisch': True})
 
+    # ── duo_verzameling completeren met het −spoor + de piek ──────────────────
+    # De +variant-DUO dekt alleen het +spoor (step 1..6). Vanaf de fork-step
+    # (waar A4=±√ splitst) taggen we het +spoor met spoor '+' en voegen we het
+    # −spoor toe uit de −variant-DUO (met accent-id's A5'/A6'; de gedeelde noemer
+    # B5 blijft alleen in het +spoor). Step 7 wordt een aggregator-entry (spoor
+    # 'beide') die A6 en A6' bundelt tot de oplossingsverzameling.
+    duo_plus = opgave_plus.get('duo_verzameling')
+    duo_min = opgave_min.get('duo_verzameling')
+    if isinstance(duo_plus, list) and isinstance(duo_min, list) and a5p and a6p:
+        split_step = a5p['step']
+        rename = {a5p['id']: a5acc, a6p['id']: a6acc}
+        gedeeld = b5p['id'] if b5p else None        # noemer: alleen in +spoor
+        for d in duo_plus:
+            if d.get('step', 0) >= split_step:
+                d['spoor'] = '+'
+        min_entries = []
+        for d in duo_min:
+            if d.get('step', 0) < split_step:
+                continue
+            nd = copy.deepcopy(d)
+            nd['spoor'] = '-'
+            for key in ('hoog', 'laag'):
+                lst = []
+                for h in (nd.get(key) or []):
+                    if h.get('mathblock') == gedeeld:
+                        continue                     # gedeelde noemer overslaan
+                    if h.get('mathblock') in rename:
+                        h['mathblock'] = rename[h['mathblock']]
+                    lst.append(h)
+                nd[key] = lst
+            min_entries.append(nd)
+        duo_plus.extend(min_entries)
+        duo_plus.append({
+            'step': a9_step, 'spoor': 'beide', 'aggregatie': True,
+            'input_expressie': '{%s, %s}' % (a6_plus, a6_min),
+            'hoog': [{'mathblock': piek_id, 'output_expressie': oplossing}],
+            'laag': [],
+        })
+        _rang = {'+': 0, '-': 1, 'beide': 2}
+        duo_plus.sort(key=lambda d: (d.get('step', 0), _rang.get(d.get('spoor'), 0)))
+
     # Post-mutatie export-check: de gewone check in json_exporter draaide vóór we
     # A5'/A6'/piek toevoegden. Her-valideer nu de complete opgave (niet-blokkerend).
     try:

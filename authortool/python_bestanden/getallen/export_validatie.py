@@ -156,6 +156,11 @@ def valideer_export(tree: list,
 
     # CHECK 4 + 5: dubbele negatie + waarde-invariantie
     for d in (duo_verzameling or []):
+        # Aggregator-entries (oplossingsverzameling S = {p, q}) bundelen twee
+        # sporen tot een verzameling; die heeft geen enkele numerieke waarde,
+        # dus de negatie-/invariantie-checks slaan we over.
+        if d.get('aggregatie'):
+            continue
         step = d.get('step', '?')
         alle = list(d.get('hoog', []) or []) + list(d.get('laag', []) or [])
 
