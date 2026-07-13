@@ -800,14 +800,21 @@ def _collect_simplify_source_ids(node, result=None):
 
 
 def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
-               node_paths=None):
-    """Teken alle nodes en verbindingslijnen recursief."""
+               node_paths=None, pm_overrides=None):
+    """Teken alle nodes en verbindingslijnen recursief.
+
+    pm_overrides (optioneel): dict block_id → {'block_id': nieuwe-tekst,
+    'result': nieuwe-uitkomst}. Voor de ±-abc-graaf waar A5/A5' en A6/A6'
+    in één box worden gecombineerd (bv. A5 toont "12 / -8", id "A5 / A5'").
+    """
     if block_ids is None:
         block_ids = {}
     if simplify_source_ids is None:
         simplify_source_ids = set()
     if node_paths is None:
         node_paths = {}
+    if pm_overrides is None:
+        pm_overrides = {}
     x = info["x"] + dx
     y = info["y"] + dy
     node = info["node"]
@@ -1012,8 +1019,10 @@ def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
         "opacity": "0.8",
     }).text = type_short
 
-    # Block ID (A1, B2, ...) linksonder in de box voor operatie-nodes
+    # Block ID (A1, B2, ...) linksonder in de box voor operatie-nodes.
+    # Bij een ±-override toont de box de gecombineerde id (bv. "A5 / A5'").
     block_id = block_ids.get(id(node))
+    ov = pm_overrides.get(block_id) if block_id else None
     if block_id:
         ET.SubElement(svg, "text", {
             "x": str(round(x - w / 2 + 5, 1)),
@@ -1023,7 +1032,7 @@ def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
             "font-size": "11",
             "font-weight": "500",
             "fill": "#1a1a1a",
-        }).text = block_id
+        }).text = (ov.get('block_id') if ov and ov.get('block_id') else block_id)
 
     # Pad-label ONDER de rechthoek (bv. "path = [1, 0]").
     # Voor zowel operatie-nodes als externe-input-leaves: zo lang als
@@ -1064,6 +1073,9 @@ def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
                 result_str = format_result(evaluate(node))
         else:
             result_str = format_result(evaluate(node))
+        # ±-override: toon beide spoor-uitkomsten (bv. "12 / -8") i.p.v. één.
+        if ov and ov.get('result'):
+            result_str = ov['result']
         if result_str:
             ET.SubElement(svg, "text", {
                 "x": str(round(x, 1)),
@@ -1078,7 +1090,7 @@ def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
     # Recursief children tekenen
     for child in info["children"]:
         draw_nodes(svg, child, dx, dy, block_ids, simplify_source_ids,
-                   node_paths)
+                   node_paths, pm_overrides)
 
 
 def _compute_paths_for_blocks(ast):
@@ -1179,20 +1191,30 @@ def _compute_paths_for_blocks(ast):
     return paths
 
 
-def generate_ast_svg(ast, title="", expression=""):
-    """Genereer SVG van AST na manifold converter."""
+def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=None):
+    """Genereer SVG van AST na manifold converter.
+
+    pm_overrides / pm_peak (optioneel): voor de ±-abc-graaf. pm_overrides
+    combineert A5/A5' en A6/A6' in één box (zie draw_nodes); pm_peak tekent
+    een extra piek-blok (oplossingsverzameling S = {p, q}) bovenop het
+    anker-blok. pm_peak = {'anchor': 'A6', 'block_id': 'A9', 'label': 'S',
+    'result': 'S = {3, -2}'}.
+    """
 
     layout, _ = compute_layout(ast)
     min_x, max_x, min_y, max_y = find_bounds(layout)
+
+    step_h = NODE_H + V_GAP
+    peak_gap = step_h if pm_peak else 0   # extra ruimte bovenaan voor de piek
 
     STEP_LABEL_W = 80           # ruimte voor "step N" labels links
     CONTENT_GAP  = 40           # extra horizontale ruimte tussen step-labels en eerste blok
     PATH_LABEL_H = 18           # ruimte onder elk blok voor "path = [...]" label
     svg_w = max_x - min_x + 2 * MARGIN + STEP_LABEL_W + CONTENT_GAP
-    svg_h = max_y - min_y + 2 * MARGIN + 60 + PATH_LABEL_H  # 60 voor titel
+    svg_h = max_y - min_y + 2 * MARGIN + 60 + PATH_LABEL_H + peak_gap  # 60 voor titel
 
     dx = MARGIN + STEP_LABEL_W + CONTENT_GAP - min_x
-    dy = MARGIN + 60 - min_y  # 60 voor titel ruimte
+    dy = MARGIN + 60 - min_y + peak_gap  # 60 voor titel; peak_gap voor de piek erboven
 
     svg = ET.Element("svg", {
         "xmlns": "http://www.w3.org/2000/svg",
@@ -1225,11 +1247,13 @@ def generate_ast_svg(ast, title="", expression=""):
 
     # In compute_layout is depth=0 de ROOT (bovenaan) en neemt toe naar leaves.
     # Step 0 = leaves = onderaan = y_max; step max_depth = root = y_min.
-    # Stap grootte in pixels:
-    step_h = NODE_H + V_GAP
+    # (step_h is al bovenaan gedefinieerd.)
 
     # label_margin = STEP_LABEL_W (al gedefinieerd boven)
     label_margin = STEP_LABEL_W
+
+    # Bij een piek (A9) is er één step extra bovenaan (step max_depth+1).
+    top_step = max_depth + 1 if pm_peak else max_depth
 
     # y positie van een step (step 0 = onderaan = max layout depth):
     #   layout_depth van leaves = max_depth  (want root is depth 0)
@@ -1238,7 +1262,7 @@ def generate_ast_svg(ast, title="", expression=""):
     # Step nummer s hoort bij layout_depth = max_depth - s
     #   → y_center = (max_depth - s) * step_h + dy + NODE_H / 2
 
-    for s in range(max_depth + 1):
+    for s in range(top_step + 1):
         layout_depth = max_depth - s
         y_center = layout_depth * step_h + dy + NODE_H / 2
         y_line = round(y_center)
@@ -1272,9 +1296,91 @@ def generate_ast_svg(ast, title="", expression=""):
     block_ids = assign_block_ids(layout, max_depth)
     simplify_source_ids = _collect_simplify_source_ids(ast)
     node_paths = _compute_paths_for_blocks(ast)
-    draw_nodes(svg, layout, dx, dy, block_ids, simplify_source_ids, node_paths)
+    draw_nodes(svg, layout, dx, dy, block_ids, simplify_source_ids, node_paths,
+               pm_overrides)
+
+    # ── Piek A9 (oplossingsverzameling) bovenop het anker-blok ────────────────
+    if pm_peak:
+        _draw_pm_peak(svg, layout, block_ids, dx, dy, step_h, pm_peak)
 
     return ET.ElementTree(svg)
+
+
+def _find_info_by_block_id(info, block_ids, target):
+    """Zoek in de layout-boom de node-info waarvan het block_id == target."""
+    if block_ids.get(id(info["node"])) == target:
+        return info
+    for ch in info["children"]:
+        found = _find_info_by_block_id(ch, block_ids, target)
+        if found:
+            return found
+    return None
+
+
+def _draw_pm_peak(svg, layout, block_ids, dx, dy, step_h, pm_peak):
+    """Teken het piek-blok (A9, S = {p, q}) één step boven het anker-blok.
+
+    De piek staat in de accent-kleur (de 'ster op de kerstboom') en heeft één
+    verbindingslijn naar het anker (het gecombineerde A6/A6'-blok).
+    """
+    anchor = _find_info_by_block_id(layout, block_ids, pm_peak.get('anchor'))
+    if anchor is None:
+        return
+    ax = anchor["x"] + dx
+    ay = anchor["y"] + dy
+    px = ax                       # zelfde x als het anker
+    py = ay - step_h              # één step erboven
+    result = pm_peak.get('result', '')
+    label = pm_peak.get('label', 'S')
+    bid = pm_peak.get('block_id', 'A9')
+
+    # Breedte: ruim genoeg voor "S = {p, q}" boven de box.
+    w = max(70, 10 * len(result))
+    h = NODE_H
+
+    # Verbindingslijn piek → anker (van onderkant piek naar bovenkant anker).
+    ET.SubElement(svg, "line", {
+        "x1": str(round(px, 1)), "y1": str(round(py + h, 1)),
+        "x2": str(round(ax, 1)), "y2": str(round(ay, 1)),
+        "stroke": "#999", "stroke-width": "1.5",
+    })
+
+    # Accent-kleur (ster op de kerstboom): licht goud met goud-bruine rand.
+    ET.SubElement(svg, "rect", {
+        "x": str(round(px - w / 2, 1)), "y": str(round(py, 1)),
+        "width": str(round(w, 1)), "height": str(h),
+        "rx": "3", "ry": "3",
+        "fill": "#efe0b6", "stroke": "#ae7a15", "stroke-width": "2",
+    })
+    # Hoofd-symbool "S" centraal
+    ET.SubElement(svg, "text", {
+        "x": str(round(px, 1)), "y": str(round(py + h / 2 + 6, 1)),
+        "text-anchor": "middle",
+        "font-family": "JetBrains Mono, Consolas, monospace",
+        "font-size": "18", "font-weight": "500", "fill": "#6a4807",
+    }).text = label
+    # Type-label bovenin
+    ET.SubElement(svg, "text", {
+        "x": str(round(px, 1)), "y": str(round(py + 11, 1)),
+        "text-anchor": "middle",
+        "font-family": "JetBrains Mono, Consolas, monospace",
+        "font-size": "8", "fill": "#ae7a15", "opacity": "0.85",
+    }).text = "oplossing"
+    # Block-id linksonder
+    ET.SubElement(svg, "text", {
+        "x": str(round(px - w / 2 + 5, 1)), "y": str(round(py + h - 5, 1)),
+        "text-anchor": "start",
+        "font-family": "JetBrains Mono, Consolas, monospace",
+        "font-size": "11", "font-weight": "500", "fill": "#1a1a1a",
+    }).text = bid
+    # Uitkomst (S = {p, q}) boven de box
+    if result:
+        ET.SubElement(svg, "text", {
+            "x": str(round(px, 1)), "y": str(round(py - 5, 1)),
+            "text-anchor": "middle",
+            "font-family": "JetBrains Mono, Consolas, monospace",
+            "font-size": "11", "font-weight": "400", "fill": "#333",
+        }).text = f"= {result}"
 
 
 # ─── Main ────────────────────────────────────────────────────────────────────

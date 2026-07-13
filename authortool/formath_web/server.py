@@ -979,6 +979,29 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         sporen = opgave_plus['sjabloon']['stappen'][2]['sporen']
         return opgave_plus, conv, sporen[0]['uitkomst'], sporen[1]['uitkomst']
 
+    @staticmethod
+    def _pm_svg_extras(opgave):
+        """Bouw pm_overrides + pm_peak voor de ±-abc-SVG uit de mathblocks.
+
+        Combineert A5/A5' en A6/A6' in één box (beide spoor-uitkomsten) en
+        maakt van A9 de piek (S = {p, q}) bovenop A6. Retourneert (None, None)
+        als de accent-broers ontbreken (dan gewone SVG)."""
+        mb = {m['id']: m for m in opgave.get('mathblocks', [])}
+        def out(bid):
+            return mb.get(bid, {}).get('output', '')
+        overrides = {}
+        if 'A5' in mb and "A5'" in mb:
+            overrides['A5'] = {'block_id': "A5 / A5'",
+                               'result': out('A5') + ' / ' + out("A5'")}
+        if 'A6' in mb and "A6'" in mb:
+            overrides['A6'] = {'block_id': "A6 / A6'",
+                               'result': out('A6') + ' / ' + out("A6'")}
+        peak = None
+        if 'A9' in mb:
+            peak = {'anchor': 'A6', 'block_id': 'A9', 'label': 'S',
+                    'result': out('A9')}
+        return (overrides or None), peak
+
     # ── ±-abc export (ÉÉN opgave met sjabloon) ────────────────────────────────
     def _handle_export_fork(self, expression, request_data):
         """Produceer uit een ±-expressie ÉÉN abc-opgave (A1-A4, ±√ + sjabloon).
@@ -1010,7 +1033,10 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             json_path = os.path.join(write_dir, 'opgave_%s.json' % basis_id)
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(opgave, f, indent=2, ensure_ascii=False)
-            tree = generate_ast_svg(conv, title=f"AST: {expression}", expression=expression)
+            pm_ov, pm_peak = self._pm_svg_extras(opgave)
+            tree = generate_ast_svg(conv, title=f"AST: {expression}",
+                                    expression=expression,
+                                    pm_overrides=pm_ov, pm_peak=pm_peak)
             ET.indent(tree, space="  ")
             with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
                 f.write(ET.tostring(tree.getroot(), encoding='unicode'))
@@ -1040,7 +1066,10 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             except ValueError as e:
                 self._send_json({'success': False, 'error': '±-preview: %s' % e})
                 return
-            tree = generate_ast_svg(conv, title=f"AST: {expression}", expression=expression)
+            pm_ov, pm_peak = self._pm_svg_extras(opgave)
+            tree = generate_ast_svg(conv, title=f"AST: {expression}",
+                                    expression=expression,
+                                    pm_overrides=pm_ov, pm_peak=pm_peak)
             ET.indent(tree, space="  ")
             svg = ET.tostring(tree.getroot(), encoding='unicode')
             from manifold_converter import remove_all_annotations

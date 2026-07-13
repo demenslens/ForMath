@@ -250,7 +250,12 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     d_waarde = (_blok(opgave_plus, a3_id) or {}).get('output', wortelD)
 
     a5p, a6p, b5p = _a5_a6_b5(opgave_plus)    # +spoor: A5, A6, B5
-    a5m, a6m, _b5m = _a5_a6_b5(opgave_min)    # bron voor de −spoor-broers A7, A8
+    a5m, a6m, _b5m = _a5_a6_b5(opgave_min)    # bron voor de −spoor-broers A5', A6'
+
+    # De −spoor-broers krijgen een accent-id (A5', A6') op HETZELFDE niveau (step),
+    # want een cijfer-ophoging (A7/A8) zou een hoger niveau in de graaf suggereren.
+    a5acc = (a5p['id'] + "'") if a5p else "A5'"
+    a6acc = (a6p['id'] + "'") if a6p else "A6'"
 
     # A5's √-input markeren als spoor '+'
     if a5p:
@@ -260,17 +265,17 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
 
     a7 = a8 = None
     if a5p and a6p and b5p and a5m and a6m:
-        # A7 = −spoor van A5 (−b − √D), hangt aan de gedeelde A4 (spoor −)
+        # A5' = −spoor van A5 (−b − √D), hangt aan de gedeelde A4 (spoor −)
         a7 = copy.deepcopy(a5m)
-        a7['id'] = 'A7'
+        a7['id'] = a5acc
         a7['step'] = a5p['step']
         a7['input'] = [i for i in a7['input'] if i.get('type') == 'extern'] + \
                       [{'type': 'mathblock', 'id': wb['id'], 'spoor': '-'}]
-        # A8 = −spoor van A6 (A7 : B5), gedeelde B5
+        # A6' = −spoor van A6 (A5' : B5), gedeelde B5
         a8 = copy.deepcopy(a6m)
-        a8['id'] = 'A8'
+        a8['id'] = a6acc
         a8['step'] = a6p['step']
-        a8['input'] = [{'type': 'mathblock', 'id': 'A7'},
+        a8['input'] = [{'type': 'mathblock', 'id': a5acc},
                        {'type': 'mathblock', 'id': b5p['id']}]
 
     a6_plus = a6p['output'] if a6p else '?'
@@ -282,7 +287,7 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
         'operatie': {'symbool': 'S', 'beschrijving': 'oplossingsverzameling'},
         'input': [
             {'type': 'mathblock', 'id': a6p['id'] if a6p else None},
-            {'type': 'mathblock', 'id': 'A8'},
+            {'type': 'mathblock', 'id': a6acc},
         ],
         'output': oplossing,
     }
@@ -291,7 +296,7 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
         if blok:
             opgave_plus['mathblocks'].append(blok)
 
-    # steps herbouwen uit de blokken (A7 op A5's step, A8 op A6's step, A9 nieuw)
+    # steps herbouwen uit de blokken (A5' op A5's step, A6' op A6's step, A9 nieuw)
     per_step = {}
     for mb in opgave_plus['mathblocks']:
         per_step.setdefault(mb['step'], []).append(mb['id'])
@@ -314,7 +319,7 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
                  {'teken': '+', 'wortel': wortelD,
                   'mathblocks': [a5p['id'], a6p['id']] if (a5p and a6p) else [], 'uitkomst': a6_plus},
                  {'teken': '-', 'wortel': '-' + wortelD,
-                  'mathblocks': ['A7', 'A8'], 'uitkomst': a6_min},
+                  'mathblocks': [a5acc, a6acc], 'uitkomst': a6_min},
              ]},
         ],
         'oplossingsverzameling': oplossing,
