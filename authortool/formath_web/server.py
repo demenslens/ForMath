@@ -944,12 +944,12 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
     # ── ±-abc: gedeelde opgave-bouwer (Export + Process-preview) ──────────────
     def _bouw_pm_opgave(self, expression, latex):
-        """Bouw de ±-abc-opgave (A1-A4, A4=±√, + sjabloon) uit een ±-expressie.
+        """Bouw de ±-abc-opgave (volledige graaf A1-A6 + B5 + A9) uit de +variant
+        én −variant.
 
-        Retourneert (opgave, conv, a_uit, b_uit): de opgave, de √-subexpressie-AST
-        voor de SVG (fork-√ als ± gemarkeerd), en de twee spoor-uitkomsten. Werpt
-        ValueError als er geen (enkele) fork-√ is. Gedeeld door de export én de
-        Process-preview, zodat beide exact dezelfde ±-opgave tonen.
+        Retourneert (opgave, conv, a6_plus, a6_min): de opgave, de +variant-AST
+        voor de SVG (fork-√ als ± gemarkeerd), en de twee eind-uitkomsten. Werpt
+        ValueError als er geen fork-√ is. Gedeeld door export én Process-preview.
         """
         import pm_fork
         from json_exporter import generate_formath_json
@@ -966,21 +966,18 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
                 expression=expr, schrijf=False)
             return converted, result
 
-        wortel = pm_fork.wortel_na_pm(expression)      # ValueError als geen fork-√
-        conv, opgave = pijplijn(wortel)
-        wortelD = pm_fork._root_output(opgave)
-        a_expr, b_expr = pm_fork.tak_expressies(expression, wortel, wortelD)
-        _ca, tak_a = pijplijn(a_expr)
-        _cb, tak_b = pijplijn(b_expr)
-        a_uit = pm_fork._root_output(tak_a)
-        b_uit = pm_fork._root_output(tak_b)
-        pm_fork.maak_pm_opgave(opgave, expression, latex or expression, wortel,
-                               wortelD, a_expr, a_uit, b_expr, b_uit)
+        # De volledige +variant- en −variant-graaf (elk A1-A6 + B5).
+        conv, opgave_plus = pijplijn(expression.replace('±', '+'))
+        _cm, opgave_min = pijplijn(expression.replace('±', '-'))
+        if pm_fork._wortelblok(opgave_plus) is None:
+            raise ValueError('geen √ in de +variant — geen abc-fork')
+        pm_fork.maak_pm_opgave(opgave_plus, opgave_min, expression, latex or expression)
         try:
             pm_fork.vind_wortel(conv)['aantal_wortels'] = 2   # ±^1/2 in de SVG
         except ValueError:
             pass
-        return opgave, conv, a_uit, b_uit
+        sporen = opgave_plus['sjabloon']['stappen'][2]['sporen']
+        return opgave_plus, conv, sporen[0]['uitkomst'], sporen[1]['uitkomst']
 
     # ── ±-abc export (ÉÉN opgave met sjabloon) ────────────────────────────────
     def _handle_export_fork(self, expression, request_data):

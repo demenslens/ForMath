@@ -108,30 +108,37 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(a['fork_ouder']['teken'], '+')
         self.assertEqual(b['fork_ouder']['teken'], '-')
 
-    def test_pm_opgave_een_id_met_sjabloon(self):
-        # Eén opgave: de √-subexpressie (A1-A4) → ±-opgave met sjabloon.
-        basis = _pipeline('sqrt((-2)^2-4×2×(-12))')
-        self.assertEqual(pm_fork._root_output(basis), '10')
-        pm_fork.maak_pm_opgave(
-            basis, ABC_PM, ABC_PM, 'sqrt((-2)^2-4×2×(-12))', '10',
-            '(-(-2)+10):(2×2)', '3', '(-(-2)-10):(2×2)', '-2')
-        a4 = pm_fork._wortelblok(basis)
+    def test_pm_opgave_volledige_graaf_met_A9(self):
+        # Volledige abc-graaf (A1-A6 + B5): A4=±√, A5/A6 dubbelwaardig, A9 = S.
+        plus = _pipeline(ABC_PM.replace('±', '+'))
+        minus = _pipeline(ABC_PM.replace('±', '-'))
+        self.assertEqual(pm_fork._root_output(plus), '3')
+        self.assertEqual(pm_fork._root_output(minus), '-2')
+        pm_fork.maak_pm_opgave(plus, minus, ABC_PM, ABC_PM)
+        mb = {m['id']: m for m in plus['mathblocks']}
+        # A4 = ±√
+        a4 = pm_fork._wortelblok(plus)
         self.assertEqual(a4['operatie']['symbool'], '±√')
         self.assertEqual(a4['operatie']['aantal_wortels'], 2)
         self.assertEqual(a4['output'], '±10')
-        self.assertEqual(basis['metadata']['expressie']['tekst'], ABC_PM)
-        sj = basis['sjabloon']
-        self.assertEqual(sj['type'], 'abc_formule')
-        self.assertIn('S = {p, q}', sj['gevraagde'])
-        self.assertEqual(sj['additioneel_gegeven']['label'], 'D')
-        self.assertEqual(sj['additioneel_gegeven']['mathblock'], 'A3')
+        # A5, A6 dubbelwaardig + per-spoor hints
+        a5, a6 = mb['A5'], mb['A6']
+        self.assertEqual(a5['output_sporen'], {'+': '12', '-': '-8'})
+        self.assertEqual(a6['output_sporen'], {'+': '3', '-': '-2'})
+        self.assertIn('+', a5['hints_sporen'])
+        self.assertIn('-', a6['hints_sporen'])
+        self.assertNotIn('hints', a5)
+        # A9 = piek: S met twee spoor-inputs
+        a9 = mb.get('A9')
+        self.assertIsNotNone(a9)
+        self.assertEqual(a9['operatie']['symbool'], 'S')
+        self.assertEqual(a9['output'], 'S = {3, -2}')
+        self.assertEqual([i['spoor'] for i in a9['input']], ['+', '-'])
+        # sjabloon
+        sj = plus['sjabloon']
         self.assertEqual(sj['oplossingsverzameling'], 'S = {3, -2}')
-        # stap 1 = D uitrekenen (t/m A3); stap 2 = ±√D (varianten); stap 3 = sporen
-        self.assertEqual(sj['stappen'][0]['t_m_mathblock'], 'A3')
-        self.assertEqual(sj['stappen'][0]['uitkomst'], '100')
-        self.assertEqual(sj['stappen'][1]['verwacht'], '±10')
-        self.assertIn('10,-10', sj['stappen'][1]['varianten'])
         self.assertEqual([sp['uitkomst'] for sp in sj['stappen'][2]['sporen']], ['3', '-2'])
+        self.assertEqual(plus['metadata']['expressie']['tekst'], ABC_PM)
 
     def test_volledige_takken_en_parent_overzicht(self):
         # Subs = volledige takken (elk mét de √) → 3 en −2.

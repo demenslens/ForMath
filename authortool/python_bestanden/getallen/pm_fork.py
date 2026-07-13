@@ -207,58 +207,108 @@ def bouw_fork_opgaven(expr, run_pipeline, basis_id):
     return {'trunk': trunk, 'tak_a': tak_a, 'tak_b': tak_b}
 
 
-def maak_pm_opgave(opgave, full_expr, latex_display, wortel, wortelD,
-                   a_expr, a_uit, b_expr, b_uit):
-    """Verbouw de √-subexpressie-opgave (A1–A4, A4=√/√D) tot de ±-opgave.
-
-    - A4 wordt een ±-worteltrekken-mathblock (aantal_wortels:2, output ±√D).
-    - de expressie (mathfield) wordt de volledige abc.
-    - er komt een 'splitsing'-sectie: ná A4 biedt de studenttool de twee takken
-      (+/− √D) als losse regels aan, met kant-en-klare expressies + uitkomsten.
-
-    Eén opgave, één id — geen sub-opgaven. Zie ONTWERP_pm_wortel_fork.md.
-    """
+def _a5_a6_b5(opgave):
+    """(A5, A6, B5) uit een abc-graaf: A5 = blok dat de √ gebruikt (−b±√D),
+    A6 = root (deling), B5 = de andere input van A6 (2a). None waar niet gevonden."""
     wb = _wortelblok(opgave)
+    a5 = None
+    if wb is not None:
+        a5 = next((mb for mb in opgave['mathblocks']
+                   if any(i.get('type') == 'mathblock' and i.get('id') == wb['id']
+                          for i in mb['input'])), None)
+    a6 = _rootblok(opgave)
+    b5 = None
+    if a5 and a6:
+        b5_id = next((i['id'] for i in a6['input']
+                      if i.get('type') == 'mathblock' and i['id'] != a5['id']), None)
+        b5 = _blok(opgave, b5_id) if b5_id else None
+    return a5, a6, b5
+
+
+def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
+    """Bouw de ±-abc-opgave uit de +variant- én −variant-graaf (elk A1–A6 + B5).
+
+    Op opgave_plus (in-place): de volledige abc-graaf waarin
+      - A4 een ±-worteltrekken-mathblock is (±√D),
+      - A5 en A6 DUBBELWAARDIG zijn (output_sporen {+,-} + hints_sporen {+,-}),
+        want alleen die twee verschillen per spoor,
+      - een piek-mathblock A9 de oplossingsverzameling S = {p, q} afdwingt
+        (twee inputs: de +/− uitkomst van A6),
+    plus een 'sjabloon' (het studenttool-contract). Eén opgave, één id.
+    """
+    wb = _wortelblok(opgave_plus)
     if wb is None:
-        raise ValueError('geen √-blok in de opgave — kan geen ±-opgave maken')
+        raise ValueError('geen √-blok — kan geen ±-opgave maken')
     idx = str(wb['operatie'].get('index', 2))
     wb['operatie']['symbool'] = '±√' if idx == '2' else '±√' + idx
     wb['operatie']['aantal_wortels'] = 2
+    wortelD = wb['output']                      # bv. '10'
     wb['output'] = '±' + wortelD
-    exp = opgave['metadata']['expressie']
+    exp = opgave_plus['metadata']['expressie']
     exp['tekst'] = full_expr
     exp['latex_display'] = latex_display
 
-    # A3 = de discriminant (het mathblock-input van de √); de student rekent D
-    # zelf uit (A1..A3) en trekt daarna zelf ±√D.
+    a5p, a6p, _b5 = _a5_a6_b5(opgave_plus)
+    a5m, a6m, _b5m = _a5_a6_b5(opgave_min)
     a3_id = next((i['id'] for i in wb['input'] if i.get('type') == 'mathblock'), None)
-    a3 = _blok(opgave, a3_id) if a3_id else None
-    d_waarde = a3['output'] if a3 else wortelD
-    # Toegestane vormen voor ±√D (nog géén S = {..}-notatie).
-    varianten = ['±' + wortelD, wortelD + ',-' + wortelD, '-' + wortelD + ',' + wortelD]
+    d_waarde = (_blok(opgave_plus, a3_id) or {}).get('output', wortelD)
 
-    opgave['sjabloon'] = {
+    a5_plus = a5p['output'] if a5p else '?'
+    a5_min = a5m['output'] if a5m else '?'
+    a6_plus = a6p['output'] if a6p else '?'
+    a6_min = a6m['output'] if a6m else '?'
+
+    # A5, A6 dubbelwaardig: per-spoor output én per-spoor hints (die verschillen).
+    if a5p:
+        a5p['output_sporen'] = {'+': a5_plus, '-': a5_min}
+        a5p['output'] = '%s / %s' % (a5_plus, a5_min)
+        a5p['hints_sporen'] = {'+': a5p.get('hints', {}),
+                               '-': (a5m.get('hints', {}) if a5m else a5p.get('hints', {}))}
+        a5p.pop('hints', None)
+    if a6p:
+        a6p['output_sporen'] = {'+': a6_plus, '-': a6_min}
+        a6p['output'] = '%s / %s' % (a6_plus, a6_min)
+        a6p['hints_sporen'] = {'+': a6p.get('hints', {}),
+                               '-': (a6m.get('hints', {}) if a6m else a6p.get('hints', {}))}
+        a6p.pop('hints', None)
+
+    # A9 = piek: dwingt de oplossingsverzameling af (twee inputs uit A6).
+    oplossing = 'S = {%s, %s}' % (a6_plus, a6_min)
+    a9_step = (a6p['step'] if a6p else max(mb['step'] for mb in opgave_plus['mathblocks'])) + 1
+    a9 = {
+        'id': 'A9', 'step': a9_step,
+        'operatie': {'symbool': 'S', 'beschrijving': 'oplossingsverzameling'},
+        'input': [
+            {'type': 'mathblock', 'id': a6p['id'] if a6p else None, 'spoor': '+'},
+            {'type': 'mathblock', 'id': a6p['id'] if a6p else None, 'spoor': '-'},
+        ],
+        'output': oplossing,
+    }
+    opgave_plus['mathblocks'].append(a9)
+    opgave_plus.setdefault('steps', []).append({'step': a9_step, 'mathblocks': ['A9']})
+    opgave_plus['metadata']['aantal_mathblocks'] = len(opgave_plus['mathblocks'])
+    opgave_plus['metadata']['aantal_steps'] = a9_step
+
+    varianten = ['±' + wortelD, wortelD + ',-' + wortelD, '-' + wortelD + ',' + wortelD]
+    sporen_ids = [a5p['id'], a6p['id']] if (a5p and a6p) else []
+    opgave_plus['sjabloon'] = {
         'type': 'abc_formule',
         'gevraagde': 'Bepaal de oplossingsverzameling S = {p, q}.',
-        'additioneel_gegeven': {
-            'label': 'D',
-            'definitie': 'D = b² − 4ac',
-            'mathblock': a3_id,
-        },
+        'additioneel_gegeven': {'label': 'D', 'definitie': 'D = b² − 4ac', 'mathblock': a3_id},
         'stappen': [
             {'nr': 1, 'vraag': 'Bereken de discriminant D = b² − 4ac.',
              't_m_mathblock': a3_id, 'uitkomst': d_waarde},
             {'nr': 2, 'vraag': 'Trek de wortel uit D: bepaal ±√D.',
              'mathblock': wb['id'], 'verwacht': '±' + wortelD, 'varianten': varianten},
-            {'nr': 3, 'vraag': 'Substitueer beide wortels in de abc-formule (twee sporen).',
+            {'nr': 3, 'vraag': 'Substitueer en werk beide sporen uit.',
              'sporen': [
-                 {'wortel': wortelD, 'expressie': a_expr, 'uitkomst': a_uit},
-                 {'wortel': '-' + wortelD, 'expressie': b_expr, 'uitkomst': b_uit},
+                 {'teken': '+', 'wortel': wortelD, 'mathblocks': sporen_ids, 'uitkomst': a6_plus},
+                 {'teken': '-', 'wortel': '-' + wortelD, 'mathblocks': sporen_ids, 'uitkomst': a6_min},
              ]},
         ],
-        'oplossingsverzameling': 'S = {%s, %s}' % (a_uit, b_uit),
+        'oplossingsverzameling': oplossing,
     }
-    return opgave
+    return opgave_plus
 
 
 def bouw_parent_overzicht(sub_a, sub_b, basis_id, tekst, latex_display):
