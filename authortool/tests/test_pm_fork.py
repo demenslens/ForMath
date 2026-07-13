@@ -147,6 +147,32 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(sj['stappen'][2]['sporen'][1]['mathblocks'], ["A5'", "A6'"])
         self.assertEqual(plus['metadata']['expressie']['tekst'], ABC_PM)
 
+    def test_node_map_dekt_alle_blokken(self):
+        # Regressie: de node_map moet ELK mathblock dekken, óók de na afloop
+        # toegevoegde A5'/A6' (twin-verankering, spoor '-') en de piek A7.
+        plus = _pipeline(ABC_PM.replace('±', '+'))
+        minus = _pipeline(ABC_PM.replace('±', '-'))
+        pm_fork.maak_pm_opgave(plus, minus, ABC_PM, ABC_PM)
+        nm = plus['metadata']['expressie']['ast']['node_map']
+        in_map = {e['mathblock_id'] for e in nm}
+        for mb in plus['mathblocks']:
+            self.assertIn(mb['id'], in_map, f"{mb['id']} niet in node_map")
+        by_id = {e['mathblock_id']: e for e in nm if e.get('type') == 'operation'}
+        # accent-broers delen het pad van hun +spoor-partner, met spoor '-'
+        self.assertEqual(by_id["A5'"]['path'], by_id['A5']['path'])
+        self.assertEqual(by_id["A5'"]['spoor'], '-')
+        self.assertEqual(by_id["A6'"]['path'], by_id['A6']['path'])
+        self.assertEqual(by_id["A6'"]['spoor'], '-')
+        # de piek is synthetisch (geen eigen AST-node) en verankert op de root
+        self.assertTrue(by_id['A7'].get('synthetisch'))
+        self.assertEqual(by_id['A7']['path'], by_id['A6']['path'])
+        # en de ingebouwde export-check ziet geen problemen op de volle opgave
+        import export_validatie
+        ast = plus['metadata']['expressie']['ast']
+        probs = export_validatie.valideer_export(
+            ast['tree'], nm, plus['mathblocks'], plus.get('duo_verzameling'))
+        self.assertEqual(probs, [], f"export-check: {probs}")
+
     def test_volledige_takken_en_parent_overzicht(self):
         # Subs = volledige takken (elk mét de √) → 3 en −2.
         plus = _pipeline(ABC_PM.replace('±', '+'))

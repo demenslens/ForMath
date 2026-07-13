@@ -328,6 +328,52 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
         ],
         'oplossingsverzameling': oplossing,
     }
+
+    # ── node_map bijwerken voor de toegevoegde blokken ────────────────────────
+    # De accent-broers A5'/A6' delen structureel de plek van hun +spoor-partner
+    # (dezelfde schermtekens, andere teken-keuze na de ±-fork), dus ze verankeren
+    # op HETZELFDE AST-pad met spoor '-'. De piek is een synthetische aggregator
+    # zonder eigen AST-node en verankert op de root (het uitgerekende eindpunt).
+    ast_meta = (opgave_plus.get('metadata', {})
+                .get('expressie', {}).get('ast', {}))
+    node_map = ast_meta.get('node_map')
+    if isinstance(node_map, list) and a7 and a8 and a5p and a6p:
+        def _op_pad(bid):
+            for e in node_map:
+                if e.get('mathblock_id') == bid and e.get('type') == 'operation':
+                    return e.get('path')
+            return None
+        p5, p6 = _op_pad(a5p['id']), _op_pad(a6p['id'])
+        if p5 is not None:
+            node_map.append({'path': list(p5), 'mathblock_id': a5acc,
+                             'type': 'operation', 'spoor': '-'})
+        if p6 is not None:
+            node_map.append({'path': list(p6), 'mathblock_id': a6acc,
+                             'type': 'operation', 'spoor': '-'})
+            node_map.append({'path': list(p6), 'mathblock_id': piek_id,
+                             'type': 'operation', 'spoor': 'beide',
+                             'synthetisch': True})
+
+    # Post-mutatie export-check: de gewone check in json_exporter draaide vóór we
+    # A5'/A6'/piek toevoegden. Her-valideer nu de complete opgave (niet-blokkerend).
+    try:
+        try:
+            from export_validatie import valideer_export
+        except ImportError:
+            from .export_validatie import valideer_export
+        probs = valideer_export(ast_meta.get('tree'), node_map,
+                                opgave_plus.get('mathblocks'),
+                                opgave_plus.get('duo_verzameling'))
+        if probs:
+            print('⚠️  ±-EXPORT-CHECK: %d probleem(en):' % len(probs))
+            for p in probs:
+                print('    ' + p)
+        else:
+            print('✓ ±-EXPORT-CHECK: alle %d blokken gedekt in node_map.'
+                  % len(opgave_plus.get('mathblocks', [])))
+    except Exception as _e:
+        print('⚠️  ±-EXPORT-CHECK kon niet draaien: %s' % _e)
+
     return opgave_plus
 
 
