@@ -229,10 +229,12 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     """Bouw de ±-abc-opgave uit de +variant- én −variant-graaf (elk A1–A6 + B5).
 
     Op opgave_plus (in-place): de volledige abc-graaf. A4 = ±√D (de fork). Alleen
-    A5 en A6 verschillen per spoor, dus die krijgen een BROER: A7 (−spoor van A5)
-    en A8 (−spoor van A6) — elk een echt mathblock met eigen hints. A4 voedt A5 (+)
-    én A7 (−); B5 voedt A6 én A8. Een piek-mathblock A9 (operatie 'S') neemt A6 en
-    A8 en dwingt de oplossingsverzameling S = {p, q} af. Plus een 'sjabloon'.
+    A5 en A6 verschillen per spoor, dus die krijgen een BROER op HETZELFDE niveau
+    (accent-id, geen cijfer-ophoging): A5' (−spoor van A5, step 5) en A6' (−spoor
+    van A6, step 6) — elk een echt mathblock met eigen hints. A4 voedt A5 (+) én
+    A5' (−); B5 voedt A6 én A6'. Een piek-mathblock op de volgende step (A7 als de
+    graaf tot step 6 loopt, operatie 'S') neemt A6 en A6' en dwingt de
+    oplossingsverzameling S = {p, q} af. Plus een 'sjabloon'.
     """
     wb = _wortelblok(opgave_plus)
     if wb is None:
@@ -282,8 +284,10 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     a6_min = a8['output'] if a8 else '?'
     oplossing = 'S = {%s, %s}' % (a6_plus, a6_min)
     a9_step = (a6p['step'] if a6p else max(mb['step'] for mb in opgave_plus['mathblocks'])) + 1
+    # De piek-id volgt de step (piek op step 7 → A7), niet een vast 'A9'.
+    piek_id = 'A%d' % a9_step
     a9 = {
-        'id': 'A9', 'step': a9_step,
+        'id': piek_id, 'step': a9_step,
         'operatie': {'symbool': 'S', 'beschrijving': 'oplossingsverzameling'},
         'input': [
             {'type': 'mathblock', 'id': a6p['id'] if a6p else None},
@@ -296,7 +300,7 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
         if blok:
             opgave_plus['mathblocks'].append(blok)
 
-    # steps herbouwen uit de blokken (A5' op A5's step, A6' op A6's step, A9 nieuw)
+    # steps herbouwen uit de blokken (A5' op A5's step, A6' op A6's step, piek nieuw)
     per_step = {}
     for mb in opgave_plus['mathblocks']:
         per_step.setdefault(mb['step'], []).append(mb['id'])

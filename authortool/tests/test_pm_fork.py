@@ -108,9 +108,10 @@ class TestPmFork(unittest.TestCase):
         self.assertEqual(a['fork_ouder']['teken'], '+')
         self.assertEqual(b['fork_ouder']['teken'], '-')
 
-    def test_pm_opgave_broers_accent_en_A9(self):
-        # Volledige abc-graaf: A4=±√, +spoor A5/A6, −spoor-broers A5'/A6', piek A9.
-        # De broers krijgen een accent-id (zelfde step), geen cijfer-ophoging.
+    def test_pm_opgave_broers_accent_en_piek_A7(self):
+        # Volledige abc-graaf: A4=±√, +spoor A5/A6, −spoor-broers A5'/A6', piek A7.
+        # De broers krijgen een accent-id (zelfde step), geen cijfer-ophoging;
+        # de piek zit op step 7 en heet daarom A7 (id volgt de step).
         plus = _pipeline(ABC_PM.replace('±', '+'))
         minus = _pipeline(ABC_PM.replace('±', '-'))
         self.assertEqual(pm_fork._root_output(plus), '3')
@@ -135,10 +136,11 @@ class TestPmFork(unittest.TestCase):
         # elk spoor-blok heeft z'n eigen hints (geen dubbel-constructie)
         self.assertIn('hints', mb['A5'])
         self.assertIn('hints', mb["A5'"])
-        # A9 = piek: S met inputs A6 en A6'
-        self.assertEqual(mb['A9']['operatie']['symbool'], 'S')
-        self.assertEqual(mb['A9']['output'], 'S = {3, -2}')
-        self.assertEqual([i['id'] for i in mb['A9']['input']], ['A6', "A6'"])
+        # A7 = piek op step 7: S met inputs A6 en A6' (id volgt de step)
+        self.assertEqual(mb['A7']['step'], 7)
+        self.assertEqual(mb['A7']['operatie']['symbool'], 'S')
+        self.assertEqual(mb['A7']['output'], 'S = {3, -2}')
+        self.assertEqual([i['id'] for i in mb['A7']['input']], ['A6', "A6'"])
         # sjabloon: −spoor verwijst naar de accent-broers
         sj = plus['sjabloon']
         self.assertEqual(sj['oplossingsverzameling'], 'S = {3, -2}')

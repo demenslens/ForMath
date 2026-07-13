@@ -1197,8 +1197,8 @@ def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=No
     pm_overrides / pm_peak (optioneel): voor de ±-abc-graaf. pm_overrides
     combineert A5/A5' en A6/A6' in één box (zie draw_nodes); pm_peak tekent
     een extra piek-blok (oplossingsverzameling S = {p, q}) bovenop het
-    anker-blok. pm_peak = {'anchor': 'A6', 'block_id': 'A9', 'label': 'S',
-    'result': 'S = {3, -2}'}.
+    anker-blok. De piek-id volgt de step (piek op step 7 → A7). pm_peak =
+    {'anchor': 'A6', 'block_id': 'A7', 'label': 'S', 'result': 'S = {3, -2}'}.
     """
 
     layout, _ = compute_layout(ast)
@@ -1252,7 +1252,7 @@ def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=No
     # label_margin = STEP_LABEL_W (al gedefinieerd boven)
     label_margin = STEP_LABEL_W
 
-    # Bij een piek (A9) is er één step extra bovenaan (step max_depth+1).
+    # Bij een piek is er één step extra bovenaan (step max_depth+1).
     top_step = max_depth + 1 if pm_peak else max_depth
 
     # y positie van een step (step 0 = onderaan = max layout depth):
@@ -1299,7 +1299,7 @@ def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=No
     draw_nodes(svg, layout, dx, dy, block_ids, simplify_source_ids, node_paths,
                pm_overrides)
 
-    # ── Piek A9 (oplossingsverzameling) bovenop het anker-blok ────────────────
+    # ── Piek (oplossingsverzameling S) bovenop het anker-blok ─────────────────
     if pm_peak:
         _draw_pm_peak(svg, layout, block_ids, dx, dy, step_h, pm_peak)
 
@@ -1318,10 +1318,11 @@ def _find_info_by_block_id(info, block_ids, target):
 
 
 def _draw_pm_peak(svg, layout, block_ids, dx, dy, step_h, pm_peak):
-    """Teken het piek-blok (A9, S = {p, q}) één step boven het anker-blok.
+    """Teken het piek-blok (S = {p, q}) één step boven het anker-blok.
 
-    De piek staat in de accent-kleur (de 'ster op de kerstboom') en heeft één
-    verbindingslijn naar het anker (het gecombineerde A6/A6'-blok).
+    De piek-id volgt de step (piek op step 7 → A7). De piek staat in de
+    accent-kleur (de 'ster op de kerstboom') en heeft één verbindingslijn naar
+    het anker (het gecombineerde A6/A6'-blok).
     """
     anchor = _find_info_by_block_id(layout, block_ids, pm_peak.get('anchor'))
     if anchor is None:
@@ -1332,7 +1333,7 @@ def _draw_pm_peak(svg, layout, block_ids, dx, dy, step_h, pm_peak):
     py = ay - step_h              # één step erboven
     result = pm_peak.get('result', '')
     label = pm_peak.get('label', 'S')
-    bid = pm_peak.get('block_id', 'A9')
+    bid = pm_peak.get('block_id', 'A7')
 
     # Breedte: ruim genoeg voor "S = {p, q}" boven de box.
     w = max(70, 10 * len(result))

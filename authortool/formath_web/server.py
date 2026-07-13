@@ -944,7 +944,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
 
     # ── ±-abc: gedeelde opgave-bouwer (Export + Process-preview) ──────────────
     def _bouw_pm_opgave(self, expression, latex):
-        """Bouw de ±-abc-opgave (volledige graaf A1-A6 + B5 + A9) uit de +variant
+        """Bouw de ±-abc-opgave (volledige graaf A1-A6 + B5 + piek) uit de +variant
         én −variant.
 
         Retourneert (opgave, conv, a6_plus, a6_min): de opgave, de +variant-AST
@@ -984,7 +984,7 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         """Bouw pm_overrides + pm_peak voor de ±-abc-SVG uit de mathblocks.
 
         Combineert A5/A5' en A6/A6' in één box (beide spoor-uitkomsten) en
-        maakt van A9 de piek (S = {p, q}) bovenop A6. Retourneert (None, None)
+        maakt van het S-blok de piek (S = {p, q}) bovenop A6. Retourneert (None, None)
         als de accent-broers ontbreken (dan gewone SVG)."""
         mb = {m['id']: m for m in opgave.get('mathblocks', [])}
         def out(bid):
@@ -997,9 +997,11 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             overrides['A6'] = {'block_id': "A6 / A6'",
                                'result': out('A6') + ' / ' + out("A6'")}
         peak = None
-        if 'A9' in mb:
-            peak = {'anchor': 'A6', 'block_id': 'A9', 'label': 'S',
-                    'result': out('A9')}
+        piek = next((m for m in opgave.get('mathblocks', [])
+                     if (m.get('operatie') or {}).get('symbool') == 'S'), None)
+        if piek:
+            peak = {'anchor': 'A6', 'block_id': piek['id'], 'label': 'S',
+                    'result': piek.get('output', '')}
         return (overrides or None), peak
 
     # ── ±-abc export (ÉÉN opgave met sjabloon) ────────────────────────────────
