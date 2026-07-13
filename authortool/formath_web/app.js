@@ -1646,16 +1646,16 @@ function _renderWortelkeuze(mbId, meta) {
     const name = 'wortelkeuze-' + mbId;
     return `
         <div class="hints-group wortelkeuze">
-            <div class="hints-group-title">Wortelkeuze (even wortel)</div>
-            <div class="wortelkeuze-desc">Werk je één (+) of beide (±) wortels uit?
-                Bij 2 ontstaat een ±-vertakking.</div>
+            <div class="hints-group-title">Wortel (even) — + of ±</div>
+            <div class="wortelkeuze-desc">Default staat de + (positieve) wortel aan.
+                Zet 'm op ± voor beide wortels (dan wordt het een ±-worteltrek).</div>
             <label class="wortelkeuze-opt">
                 <input type="radio" name="${escapeHtml(name)}" value="1" ${Number(cur) === 1 ? 'checked' : ''}>
-                <span>1 wortel (+)</span>
+                <span>+ (positieve wortel)</span>
             </label>
             <label class="wortelkeuze-opt">
                 <input type="radio" name="${escapeHtml(name)}" value="2" ${Number(cur) === 2 ? 'checked' : ''}>
-                <span>2 wortels (+ en −)</span>
+                <span>± (beide wortels)</span>
             </label>
         </div>
     `;
@@ -1892,6 +1892,36 @@ function onSoortOpgaveChange(value) {
  */
 function onProductieChange(value) {
     currentProductie = value || PRODUCTIE_DEFAULT;
+}
+
+let currentFormule = 'algemeen';
+/**
+ * Formule-keuzemenu onder het mathfield. 'abc formule' zet de wortel in de
+ * huidige expressie op ± (\pm vóór \sqrt), zodat de export in een ±-worteltrek
+ * + splitsing forkt. 'Algemeen' zet ± terug naar +.
+ */
+function onFormuleKeuze(soort) {
+    currentFormule = soort || 'algemeen';
+    let latex;
+    try { latex = mathField.getValue('latex'); } catch (e) { return; }
+    if (!latex) return;
+    let nieuw = latex;
+    if (currentFormule === 'abc') {
+        if (!latex.includes('\\pm') && latex.includes('\\sqrt')) {
+            nieuw = latex.includes('+\\sqrt')
+                ? latex.replace('+\\sqrt', '\\pm \\sqrt')
+                : latex.replace('\\sqrt', '\\pm \\sqrt');
+        }
+    } else if (latex.includes('\\pm')) {
+        nieuw = latex.replace(/\\pm\s*\\sqrt/, '+\\sqrt').replace(/\\pm/g, '+');
+    }
+    if (nieuw !== latex) {
+        try { mathField.setValue(nieuw); } catch (e) {}
+        hasUnparsedChanges = true;
+        setStatus(currentFormule === 'abc'
+            ? 'abc-formule: de wortel staat nu op ± — druk op Parse.'
+            : 'Formule op Algemeen — de wortel staat weer op +.', 'info');
+    }
 }
 
 /**

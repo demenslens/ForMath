@@ -456,6 +456,7 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 .qb-base { font-size: 12px; }
 .qb-sup  { font-size: 9px; align-self: flex-start; }
 .qb-pi   { font-size: 14px; }
+.qb-pm   { font-size: 17px; font-weight: 600; }
 .qb-frac {
   display: inline-flex; flex-direction: column; align-items: center;
   line-height: 1; font-size: 9px;
