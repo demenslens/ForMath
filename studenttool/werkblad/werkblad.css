@@ -409,14 +409,16 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
   text-align: right;
 }
 
-/* Opgavenummer — op DEZELFDE regel als 'Naam:' (zelfde top), links uitgelijnd
-   met de INHOUD van de regels daaronder: .rules margin-left (56px) + .rl
-   padding-left (6px) = 62px. Het nummer wordt door renderOpgave gevuld. */
+/* Opgavenummer — op DEZELFDE regel als 'Naam:' (zelfde top), links uitgelijnd met
+   de expressie-inhoud van de regels eronder. Absolute posities meten vanaf de
+   padding-box van .page (padding-left 40px), maar de regel-inhoud (normale flow)
+   begint ná die padding: 40 (.page) + 56 (.rules margin) + 6 (.rl padding) = 102px
+   — dus 12px rechts van de rode kantlijn (op 90px), net als de expressies. */
 .opgave-nr {
   position: absolute;
   z-index: 4;
   top: calc(var(--page-lines-top, 130px) - 34px);
-  left: 62px;
+  left: 102px;
   font-family: var(--font-display);
   font-size: 15px;
   color: var(--ink-soft);
