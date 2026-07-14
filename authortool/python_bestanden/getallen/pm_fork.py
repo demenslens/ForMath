@@ -82,6 +82,14 @@ def _a5_a6_b5(opgave):
     return a5, a6, b5
 
 
+def _verzameling(p, q):
+    """Verzamelingsnotatie {p, q}, of {p} als beide wortels samenvallen.
+
+    Een verzameling heeft geen dubbele elementen: bij een dubbele wortel (D=0,
+    dus p == q) is de oplossing één element, niet twee dezelfde."""
+    return '{%s}' % p if p == q else '{%s, %s}' % (p, q)
+
+
 def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     """Bouw de ±-abc-opgave uit de +variant- én −variant-graaf (elk A1–A6 + B5).
 
@@ -139,7 +147,7 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
 
     a6_plus = a6p['output'] if a6p else '?'
     a6_min = a8['output'] if a8 else '?'
-    oplossing = 'S = {%s, %s}' % (a6_plus, a6_min)
+    oplossing = 'S = ' + _verzameling(a6_plus, a6_min)
     a9_step = (a6p['step'] if a6p else max(mb['step'] for mb in opgave_plus['mathblocks'])) + 1
     # De piek-id volgt de step (piek op step 7 → A7), niet een vast 'A9'.
     piek_id = 'A%d' % a9_step
@@ -245,7 +253,7 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
         duo_plus.extend(min_entries)
         duo_plus.append({
             'step': a9_step, 'spoor': 'beide', 'aggregatie': True,
-            'input_expressie': '{%s, %s}' % (a6_plus, a6_min),
+            'input_expressie': _verzameling(a6_plus, a6_min),
             'hoog': [{'mathblock': piek_id, 'output_expressie': oplossing}],
             'laag': [],
         })

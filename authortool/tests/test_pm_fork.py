@@ -24,6 +24,8 @@ import json_exporter
 import pm_fork
 
 ABC_PM = '(-(-2)±sqrt((-2)^2-4×2×(-12)))/(2×2)'
+# D=0: a=1, b=-4, c=4 → discriminant 0 → dubbele wortel 2 (S = {2}, niet {2, 2}).
+ABC_D0 = '(-(-4)±sqrt((-4)^2-4×1×4))/(2×1)'
 
 
 def _pipeline(expr):
@@ -144,6 +146,27 @@ class TestPmFork(unittest.TestCase):
         probs = export_validatie.valideer_export(
             ast['tree'], ast['node_map'], plus['mathblocks'], duo)
         self.assertEqual(probs, [], f"export-check: {probs}")
+
+    def test_dubbele_wortel_dedupe_oplossingsverzameling(self):
+        # D=0: beide sporen vallen samen (wortel 2). Een verzameling heeft geen
+        # dubbele elementen, dus S = {2} — niet S = {2, 2}.
+        plus = _pipeline(ABC_D0.replace('±', '+'))
+        minus = _pipeline(ABC_D0.replace('±', '-'))
+        self.assertEqual(pm_fork._root_output(plus), '2')
+        self.assertEqual(pm_fork._root_output(minus), '2')
+        pm_fork.maak_pm_opgave(plus, minus, ABC_D0, ABC_D0)
+        piek = next(m for m in plus['mathblocks']
+                    if (m.get('operatie') or {}).get('symbool') == 'S')
+        self.assertEqual(piek['output'], 'S = {2}')
+        self.assertEqual(plus['sjabloon']['oplossingsverzameling'], 'S = {2}')
+        # ook de duo-aggregator toont de gededupliceerde verzameling
+        duo7 = next(d for d in plus['duo_verzameling'] if d.get('spoor') == 'beide')
+        self.assertEqual(duo7['input_expressie'], '{2}')
+        # en twee verschillende wortels blijven wél twee elementen
+        p2 = _pipeline(ABC_PM.replace('±', '+'))
+        m2 = _pipeline(ABC_PM.replace('±', '-'))
+        pm_fork.maak_pm_opgave(p2, m2, ABC_PM, ABC_PM)
+        self.assertEqual(p2['sjabloon']['oplossingsverzameling'], 'S = {3, -2}')
 
 
 if __name__ == '__main__':
