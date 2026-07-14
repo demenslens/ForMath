@@ -4986,10 +4986,51 @@
     }).catch(function(e){ dbgWarn('[ML] laadfout ' + ML_URLS[i] + ': ' + (e && e.message)); loadML(i + 1); });
   })(0);
 
+  // ── Versleepbare kolommen (Opgaven links, Resultaat rechts) ──
+  // De Batches-kolom heeft géén resizer en blijft dus vast. Een geslepen breedte
+  // komt als inline-width op de aside (overschrijft var(--side-w)); dubbelklik reset.
+  function initColResizers(){
+    var opgaven = document.getElementById('opgaven-side');
+    var resultaat = document.getElementById('resultaat-side');
+    var MIN = 180, MAX = 640;
+    Array.prototype.forEach.call(document.querySelectorAll('.col-resizer'), function(rz){
+      var which = rz.getAttribute('data-resize');
+      var target = which === 'opgaven' ? opgaven : resultaat;
+      if(!target) return;
+      // Links: naar rechts slepen verbreedt Opgaven (+1). Rechts: naar links
+      // slepen verbreedt Resultaat (-1).
+      var dir = which === 'opgaven' ? 1 : -1;
+      rz.addEventListener('mousedown', function(ev){
+        ev.preventDefault();
+        var startX = ev.clientX;
+        var startW = target.getBoundingClientRect().width;
+        rz.classList.add('dragging');
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        function onMove(e){
+          var w = Math.max(MIN, Math.min(MAX, startW + (e.clientX - startX) * dir));
+          target.style.width = w + 'px';
+          target.style.flexShrink = '0';
+        }
+        function onUp(){
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          rz.classList.remove('dragging');
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+      rz.addEventListener('dblclick', function(){ target.style.width = ''; });
+    });
+  }
+
   // ══════════════════════════════════════
   // INIT
   // ══════════════════════════════════════
   loadIndex();
+  initColResizers();
 
   // Refresh button: reload index.json and rebuild sidebar
   document.getElementById('refresh-btn').onclick = function(){

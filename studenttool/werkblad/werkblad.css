@@ -168,6 +168,20 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 /* Resultaat even breed als Opgaven (overschrijft side-wide) */
 .side-right.side-wide { width: var(--side-w); }
 
+/* Versleepbare kolomgrens tussen Opgaven|schrift en schrift|Resultaat.
+   De Batches-kolom heeft GEEN resizer en blijft dus vast. Een geslepen breedte
+   wordt als inline-width op de aside gezet (overschrijft var(--side-w)). */
+.col-resizer {
+  flex: 0 0 6px;
+  align-self: stretch;
+  cursor: col-resize;
+  background: transparent;
+  transition: background .12s;
+  z-index: 5;
+}
+.col-resizer:hover,
+.col-resizer.dragging { background: var(--accent-soft); }
+
 .side-head {
   padding: 15px 16px 11px;
   border-bottom: 1px solid var(--rule);
@@ -293,7 +307,7 @@ button { font-family: inherit; cursor: pointer; color: inherit; }
 /* ── De "pagina" (schrift) — lijnen altijd zichtbaar via achtergrond ──── */
 .page {
   position: relative;
-  max-width: 790px;
+  max-width: 1100px;
   margin: 0 auto;
   min-height: 100%;
   background-color: var(--bg-panel);

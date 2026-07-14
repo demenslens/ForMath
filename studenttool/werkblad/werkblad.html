@@ -21,7 +21,7 @@
   })();
 </script>
 
-<link rel="stylesheet" href="werkblad.css?v=223">
+<link rel="stylesheet" href="werkblad.css?v=224">
 </head>
 <body>
 
@@ -75,7 +75,7 @@
     </aside>
 
     <!-- Sidebar 2: Opgaven (bestaand) -->
-    <aside class="side">
+    <aside class="side" id="opgaven-side">
       <div class="side-head"><h2>Opgaven</h2><p>Wiskunde werkblad</p></div>
       <div class="opg-list" id="opg-list">
         <div class="side-loading" id="opg-loading">Opgaven laden...</div>
@@ -88,6 +88,10 @@
         </button>
       </div>
     </aside>
+
+    <!-- Versleepbare kolomgrens: Opgaven ↔ schrift -->
+    <div class="col-resizer" data-resize="opgaven"
+         title="Sleep om de Opgaven-kolom breder/smaller te maken"></div>
 
     <div class="main">
       <div class="scroll">
@@ -182,6 +186,10 @@
         </div>
       </div>
     </div>
+
+    <!-- Versleepbare kolomgrens: schrift ↔ Resultaat -->
+    <div class="col-resizer" data-resize="resultaat"
+         title="Sleep om de Resultaat-kolom breder/smaller te maken"></div>
 
     <!-- Sidebar 3: Resultaat (rechts) -->
     <aside class="side side-wide side-right" id="resultaat-side" aria-label="Resultaat">
@@ -285,7 +293,7 @@
 <script src="abc_fork.js?v=1"></script>
 
 <!-- Application -->
-<script src="werkblad.js?v=203"></script>
+<script src="werkblad.js?v=204"></script>
 
 <!-- Settings + thema (klein blokje, geen interferentie met werkblad.js) -->
 <script>
