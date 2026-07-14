@@ -17,6 +17,11 @@
 (function () {
   'use strict';
 
+  // Lopende fork-toestand (Optie A, sequentieel). Null buiten een fork of vóór
+  // de ±√-step. Wordt gereset bij elke detect() (nieuwe opgave).
+  //   { actief:'+'|'-', plusLatex, minLatex, plusUit, minUit, oplossing }
+  var forkState = null;
+
   /**
    * Detecteer of een opgave-JSON een abc-fork is. Structureel (niet op
    * soort_opgave, dat blijft 'rekenen_getallen'):
@@ -26,6 +31,7 @@
    * Retourneert { isFork, wortel, piek, sjabloon }.
    */
   function detect(data) {
+    forkState = null;   // nieuwe opgave → fork-toestand resetten
     var mbs = (data && data.mathblocks) || [];
     var wortel = null, piek = null;
     for (var i = 0; i < mbs.length; i++) {
@@ -51,8 +57,63 @@
     return 'abc-opgave herkend — bepaal ' + opl;
   }
 
+  // De verwachte uitkomst van een spoor uit het sjabloon (teken '+' of '-').
+  function _spoorUitkomst(forkInfo, teken) {
+    try {
+      var stappen = forkInfo.sjabloon.stappen;
+      for (var i = 0; i < stappen.length; i++) {
+        var sp = stappen[i].sporen;
+        if (!sp) continue;
+        for (var j = 0; j < sp.length; j++) {
+          if (sp[j].teken === teken) return sp[j].uitkomst;
+        }
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // ±/\pm in een latex-string vervangen door een concreet teken (+ of -).
+  function _kiesTeken(latex, teken) {
+    return String(latex).replace(/\\pm\s*/g, teken).replace(/±/g, teken);
+  }
+
+  /**
+   * Aangeroepen door doLF vlak vóór de rij-overgang, met de zojuist opgeloste
+   * mathblock-id's. Als het ±√-blok (de fork-wortel) erbij zit, START de fork:
+   * leid de twee sporen af uit de huidige latex (± → +/-) en retourneer een
+   * directive voor het EERSTE spoor (+). Anders null (gewone lineaire overgang).
+   *
+   * Directive: { spoor, spoorLatex, verwacht, status }.
+   * werkblad zet spoorLatex als volgende regel en beginUitkomst op de waarde.
+   */
+  function onResolve(resolved, latexVal, forkInfo) {
+    var wid = forkInfo && forkInfo.wortel && forkInfo.wortel.id;
+    if (!wid || !resolved || resolved.indexOf(wid) === -1) return null;
+    forkState = {
+      actief: '+',
+      plusLatex: _kiesTeken(latexVal, '+'),
+      minLatex: _kiesTeken(latexVal, '-'),
+      plusUit: _spoorUitkomst(forkInfo, '+'),
+      minUit: _spoorUitkomst(forkInfo, '-'),
+      oplossing: (forkInfo.piek && forkInfo.piek.output) ||
+                 (forkInfo.sjabloon && forkInfo.sjabloon.oplossingsverzameling) ||
+                 'S = {p, q}'
+    };
+    return {
+      spoor: '+',
+      spoorLatex: forkState.plusLatex,
+      verwacht: forkState.plusUit,
+      status: 'Fork bij ±√: werk eerst het +spoor uit' +
+              (forkState.plusUit ? ' (→ ' + forkState.plusUit + ')' : '') + '.'
+    };
+  }
+
+  function state() { return forkState; }
+
   window.ABCFORK = {
     detect: detect,
-    beschrijving: beschrijving
+    beschrijving: beschrijving,
+    onResolve: onResolve,
+    state: state
   };
 })();

@@ -4145,6 +4145,23 @@
       return;
     }
 
+    // abc-fork (Optie A): als de ±√-step zojuist is opgelost, splitst ABCFORK de
+    // uitwerking in sporen. De directive levert de latex van het EERSTE spoor;
+    // die zetten we (i.p.v. de ±-expressie) op de volgende regel, en de eind-
+    // waarde van dit spoor wordt de nieuwe beginUitkomst. (−spoor + S volgen in
+    // een latere slice.)
+    if(isForkOpgave && window.ABCFORK && window.ABCFORK.onResolve){
+      var _fd = window.ABCFORK.onResolve(
+        (pinResult && pinResult.resolved) || [], latexVal, forkInfo);
+      if(_fd && _fd.spoorLatex){
+        latexVal = _fd.spoorLatex;
+        previousLatex = latexVal;
+        var _bu = evaluateExpression(latexVal);
+        if(_bu !== null) beginUitkomst = _bu;
+        if(_fd.status) st('ok', _fd.status);
+      }
+    }
+
     // Move to next line
     var nextIndex = activeLineIndex + 1;
     if(nextIndex >= rules.children.length) rules.appendChild(mkLine());
