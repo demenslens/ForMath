@@ -692,7 +692,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             tree = generate_ast_svg(
                 converted,
                 title=f"AST: {expression}",
-                expression=expression
+                expression=expression,
+                latex=latex_display
             )
 
             # ElementTree → SVG string
@@ -918,7 +919,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             tree = generate_ast_svg(
                 converted,
                 title=f"AST: {expression}",
-                expression=expression
+                expression=expression,
+                latex=latex_display
             )
             ET.indent(tree, space="  ")
             svg = ET.tostring(tree.getroot(), encoding='unicode')
@@ -991,10 +993,10 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             return mb.get(bid, {}).get('output', '')
         overrides = {}
         if 'A5' in mb and "A5'" in mb:
-            overrides['A5'] = {'block_id': "A5 / A5'",
+            overrides['A5'] = {'block_id': "A5/A5'",
                                'result': out('A5') + ' / ' + out("A5'")}
         if 'A6' in mb and "A6'" in mb:
-            overrides['A6'] = {'block_id': "A6 / A6'",
+            overrides['A6'] = {'block_id': "A6/A6'",
                                'result': out('A6') + ' / ' + out("A6'")}
         peak = None
         piek = next((m for m in opgave.get('mathblocks', [])
@@ -1038,7 +1040,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             pm_ov, pm_peak = self._pm_svg_extras(opgave)
             tree = generate_ast_svg(conv, title=f"AST: {expression}",
                                     expression=expression,
-                                    pm_overrides=pm_ov, pm_peak=pm_peak)
+                                    pm_overrides=pm_ov, pm_peak=pm_peak,
+                                    latex=latex)
             ET.indent(tree, space="  ")
             with open(json_path.replace('.json', '.svg'), 'w', encoding='utf-8') as f:
                 f.write(ET.tostring(tree.getroot(), encoding='unicode'))
@@ -1071,7 +1074,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             pm_ov, pm_peak = self._pm_svg_extras(opgave)
             tree = generate_ast_svg(conv, title=f"AST: {expression}",
                                     expression=expression,
-                                    pm_overrides=pm_ov, pm_peak=pm_peak)
+                                    pm_overrides=pm_ov, pm_peak=pm_peak,
+                                    latex=latex)
             ET.indent(tree, space="  ")
             svg = ET.tostring(tree.getroot(), encoding='unicode')
             from manifold_converter import remove_all_annotations

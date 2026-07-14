@@ -78,9 +78,9 @@ def node_label(node):
     if t == "ROOT":
         idx = node.get("index", {}).get("value", 2)
         # Toon als "^1/2", "^1/3", "^1/4", etc. — exponent-notatie van wortel.
-        # Bij een ±-fork (even wortel, aantal_wortels:2) een ± ervoor.
-        pm = "±" if node.get("aantal_wortels") == 2 else ""
-        return f"{pm}^1/{idx}"
+        # Bij een ±-fork hoort het ±-teken NIET in het blok maar bij de uitkomst
+        # (= ±10); draw_nodes zet dat op de waarde bovenaan het blok.
+        return f"^1/{idx}"
     if t == "UNARY_OP":
         op = node.get("operator", "?")
         return f"-{op}" if neg else op
@@ -1076,6 +1076,9 @@ def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
         # ±-override: toon beide spoor-uitkomsten (bv. "12 / -8") i.p.v. één.
         if ov and ov.get('result'):
             result_str = ov['result']
+        # A4 = ±√: het ±-teken hoort bij de uitkomst (= ±10), niet in het blok.
+        if t == "ROOT" and node.get("aantal_wortels") == 2 and result_str:
+            result_str = "±" + result_str
         if result_str:
             ET.SubElement(svg, "text", {
                 "x": str(round(x, 1)),
@@ -1191,7 +1194,19 @@ def _compute_paths_for_blocks(ast):
     return paths
 
 
-def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=None):
+def _leesbare_expr(s):
+    """Maak een expressiestring iets leesbaarder voor de SVG-titel:
+    sqrt→√ en veelvoorkomende exponenten naar superscript."""
+    if not s:
+        return s
+    s = s.replace('sqrt', '√')
+    for e, sup in (('^2', '²'), ('^3', '³'), ('^4', '⁴')):
+        s = s.replace(e, sup)
+    return s
+
+
+def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=None,
+                     latex=""):
     """Genereer SVG van AST na manifold converter.
 
     pm_overrides / pm_peak (optioneel): voor de ±-abc-graaf. pm_overrides
@@ -1229,15 +1244,19 @@ def generate_ast_svg(ast, title="", expression="", pm_overrides=None, pm_peak=No
         "fill": "#FFFFFF",
     })
 
-    # Titel (bovenin)
+    # Titel (bovenin): regel 1 = leesbare expressie, regel 2 = de LaTeX-vorm.
     if title:
         ET.SubElement(svg, "text", {
             "x": str(MARGIN), "y": str(MARGIN + 10),
             "font-family": "JetBrains Mono, Consolas, monospace",
             "font-size": "15", "font-weight": "500", "fill": "#1a1a1a",
-        }).text = title
-
-    # (Tweede expressie-regel verwijderd — dubbel met titel)
+        }).text = _leesbare_expr(title)
+    if latex:
+        ET.SubElement(svg, "text", {
+            "x": str(MARGIN), "y": str(MARGIN + 28),
+            "font-family": "JetBrains Mono, Consolas, monospace",
+            "font-size": "11", "font-weight": "400", "fill": "#888888",
+        }).text = "LaTeX: " + latex
 
     # Legenda weggelaten
 

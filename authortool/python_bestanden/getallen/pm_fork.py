@@ -9,7 +9,8 @@ toe, en completeert node_map + duo_verzameling voor beide sporen. Zie
 tests/test_pm_fork.py.
 
 Werkt op de dict-vorm van de AST (to_dict) en de opgave-JSON, net als de rest van
-de pijplijn. vind_wortel wordt ook door de server gebruikt (±^1/2 in de SVG).
+de pijplijn. vind_wortel wordt ook door de server gebruikt (markeert A4 als
+±-fork; het ±-teken komt in de SVG bij de A4-uitkomst = ±10).
 """
 import copy
 

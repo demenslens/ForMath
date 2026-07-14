@@ -537,6 +537,15 @@ async function processExpression() {
         lastProcessed = { latex, tekst, latex_display: latexDisplay,
                           ast: data.ast, opgave: data.opgave };
 
+        // Na een geslaagde parse: forceer dat het mathfield de GERENDERDE vorm
+        // toont. Soms blijft er rauwe LaTeX-tekst staan; setValue met dezelfde
+        // expressie triggert de MathLive-rendering opnieuw. silenceNotifications
+        // voorkomt dat dit als 'onbewerkte wijziging' telt.
+        if (!textMode && mathField) {
+            try { mathField.setValue(latex, { silenceNotifications: true }); }
+            catch (e) { try { mathField.setValue(latex); } catch (e2) {} }
+        }
+
         // Ververs de JSON-view als die openstaat.
         if (typeof currentView !== 'undefined' && currentView === 'json') setView('json');
 
