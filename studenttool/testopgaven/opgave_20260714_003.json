@@ -1,0 +1,841 @@
+{
+  "metadata": {
+    "id": "20260714_003",
+    "auteur": "H.N.Lensing",
+    "expressie": {
+      "tekst": "(-(-2)±sqrt((-2)^2-4×2×(-12)))/(2×2)",
+      "latex_display": "\\frac{2\\pm \\sqrt{\\left(-2\\right)^{2}-\\left(4\\times 2\\times \\left(-12\\right)\\right)}}{2\\times 2}",
+      "mathml": "",
+      "ast": {
+        "tree": [
+          "Divide",
+          [
+            "Add",
+            2,
+            [
+              "Sqrt",
+              [
+                "Add",
+                [
+                  "Power",
+                  -2,
+                  2
+                ],
+                [
+                  "Negate",
+                  [
+                    "Multiply",
+                    4,
+                    2,
+                    -12
+                  ]
+                ]
+              ]
+            ]
+          ],
+          [
+            "Multiply",
+            2,
+            2
+          ]
+        ],
+        "node_map": [
+          {
+            "path": [
+              0,
+              0
+            ],
+            "mathblock_id": "A4",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0,
+              0,
+              0
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "-2"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0,
+              0
+            ],
+            "mathblock_id": "A1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0,
+              1,
+              0,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "4"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0,
+              1,
+              0,
+              1
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0,
+              1,
+              0,
+              2
+            ],
+            "mathblock_id": "B1",
+            "type": "input",
+            "waarde": "-12"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0,
+              1,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0
+            ],
+            "mathblock_id": "A2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              1
+            ],
+            "mathblock_id": "A3",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0
+            ],
+            "mathblock_id": "A4",
+            "type": "operation"
+          },
+          {
+            "path": [
+              1,
+              0
+            ],
+            "mathblock_id": "B4",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              1,
+              1
+            ],
+            "mathblock_id": "B4",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              1
+            ],
+            "mathblock_id": "B4",
+            "type": "operation"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A5",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0
+            ],
+            "mathblock_id": "A4'",
+            "type": "operation",
+            "spoor": "-"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A5'",
+            "type": "operation",
+            "spoor": "-"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A6",
+            "type": "operation",
+            "spoor": "beide",
+            "synthetisch": true
+          }
+        ]
+      }
+    },
+    "aantal_mathblocks": 10,
+    "bewerkingen": {
+      "optelling": 2,
+      "vermenigvuldiging": 1,
+      "deling": 1,
+      "machtsverheffen": 1,
+      "worteltrekken": 1,
+      "optel_manifold": 0,
+      "vermenigvuldig_manifold": 1,
+      "matroesjka_manifold": 0,
+      "vereenvoudigen": 0,
+      "gemengd_getal": 0
+    },
+    "aantal_steps": 6,
+    "niveau": "Hoog",
+    "randvoorwaarden": {
+      "vereenvoudig_uitkomst": false,
+      "antwoord_in_breuken": true,
+      "antwoord_in_decimalen": false,
+      "decimalen_afronden": 2,
+      "pi_decimalen": 2,
+      "uitkomst_als_gemengd_getal": true,
+      "hints_aan": true,
+      "feedback_aan": true
+    },
+    "opdracht": "reken_uit",
+    "soort_opgave": "rekenen_getallen",
+    "productie": "enkelvoudig",
+    "onderwijstype": "havo",
+    "onderwijsniveau": "onderbouw",
+    "notitie": ""
+  },
+  "mathblocks": [
+    {
+      "id": "A1",
+      "step": 1,
+      "operatie": {
+        "symbool": "^2",
+        "beschrijving": "machtsverheffen",
+        "exponent": 2
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "-2"
+        }
+      ],
+      "output": "4",
+      "hints": {
+        "structureel": {
+          "wat": "Verhef het grondtal tot de macht 2.",
+          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
+          "let_op": "Een negatief grondtal met een even exponent geeft een positief resultaat."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B1",
+      "step": 1,
+      "operatie": {
+        "symbool": "-M×(3)",
+        "beschrijving": "vermenigvuldig-manifold",
+        "aantal_operanden": 3
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "4"
+        },
+        {
+          "type": "extern",
+          "waarde": "2"
+        },
+        {
+          "type": "extern",
+          "waarde": "-12"
+        }
+      ],
+      "output": "96",
+      "is_negative": true,
+      "hints": {
+        "structureel": {
+          "wat": "Vermenigvuldig deze 3 factoren met elkaar.",
+          "hoe": "De volgorde van vermenigvuldigen is vrij; groepeer factoren die samen ronde getallen geven.",
+          "let_op": "Het minteken vóór deze manifold werkt op het hele resultaat."
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A2",
+      "step": 2,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A1"
+        },
+        {
+          "type": "mathblock",
+          "id": "B1",
+          "is_negative": true
+        }
+      ],
+      "output": "100",
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Voeg de twee getallen samen tot één som.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "step": 3,
+      "operatie": {
+        "symbool": "±√",
+        "beschrijving": "worteltrekken",
+        "index": 2,
+        "aantal_wortels": 2
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A2"
+        }
+      ],
+      "output": "±10",
+      "hints": {
+        "structureel": {
+          "wat": "Trek de vierkantswortel.",
+          "hoe": "Zoek het getal dat met zichzelf vermenigvuldigd het radicand geeft.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A4",
+      "step": 4,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2"
+        },
+        {
+          "type": "mathblock",
+          "id": "A3",
+          "spoor": "+"
+        }
+      ],
+      "output": "12",
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Voeg de twee getallen samen tot één som.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B4",
+      "step": 4,
+      "operatie": {
+        "symbool": "×",
+        "beschrijving": "vermenigvuldiging"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2"
+        },
+        {
+          "type": "extern",
+          "waarde": "2"
+        }
+      ],
+      "output": "4",
+      "hints": {
+        "structureel": {
+          "wat": "Vermenigvuldig de twee getallen met elkaar.",
+          "hoe": "Bereken het product van de twee factoren.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A5",
+      "step": 5,
+      "operatie": {
+        "symbool": ":",
+        "beschrijving": "deling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A4"
+        },
+        {
+          "type": "mathblock",
+          "id": "B4"
+        }
+      ],
+      "output": "3",
+      "hints": {
+        "structureel": {
+          "wat": "Deel het eerste getal door het tweede.",
+          "hoe": "Deel de teller door de noemer.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A4'",
+      "step": 4,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2"
+        },
+        {
+          "type": "mathblock",
+          "id": "A3",
+          "spoor": "-"
+        }
+      ],
+      "output": "-8",
+      "hints": {
+        "structureel": {
+          "wat": "Tel de twee getallen bij elkaar op.",
+          "hoe": "Voeg de twee getallen samen tot één som.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Correct, ga door met de volgende bewerking.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A5'",
+      "step": 5,
+      "operatie": {
+        "symbool": ":",
+        "beschrijving": "deling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A4'"
+        },
+        {
+          "type": "mathblock",
+          "id": "B4"
+        }
+      ],
+      "output": "-2",
+      "hints": {
+        "structureel": {
+          "wat": "Deel het eerste getal door het tweede.",
+          "hoe": "Deel de teller door de noemer.",
+          "let_op": ""
+        },
+        "feedback": {
+          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
+          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A6",
+      "step": 6,
+      "operatie": {
+        "symbool": "S",
+        "beschrijving": "oplossingsverzameling"
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A5"
+        },
+        {
+          "type": "mathblock",
+          "id": "A5'"
+        }
+      ],
+      "output": "S = {3, -2}"
+    }
+  ],
+  "externe_inputs": [
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "A4"
+      ]
+    },
+    {
+      "waarde": "-2",
+      "mathblock_ids": [
+        "A1"
+      ]
+    },
+    {
+      "waarde": "4",
+      "mathblock_ids": [
+        "B1"
+      ]
+    },
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "B1"
+      ]
+    },
+    {
+      "waarde": "-12",
+      "mathblock_ids": [
+        "B1"
+      ]
+    },
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "B4"
+      ]
+    },
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "B4"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "mathblocks": [
+        "A1",
+        "B1"
+      ]
+    },
+    {
+      "step": 2,
+      "mathblocks": [
+        "A2"
+      ]
+    },
+    {
+      "step": 3,
+      "mathblocks": [
+        "A3"
+      ]
+    },
+    {
+      "step": 4,
+      "mathblocks": [
+        "A4",
+        "B4",
+        "A4'"
+      ]
+    },
+    {
+      "step": 5,
+      "mathblocks": [
+        "A5",
+        "A5'"
+      ]
+    },
+    {
+      "step": 6,
+      "mathblocks": [
+        "A6"
+      ]
+    }
+  ],
+  "duo_verzameling": [
+    {
+      "step": 1,
+      "input_expressie": "(2+√(((-2)^2-(4×2×-12)))):(2×2)",
+      "hoog": [
+        {
+          "mathblock": "A1",
+          "output_expressie": "(2+√((4-(4×2×-12)))):(2×2)"
+        },
+        {
+          "mathblock": "B1",
+          "output_expressie": "(2+√(((-2)^2+96))):(2×2)"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "B4",
+          "output_expressie": "(2+√(((-2)^2-(4×2×-12)))):4"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "input_expressie": "(2+√((4+96))):(2×2)",
+      "hoog": [
+        {
+          "mathblock": "A2",
+          "output_expressie": "(2+√(100)):(2×2)"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "B4",
+          "output_expressie": "(2+√((4+96))):4"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "input_expressie": "(2+√(100)):(2×2)",
+      "hoog": [
+        {
+          "mathblock": "A3",
+          "output_expressie": "(2+10):(2×2)"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "B4",
+          "output_expressie": "(2+√(100)):4"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "input_expressie": "(2+10):(2×2)",
+      "hoog": [
+        {
+          "mathblock": "A4",
+          "output_expressie": "12:(2×2)"
+        },
+        {
+          "mathblock": "B4",
+          "output_expressie": "(2+10):4"
+        }
+      ],
+      "laag": [],
+      "spoor": "+"
+    },
+    {
+      "step": 4,
+      "input_expressie": "(2+-10):(2×2)",
+      "hoog": [
+        {
+          "mathblock": "A4'",
+          "output_expressie": "-8:(2×2)"
+        }
+      ],
+      "laag": [],
+      "spoor": "-"
+    },
+    {
+      "step": 5,
+      "input_expressie": "12:4",
+      "hoog": [
+        {
+          "mathblock": "A5",
+          "output_expressie": "3"
+        }
+      ],
+      "laag": [],
+      "spoor": "+"
+    },
+    {
+      "step": 5,
+      "input_expressie": "-8:4",
+      "hoog": [
+        {
+          "mathblock": "A5'",
+          "output_expressie": "-2"
+        }
+      ],
+      "laag": [],
+      "spoor": "-"
+    },
+    {
+      "step": 6,
+      "spoor": "beide",
+      "aggregatie": true,
+      "input_expressie": "{3, -2}",
+      "hoog": [
+        {
+          "mathblock": "A6",
+          "output_expressie": "S = {3, -2}"
+        }
+      ],
+      "laag": []
+    }
+  ],
+  "sjabloon": {
+    "type": "abc_formule",
+    "gevraagde": "Bepaal de oplossingsverzameling S = {p, q}.",
+    "additioneel_gegeven": {
+      "label": "D",
+      "definitie": "D = b² − 4ac",
+      "mathblock": "A2"
+    },
+    "stappen": [
+      {
+        "nr": 1,
+        "vraag": "Bereken de discriminant D = b² − 4ac.",
+        "t_m_mathblock": "A2",
+        "uitkomst": "100"
+      },
+      {
+        "nr": 2,
+        "vraag": "Trek de wortel uit D: bepaal ±√D.",
+        "mathblock": "A3",
+        "verwacht": "±10",
+        "varianten": [
+          "±10",
+          "10,-10",
+          "-10,10"
+        ]
+      },
+      {
+        "nr": 3,
+        "vraag": "Substitueer en werk beide sporen uit.",
+        "sporen": [
+          {
+            "teken": "+",
+            "wortel": "10",
+            "mathblocks": [
+              "A4",
+              "A5"
+            ],
+            "uitkomst": "3"
+          },
+          {
+            "teken": "-",
+            "wortel": "-10",
+            "mathblocks": [
+              "A4'",
+              "A5'"
+            ],
+            "uitkomst": "-2"
+          }
+        ]
+      }
+    ],
+    "oplossingsverzameling": "S = {3, -2}"
+  }
+}

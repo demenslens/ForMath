@@ -129,7 +129,7 @@
     {
       "bestand": "opgave_20260511_027.json",
       "id": "opgave_20260511_027",
-      "titel": "-\\frac19+\\frac{2}{3}^2\\times\\frac{13}{6}+\\left(\\left(\\sqr...",
+      "titel": "-\\frac19+\\left(\\frac{2}{3}\\right)^2\\times\\frac{13}{6}+\\le...",
       "niveau": "gevorderd",
       "stappen": 6
     },
@@ -172,6 +172,13 @@
       "bestand": "opgave_20260511_023.json",
       "id": "opgave_20260511_023",
       "titel": "\\left(\\frac{\\frac{7}{6}-\\frac{3}{4}}{2-\\sqrt{\\frac{1}{64}...",
+      "niveau": "gevorderd",
+      "stappen": 8
+    },
+    {
+      "bestand": "opgave_20260714_003.json",
+      "id": "20260714_003",
+      "titel": "(-(-2)\\pm sqrt((-2)^2-4\\times2\\times(-12)))/(2\\times2)",
       "niveau": "gevorderd",
       "stappen": 8
     },

@@ -21,7 +21,7 @@
   })();
 </script>
 
-<link rel="stylesheet" href="werkblad.css?v=220">
+<link rel="stylesheet" href="werkblad.css?v=222">
 </head>
 <body>
 
@@ -93,6 +93,7 @@
       <div class="scroll">
         <div class="page lines-per-row">
           <div class="holes"><span></span><span></span><span></span></div>
+          <div class="opgave-nr" id="opgave-nr"></div>
           <div class="naam-bar">Naam: ________________</div>
 
           <!-- Quick-buttons: snelle invoer voor wortels, machten en breuken.
@@ -281,9 +282,10 @@
 <!-- Matcher + verankering (bewezen mechaniek, herbruikbaar) -->
 <script src="matcher.browser.js?v=9"></script>
 <script src="verankering.js?v=16"></script>
+<script src="abc_fork.js?v=1"></script>
 
 <!-- Application -->
-<script src="werkblad.js?v=200"></script>
+<script src="werkblad.js?v=203"></script>
 
 <!-- Settings + thema (klein blokje, geen interferentie met werkblad.js) -->
 <script>

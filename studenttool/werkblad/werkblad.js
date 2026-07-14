@@ -75,6 +75,11 @@
   var opgaveVoltooid = false; // true zodra alle steps klaar zijn — geen nieuwe LF-regel meer
   var previousLatex = '';   // last confirmed (correct) expression LaTeX
   var lfBlocked = false;    // true when pinpointed errors exist — LF disabled  // IDs of mathblocks that have been resolved (replaced by their output)
+  // ── abc-fork (±√ → twee sporen → oplossingsverzameling S) ──
+  // Fase 1: alleen detectie + lees-route. De reductie/splitsing zelf (fase 2+)
+  // gebruikt deze state later.
+  var isForkOpgave = false; // true als de opgave een ±√-fork bevat
+  var forkInfo = null;      // { wortel, piek, sjabloon } of null
 
   // ══════════════════════════════════════
   // MATH EVALUATION
@@ -737,6 +742,11 @@
     // Normalise fraction notation: (n)/(d) → \frac{n}{d} for proper stacked display
     latex = normaliseFractionNotation(latex);
 
+    // abc-fork detecteren via de aparte module (fase 1: herkennen + lees-route;
+    // de splitsing/reductie zelf leeft ook in window.ABCFORK, fase 2+).
+    forkInfo = (window.ABCFORK && window.ABCFORK.detect(data)) || { isFork: false };
+    isForkOpgave = !!forkInfo.isFork;
+
     // Evaluate the starting expression
     beginUitkomst = evaluateExpression(latex);
     previousLatex = latex;
@@ -745,7 +755,12 @@
     opgaveVoltooid = false;
     initTreeEngine();
     initStepTracking();
-    if(beginUitkomst !== null){
+    if(isForkOpgave){
+      // Herkende abc-opgave: de gevraagde uitkomst is een oplossingsverzameling,
+      // niet één getal. (Het uitwerken van beide sporen komt in een latere fase;
+      // beginUitkomst bevat voorlopig nog de +spoor-waarde.)
+      st('ok', window.ABCFORK.beschrijving(forkInfo));
+    } else if(beginUitkomst !== null){
       st('ok', 'Uitkomst: ' + math.format(beginUitkomst, {fraction:'ratio'}));
     } else {
       st('er', 'Kan expressie niet evalueren');
@@ -759,14 +774,14 @@
     //  de beginexpressie een tweede keer, terwijl de editor hem al bevat.)
     rules.appendChild(mkLine());   // regel 1: ruimte voor knoppenbalk
 
-    // Regel 2: opgavenummer + opdracht. meta.id is bv. "opgave_20260511_009";
-    // strip de "opgave_"-prefix.
+    // Opgavenummer bovenaan, op de 'Naam:'-regel (links, boven de knoppenbalk).
+    // meta.id is bv. "opgave_20260511_009"; strip de "opgave_"-prefix.
     var titelId = String(id).replace(/^opgave[_-]?/i, '');
+    var nrEl = document.getElementById('opgave-nr');
+    if(nrEl) nrEl.textContent = 'Opgave ' + titelId;
+
+    // Regel 2: alleen de opdracht-label (het nummer staat nu bovenaan).
     var rId = mkLine();
-    var titel = document.createElement('span');
-    titel.className = 'rl-title';
-    titel.textContent = 'Opgave ' + titelId + ' — ';
-    rId.appendChild(titel);
     var lbl = document.createElement('span');
     lbl.className = 'rl-opgave';
     lbl.textContent = 'Vereenvoudig:';
