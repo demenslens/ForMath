@@ -173,9 +173,14 @@ class ManifoldConverter:
         if node_id in self.converted_nodes:
             return False
         
-        # Een is_negative BINARY_OP zónder _bracketed is een aftrekking — nooit converteren.
-        # Een is_negative BINARY_OP MÉT _bracketed is een negatief haakjesblok — wél converteren.
-        if node.get('is_negative') and node.get('type') == 'BINARY_OP' and not node.get('_bracketed'):
+        # Een is_negative BINARY_OP zónder _bracketed is normaal een afgetrokken
+        # term die we niet converteren. UITZONDERING: een afgetrokken ×-keten
+        # (bv. 4·a·c in b²−4ac) hoort één ×-manifold te zijn, met de min als
+        # wrapper (−manifold). Optel-ketens blijven wél uitgesloten (die zouden
+        # een echte aftrekking platslaan).
+        if (node.get('is_negative') and node.get('type') == 'BINARY_OP'
+                and not node.get('_bracketed')
+                and candidate.get('operator') != '×'):
             return False
 
         return True

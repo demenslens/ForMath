@@ -5,7 +5,8 @@ Bewijst end-to-end op de LIVE modules: genereer de −wortel-zuster uit de abc-
 pijplijn opnieuw te draaien, en bouw + valideer de vertakking-relatie.
 
 Bekende waarden (uit de abc-opgave a=2,b=-2,c=-12, D=100):
-  +wortel → wortel 3;  −wortel → A4 = -(√)= -10, eind = -2;  prefix-hash dc401153e70d.
+  +wortel → wortel 3;  −wortel → fork-√ = -(√)= -10, eind = -2;
+  prefix-hash a25eed16f914 (na de 4ac-manifold, die de graaf inkort).
 """
 import os
 import sys
@@ -28,7 +29,7 @@ from relatie_manager import (valideer_relatie, laad_registry, voeg_relatie_toe,
                              schrijf_registry)
 
 ABC_PLUS = "(-(-2)+sqrt((-2)^2-4×2×(-12)))/(2×2)"
-VINGERAFDRUK = "sha256:dc401153e70d"
+VINGERAFDRUK = "sha256:a25eed16f914"
 
 
 def _run_pipeline(expr):
@@ -62,11 +63,14 @@ class TestWortelZuster(unittest.TestCase):
 
     def test_zuster_is_negatieve_wortel(self):
         _bron, zuster = self._maak_paar()
-        mb = {m["id"]: m for m in zuster["mathblocks"]}
-        self.assertEqual(mb["A4"]["operatie"]["symbool"], "-(√)")
-        self.assertEqual(mb["A4"]["output"], "-10")
-        self.assertTrue(mb["A4"].get("is_negative"))
-        self.assertEqual(mb["A6"]["output"], "-2")
+        # Structureel (op rol, niet op vaste id): de fork-√ is de negatieve wortel.
+        fork = wz.fork_even_wortel(zuster, eis_twee=True)
+        self.assertEqual(fork["operatie"]["symbool"], "-(√)")
+        self.assertEqual(fork["output"], "-10")
+        self.assertTrue(fork.get("is_negative"))
+        # de eind-uitkomst (root = hoogste step) is -2
+        root = max(zuster["mathblocks"], key=lambda m: m["step"])
+        self.assertEqual(root["output"], "-2")
 
     def test_beide_leden_gemarkeerd_als_fork(self):
         bron, zuster = self._maak_paar()
@@ -78,7 +82,7 @@ class TestWortelZuster(unittest.TestCase):
         bron, zuster = self._maak_paar()
         rel = wz.bouw_vertakking_relatie(bron, zuster)
         self.assertEqual(rel["type"], "vertakking")
-        self.assertEqual(rel["gedeelde_prefix"]["fork_step"], 3)
+        self.assertEqual(rel["gedeelde_prefix"]["fork_step"], 2)
         self.assertEqual(rel["gedeelde_prefix"]["vingerafdruk"], VINGERAFDRUK)
         bev = valideer_relatie(rel, {bron["metadata"]["id"]: bron,
                                      zuster["metadata"]["id"]: zuster})

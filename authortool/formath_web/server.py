@@ -991,18 +991,24 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         mb = {m['id']: m for m in opgave.get('mathblocks', [])}
         def out(bid):
             return mb.get(bid, {}).get('output', '')
+        # Structureel (geen vaste id's, overleeft renumbering): elk accent-blok
+        # (id eindigt op "'") wordt met zijn basis-blok in één box gecombineerd.
         overrides = {}
-        if 'A5' in mb and "A5'" in mb:
-            overrides['A5'] = {'block_id': "A5/A5'",
-                               'result': out('A5') + ' / ' + out("A5'")}
-        if 'A6' in mb and "A6'" in mb:
-            overrides['A6'] = {'block_id': "A6/A6'",
-                               'result': out('A6') + ' / ' + out("A6'")}
+        for m in opgave.get('mathblocks', []):
+            acc = m['id']
+            if acc.endswith("'") and acc[:-1] in mb:
+                base = acc[:-1]
+                overrides[base] = {'block_id': base + '/' + acc,
+                                   'result': out(base) + ' / ' + out(acc)}
         peak = None
         piek = next((m for m in opgave.get('mathblocks', [])
                      if (m.get('operatie') or {}).get('symbool') == 'S'), None)
         if piek:
-            peak = {'anchor': 'A6', 'block_id': piek['id'], 'label': 'S',
+            # Anker = de niet-accent mathblock-input van de piek (het root-blok).
+            anchor = next((i.get('id') for i in piek.get('input', [])
+                           if i.get('type') == 'mathblock'
+                           and not str(i.get('id', '')).endswith("'")), None)
+            peak = {'anchor': anchor, 'block_id': piek['id'], 'label': 'S',
                     'result': piek.get('output', '')}
         return (overrides or None), peak
 
