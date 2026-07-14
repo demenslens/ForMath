@@ -111,8 +111,17 @@ def maak_pm_opgave(opgave_plus, opgave_min, full_expr, latex_display):
     wortelD = wb['output']                      # bv. '10'
     wb['output'] = '±' + wortelD
     exp = opgave_plus['metadata']['expressie']
+    plus_latex = exp.get('latex_display') or ''   # nette +variant-LaTeX (al gezet
+                                                  # via ast_to_latex_display)
     exp['tekst'] = full_expr
-    exp['latex_display'] = latex_display
+    # De +variant-LaTeX is al schoon (\frac, \sqrt, minimale haakjes: -(-2)→2). We
+    # zetten alleen de fork-optelling −b + √D om naar −b ± √D ("+\sqrt" → "\pm\sqrt").
+    # De meegegeven latex_display is een naïeve substitutie (letterlijk 'sqrt', veel
+    # haakjes) en gebruiken we enkel als er geen bruikbare +variant-LaTeX is.
+    if '\\sqrt' in plus_latex:
+        exp['latex_display'] = plus_latex.replace('+\\sqrt', '\\pm \\sqrt', 1)
+    else:
+        exp['latex_display'] = latex_display
 
     a3_id = next((i['id'] for i in wb['input'] if i.get('type') == 'mathblock'), None)
     d_waarde = (_blok(opgave_plus, a3_id) or {}).get('output', wortelD)
