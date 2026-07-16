@@ -71,6 +71,7 @@
   var remainingHoog = [];
   var remainingLaag = [];
   var kadersAan = false;     // toggle-status van de visuele mathblock-kaders
+  var _lastFoutRes = null;   // laatst getekende fout-kader-matcherRes (voor redraw bij resize)
   var resolvedBlocks = [];
   var opgaveVoltooid = false; // true zodra alle steps klaar zijn — geen nieuwe LF-regel meer
   var previousLatex = '';   // last confirmed (correct) expression LaTeX
@@ -735,6 +736,7 @@
     // Wis eventuele verankerings-kaders van de vorige opgave (ze hangen los
     // aan de body en zouden anders blijven staan na een opgave-wissel).
     if (window.VERANKERING) window.VERANKERING.clearBoxes();
+    if (typeof clearFoutKaders === 'function') clearFoutKaders();  // fout-kaders + _lastFoutRes reset
     if (typeof resetKadersToggle === 'function') resetKadersToggle();
     document.getElementById('block-info').textContent = '';
     lastCursorInfo = '';
@@ -4632,6 +4634,7 @@
   var FOUT_MARGE = 3;
   function clearFoutKaders(){
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
+    _lastFoutRes = null;   // toestand vergeten: er staan geen fout-kaders meer
   }
   // Geeft het aantal getekende fout-kaders terug (0 = niets te ankeren).
   function markFoutKaders(matcherRes){
@@ -4693,6 +4696,9 @@
       }
     });
     dbg('[fout] ' + getekend + ' fout-kader(s) getekend voor', fout.map(function(r){return r.mathblock;}));
+    // Onthoud de bron zodat we bij een layout-wijziging (resize, kolom-slepen)
+    // exact dezelfde fout-kaders opnieuw kunnen tekenen op de nieuwe posities.
+    _lastFoutRes = (getekend > 0) ? matcherRes : null;
     return getekend;
   }
   window.__wisFout = clearFoutKaders;
@@ -5000,6 +5006,93 @@
     if (window.VERANKERING) window.VERANKERING.clearBoxes();
     if (hintsBtn) hintsBtn.classList.remove('active');
     if (hintsPlusBtn) hintsPlusBtn.classList.remove('active');
+  }
+
+  // Herteken alle actieve kaders (hint + fout) op de HUIDIGE glyph-posities.
+  // De kaders zijn position:fixed op meetmoment; bij een layout-wijziging
+  // (venster-resize, kolom-slepen) verschuift de tekst maar blijven de kaders op
+  // hun oude viewport-plek hangen → hier herbouwen we ze uit de bewaarde toestand.
+  function redrawKaders(){
+    if (!window.VERANKERING) return;
+    if (!hintKadersHoog && !hintKadersLaag && !_lastFoutRes) return;  // niets getoond
+    var foutRes = _lastFoutRes;                 // bewaren (markFoutKaders reset dit)
+    window.VERANKERING.clearBoxes();            // hint-kaders weg (fout blijft staan)
+    if (hintKadersHoog) toonHintKaders('hoog', true);
+    if (hintKadersLaag) toonHintKaders('laag', true);
+    if (foutRes) markFoutKaders(foutRes);       // fout-kaders opnieuw op nieuwe posities
+  }
+  window.__hertekenKaders = redrawKaders;
+  // rAF-throttled herteken: alle layout-triggers (venster-resize, zoom,
+  // kolom-slepen, scroll) funnelen hierheen → hooguit één herteken per frame.
+  // Zo bewegen de kaders VLOEIEND mee i.p.v. te verspringen (debounce sprong pas
+  // aan het eind, wat het hinderlijke spronggedrag gaf).
+  var _redrawRAF = 0, _kaderMfRect = null, _lastKaderCount = 0;
+  function _activeMf(){
+    return document.querySelector('.rl.active .editor')
+        || document.querySelector('.rl.active math-field')
+        || mfRef
+        || document.querySelector('math-field');
+  }
+  function _transleerKaders(dx, dy){
+    if (!dx && !dy) return;
+    var boxes = document.querySelectorAll('.__hlbox');   // hint + fout (beide .__hlbox)
+    for (var i = 0; i < boxes.length; i++) {
+      var b = boxes[i];
+      b.style.left = (parseFloat(b.style.left) + dx) + 'px';
+      b.style.top  = (parseFloat(b.style.top)  + dy) + 'px';
+    }
+  }
+  // Eén handler voor layout-wijzigingen die NIET via scroll komen (venster-resize,
+  // zoom, kolom-slepen). Onderscheid op de HOOGTE van het actieve invoerveld:
+  //   - hoogte ongewijzigd → het veld is alleen VERSCHOVEN (bv. kolom-slepen dat de
+  //     content horizontaal opschuift): transleer de kaders mee. Goedkoop en
+  //     DETERMINISTISCH — geen flakey her-verankering (die gaf het horizontale
+  //     springen bij kolom-slepen).
+  //   - hoogte gewijzigd → schaal/reflow (zoom): volledige her-verankering.
+  function _onLayoutChange(){
+    var mf = _activeMf();
+    var n = document.querySelectorAll('.__hlbox').length;
+    if (!mf || !n) { _kaderMfRect = null; _lastKaderCount = n; return; }
+    var r = mf.getBoundingClientRect();
+    if (!_kaderMfRect || n !== _lastKaderCount) {          // vers → alleen baseline zetten
+      _kaderMfRect = { left: r.left, top: r.top, height: r.height };
+      _lastKaderCount = n;
+      return;
+    }
+    if (Math.abs(r.height - _kaderMfRect.height) < 0.5) {  // alleen verschoven → transleren
+      _transleerKaders(r.left - _kaderMfRect.left, r.top - _kaderMfRect.top);
+    } else {                                               // grootte veranderd → her-verankeren
+      redrawKaders();
+      r = mf.getBoundingClientRect();
+    }
+    _kaderMfRect = { left: r.left, top: r.top, height: r.height };
+    _lastKaderCount = document.querySelectorAll('.__hlbox').length;
+  }
+  function _scheduleRedrawKaders(){
+    if (_redrawRAF) return;
+    _redrawRAF = requestAnimationFrame(function(){ _redrawRAF = 0; _onLayoutChange(); });
+  }
+  window.addEventListener('resize', _scheduleRedrawKaders);
+  // Scroll: het werkblad scrolt in .scroll (body: overflow hidden). Pure verticale
+  // translatie → kaders synchroon mee-verschuiven over de scroll-delta (tight, geen
+  // frame-lag). Houd ook de _onLayoutChange-baseline in sync (het veld schuift mee),
+  // anders zou een kolom-sleep ná scrollen de scroll-afstand dubbel tellen.
+  var _scrollEl = document.querySelector('.scroll');
+  if (_scrollEl) {
+    var _kScrTop = _scrollEl.scrollTop, _kScrLeft = _scrollEl.scrollLeft;
+    _scrollEl.addEventListener('scroll', function(){
+      var dTop = _scrollEl.scrollTop - _kScrTop, dLeft = _scrollEl.scrollLeft - _kScrLeft;
+      _kScrTop = _scrollEl.scrollTop; _kScrLeft = _scrollEl.scrollLeft;
+      if (!dTop && !dLeft) return;
+      _transleerKaders(-dLeft, -dTop);
+      if (_kaderMfRect) { _kaderMfRect.left -= dLeft; _kaderMfRect.top -= dTop; }
+    }, { passive: true });
+  }
+  // ResizeObserver op de content-kolom (.main): vangt venster-resize, kolom-slepen
+  // ÉN zoom (CSS-pixelmaat verandert) — betrouwbaarder dan het 'resize'-event.
+  if (typeof ResizeObserver !== 'undefined') {
+    var _mainEl = document.querySelector('.main');
+    if (_mainEl) { try { new ResizeObserver(_scheduleRedrawKaders).observe(_mainEl); } catch(e){} }
   }
 
   hintsBtn.onclick = function(){
@@ -5315,6 +5408,7 @@
           var w = Math.max(MIN, Math.min(MAX, startW + (e.clientX - startX) * dir));
           target.style.width = w + 'px';
           target.style.flexShrink = '0';
+          _scheduleRedrawKaders();   // vloeiend meebewegen tijdens het slepen
         }
         function onUp(){
           document.removeEventListener('mousemove', onMove);
@@ -5322,11 +5416,12 @@
           rz.classList.remove('dragging');
           document.body.style.cursor = '';
           document.body.style.userSelect = '';
+          _scheduleRedrawKaders();
         }
         document.addEventListener('mousemove', onMove);
         document.addEventListener('mouseup', onUp);
       });
-      rz.addEventListener('dblclick', function(){ target.style.width = ''; });
+      rz.addEventListener('dblclick', function(){ target.style.width = ''; _scheduleRedrawKaders(); });
     });
   }
 
