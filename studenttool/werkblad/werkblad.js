@@ -666,8 +666,8 @@
     st('ld','Opgave laden...');
     fetch(OPGAVEN_BASE + opg.bestand)
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(function(data){ currentOpgave = data; renderOpgave(data); st('ok','Opgave geladen'); })
-      .catch(function(err){ st('er','Laden mislukt: '+err.message); });
+      .then(function(data){ currentOpgave = data; renderOpgave(data); st('ok', TT('status.loaded')); })
+      .catch(function(err){ st('er', TT('status.load_failed', {msg: err.message})); });
   }
 
   // ── Pijltjes-navigatie door de opgavenlijst ──
@@ -766,9 +766,9 @@
       // beginUitkomst bevat voorlopig nog de +spoor-waarde.)
       st('ok', TT('fork.recognized', { answer: window.ABCFORK.beschrijving(forkInfo) }));
     } else if(beginUitkomst !== null){
-      st('ok', 'Uitkomst: ' + math.format(beginUitkomst, {fraction:'ratio'}));
+      st('ok', TT('status.answer', {value: math.format(beginUitkomst, {fraction:'ratio'})}));
     } else {
-      st('er', 'Kan expressie niet evalueren');
+      st('er', TT('status.cannot_eval'));
     }
 
     // Regelindeling (de drie bovenste schriftlijnen vervallen):
@@ -900,7 +900,7 @@
       _cnt.parseTimerFire++;
       var latexVal = getEditorLatex();
       if(!latexVal || latexVal.trim() === '') {
-        st('ok', 'Step ' + currentStep);
+        st('ok', TT('status.step', {n: currentStep}));
         return;
       }
 
@@ -916,7 +916,7 @@
 
       var result = evaluateExpression(latexVal);
       if(result === null){
-        st('er', 'Ongeldige expressie');
+        st('er', TT('status.invalid_expr'));
       } else {
         var isCorrect = resultsEqual(result, beginUitkomst);
         if(isCorrect){
@@ -931,7 +931,7 @@
               if(mark) mark.remove();
             }
           }
-          st('ok', '✓ ' + math.format(result, {fraction:'ratio'}) + ' — druk LF');
+          st('ok', TT('status.value_press_lf', {value: math.format(result, {fraction:'ratio'})}));
         } else {
           st('ld', math.format(result, {fraction:'ratio'}) + ' (verwacht: ' + math.format(beginUitkomst, {fraction:'ratio'}) + ')');
         }
@@ -2055,11 +2055,11 @@
       if(currentStep < maxStep){
         currentStep++;
         initStepTracking();
-        st('ok', '✓ Correct! → Step ' + currentStep);
+        st('ok', TT('status.correct_step', {n: currentStep}));
         dbg('[stepTracking] Advanced to step', currentStep);
       } else {
         opgaveVoltooid = true;
-        st('ok', '🎉 Opgave voltooid!');
+        st('ok', TT('status.exercise_done'));
         dbg('[stepTracking] All steps completed!');
       }
     }
@@ -3946,14 +3946,14 @@
     var cl = rules.children[activeLineIndex];
     if(cl){ var m = cl.querySelector('.margin-mark'); if(m) m.remove(); }
     lfBlocked = false;
-    st('ok', 'Teruggeplaatst naar vorige regel');
+    st('ok', TT('status.reverted'));
   };
 
   // LF — evaluate, validate, commit or reject
   // ══════════════════════════════════════
   function doLF(){
     if(lfBlocked){
-      st('er', 'Corrigeer eerst de gemarkeerde fouten');
+      st('er', TT('status.fix_marked'));
       return;
     }
 
@@ -4005,7 +4005,7 @@
         // Type 1: identifiable errors
         addMarginMark(currentLine, false);
         var errMsgs = pinResult.errors.map(function(e){ return e.description; });
-        st('er', '✗ Rekenfout: ' + errMsgs.join(' | '));
+        st('er', TT('status.calc_error', {errors: errMsgs.join(' | ')}));
         // Structurele fout-markering (rode box op de foute subexpressie) via de
         // matcher-boom; valt terug op de oudere tekst-markering als er niets te
         // verankeren is (bv. pattern-pinpoint zonder matcher-resultaat).
@@ -4016,12 +4016,12 @@
         return;
       } else if(pinResult && pinResult.type === 2){
         addMarginMark(currentLine, false);
-        st('er', 'Niet-herleidbare bewerking');
+        st('er', TT('status.not_reducible'));
         showType2Popup();
         return;
       }
       addMarginMark(currentLine, false);
-      st('er', 'Fout! Uitkomst komt niet overeen' + (currentResult !== null ? ' (=' + math.format(currentResult,{fraction:'ratio'}) + ')' : ''));
+      st('er', TT('status.answer_mismatch', {now: (currentResult !== null ? ' (=' + math.format(currentResult,{fraction:'ratio'}) + ')' : '')}));
       return;
     }
 
@@ -4111,7 +4111,7 @@
 
     // Only show generic "correct" message if step tracking didn't already show one
     if(remainingHoog.length > 0){
-      st('ok', '✓ Correct! (' + math.format(currentResult,{fraction:'ratio'}) + ')');
+      st('ok', TT('status.correct', {value: math.format(currentResult,{fraction:'ratio'})}));
     }
 
     // Store as last confirmed expression
@@ -4760,15 +4760,15 @@
   }
 
   function startVerticalSplit(){
-    if(!isForkOpgave){ st('info', 'Splitsen kan alleen bij een abc-opgave met ±.'); return; }
-    if(splitState){ st('info', 'Er is al gesplitst.'); return; }
+    if(!isForkOpgave){ st('info', TT('status.split_only_abc')); return; }
+    if(splitState){ st('info', TT('status.split_already')); return; }
     var rules = document.getElementById('rules');
     var currentLine = rules.children[activeLineIndex];
     if(!currentLine) return;
     var latexVal = getEditorLatex();
     var tracks = (window.ABCFORK && window.ABCFORK.splitTracks)
       ? window.ABCFORK.splitTracks(latexVal, forkInfo) : null;
-    if(!tracks){ st('er', 'Splitsen kan alleen op een regel met een ±-teken.'); return; }
+    if(!tracks){ st('er', TT('status.split_needs_pm')); return; }
 
     // Bevries de huidige ±-regel als read-only label.
     detachCursorTracking();
