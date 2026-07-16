@@ -210,13 +210,27 @@
       "output": "4",
       "hints": {
         "structureel": {
-          "wat": "Verhef het grondtal tot de macht 2.",
-          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
-          "let_op": ""
+          "wat": {
+            "key": "power.wat",
+            "params": {
+              "exp": 2
+            }
+          },
+          "hoe": {
+            "key": "power.hoe",
+            "params": {
+              "exp": 2
+            }
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -247,13 +261,25 @@
       "is_negative": true,
       "hints": {
         "structureel": {
-          "wat": "Deel het eerste getal door het tweede.",
-          "hoe": "Deel de teller door de noemer.",
-          "let_op": "Het minteken vóór deze bewerking werkt op het hele resultaat."
+          "wat": {
+            "key": "binary.div.wat"
+          },
+          "hoe": {
+            "key": "binary.div.hoe.plain"
+          },
+          "let_op": [
+            {
+              "key": "binary.letop.negative"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -283,13 +309,21 @@
       "output": "5",
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Voeg de twee getallen samen tot één som.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -320,13 +354,21 @@
       "output": "-2",
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Voeg de twee getallen samen tot één som.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -356,13 +398,21 @@
       "output": "-25/10",
       "hints": {
         "structureel": {
-          "wat": "Deel het eerste getal door het tweede.",
-          "hoe": "Deel de teller door de noemer.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.div.wat"
+          },
+          "hoe": {
+            "key": "binary.div.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -394,14 +444,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 5.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "-25/10 = (-25÷5)/(10÷5) = -5/2."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 5
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": -25,
+              "rn": 10,
+              "ggd": 5,
+              "vt": -5,
+              "vn": 2
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -438,18 +512,41 @@
       "efficientie": {
         "aanbevolen": true,
         "reden": "einduitkomst: altijd vereenvoudigen",
-        "score": 1.0
+        "score": 1
       },
       "hints": {
         "structureel": {
-          "wat": "Schrijf de oneigenlijke breuk als gemengd getal.",
-          "hoe": "Deel teller door noemer: het quotiënt is het hele getal, de rest is de teller van de overgebleven breuk. De noemer blijft hetzelfde.",
-          "let_op": "Een gemengd getal heeft de vorm \"geheel teller/noemer\" en is alleen zinvol als de teller groter of gelijk is aan de noemer.",
-          "voorbeeld": "-5/2: 5 ÷ 2 = -2 rest 1, dus -5/2 = -2 1/2."
+          "wat": {
+            "key": "mixed.wat"
+          },
+          "hoe": {
+            "key": "mixed.hoe"
+          },
+          "let_op": [
+            {
+              "key": "mixed.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "mixed.voorbeeld.rest",
+            "params": {
+              "rt": -5,
+              "rn": 2,
+              "abs_rt": 5,
+              "int_rn": 2,
+              "int_geh": -2,
+              "abs_mt": 1,
+              "mn": 2
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

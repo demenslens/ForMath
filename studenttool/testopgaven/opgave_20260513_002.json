@@ -131,13 +131,25 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
-          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -174,18 +186,41 @@
       "efficientie": {
         "aanbevolen": true,
         "reden": "einduitkomst: altijd vereenvoudigen",
-        "score": 1.0
+        "score": 1
       },
       "hints": {
         "structureel": {
-          "wat": "Schrijf de oneigenlijke breuk als gemengd getal.",
-          "hoe": "Deel teller door noemer: het quotiënt is het hele getal, de rest is de teller van de overgebleven breuk. De noemer blijft hetzelfde.",
-          "let_op": "Een gemengd getal heeft de vorm \"geheel teller/noemer\" en is alleen zinvol als de teller groter of gelijk is aan de noemer.",
-          "voorbeeld": "206/195: 206 ÷ 195 = 1 rest 11, dus 206/195 = 1 11/195."
+          "wat": {
+            "key": "mixed.wat"
+          },
+          "hoe": {
+            "key": "mixed.hoe"
+          },
+          "let_op": [
+            {
+              "key": "mixed.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "mixed.voorbeeld.rest",
+            "params": {
+              "rt": 206,
+              "rn": 195,
+              "abs_rt": 206,
+              "int_rn": 195,
+              "int_geh": 1,
+              "abs_mt": 11,
+              "mn": 195
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

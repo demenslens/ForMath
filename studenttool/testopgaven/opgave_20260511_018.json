@@ -167,13 +167,25 @@
       "output": "60/72",
       "hints": {
         "structureel": {
-          "wat": "Deel het eerste getal door het tweede.",
-          "hoe": "Delen door een breuk = vermenigvuldigen met het omgekeerde: a/b : c/d = a/b × d/c.",
-          "let_op": "De rechter breuk omkeren is alleen toegestaan bij delen, niet bij andere bewerkingen."
+          "wat": {
+            "key": "binary.div.wat"
+          },
+          "hoe": {
+            "key": "binary.div.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.div.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -205,14 +217,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 12.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "60/72 = (60÷12)/(72÷12) = 5/6."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 12
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": 60,
+              "rn": 72,
+              "ggd": 12,
+              "vt": 5,
+              "vn": 6
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -263,13 +299,25 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
-          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -301,14 +349,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 9.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "27/18 = (27÷9)/(18÷9) = 3/2."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 9
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": 27,
+              "rn": 18,
+              "ggd": 9,
+              "vt": 3,
+              "vn": 2
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -345,18 +417,41 @@
       "efficientie": {
         "aanbevolen": true,
         "reden": "einduitkomst: altijd vereenvoudigen",
-        "score": 1.0
+        "score": 1
       },
       "hints": {
         "structureel": {
-          "wat": "Schrijf de oneigenlijke breuk als gemengd getal.",
-          "hoe": "Deel teller door noemer: het quotiënt is het hele getal, de rest is de teller van de overgebleven breuk. De noemer blijft hetzelfde.",
-          "let_op": "Een gemengd getal heeft de vorm \"geheel teller/noemer\" en is alleen zinvol als de teller groter of gelijk is aan de noemer.",
-          "voorbeeld": "3/2: 3 ÷ 2 = 1 rest 1, dus 3/2 = 1 1/2."
+          "wat": {
+            "key": "mixed.wat"
+          },
+          "hoe": {
+            "key": "mixed.hoe"
+          },
+          "let_op": [
+            {
+              "key": "mixed.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "mixed.voorbeeld.rest",
+            "params": {
+              "rt": 3,
+              "rn": 2,
+              "abs_rt": 3,
+              "int_rn": 2,
+              "int_geh": 1,
+              "abs_mt": 1,
+              "mn": 2
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

@@ -4,137 +4,43 @@ ForMath Hints Generator
 ========================
 Genereert structurele hints en feedback per mathblock (Type 1 en Type 2).
 
-Type 1 — Structureel: wat gebeurt er in deze stap, hoe, en waar moet je op letten
-Type 2 — Strategisch: efficiëntie-aanbevelingen (al in vereenvoudig-blocks)
-Type 3 — Didactisch: placeholder velden voor latere AI/auteur invulling
+i18n Fase A — TAAL-NEUTRALE OUTPUT
+----------------------------------
+Sinds de i18n-refactor emit deze generator geen Nederlandse proza meer, maar
+taal-neutrale REFERENTIES: elk hint-veld is een ``{"key": ..., "params": {...}}``
+object (of een lijst daarvan bij een samengestelde ``let_op``). De daadwerkelijke
+tekst staat in de i18n-catalogus van de render-tool (studenttool ``i18n.json``,
+sectie ``"hints"``); de render lost ``key`` + ``params`` op via ``I18N.t()``.
 
-De hints worden toegevoegd aan elk mathblock in de JSON output.
+Zo is er ÉÉN gezaghebbende bron voor de hint-tekst (de catalogus, in 6 talen) en
+zijn de hints automatisch in alle talen beschikbaar. Oude opgaven met NL-proza
+blijven werken: de render toont een string ongewijzigd (backward-compat).
 
-Aanpasbare teksten
-------------------
-Alle teksten zijn opgeslagen in hints_templates.json (in dezelfde directory).
-Auteurs/scholen kunnen dat bestand met de hand aanpassen om de standaardteksten
-te wijzigen, zonder Python-code te raken.
-
-Bij missende of corrupte templates valt de generator terug op een set
-ingebouwde defaults zodat de tool altijd blijft werken.
+Type 1 — Structureel: wat/hoe/let_op (+ soms voorbeeld)
+Type 2 — Strategisch: efficiëntie-aanbevelingen (elders, in de exporter)
+Type 3 — Didactisch: placeholder-velden voor latere AI/auteur-invulling
 """
 
 import json
-import os
 from collections import OrderedDict
-from typing import Dict, Any, Optional
+from typing import Dict, Any, List
 
 
-# ─── Templates laden ──────────────────────────────────────────────────────────
-
-_TEMPLATES_FILE = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    'hints_templates.json'
-)
-_templates_cache: Optional[Dict[str, Any]] = None
+# Operator-symbool → key-fragment.
+_OP_NAME = {'+': 'add', '×': 'mul', ':': 'div'}
 
 
-# Ingebouwde fallback-templates - alleen actief als hints_templates.json
-# ontbreekt of corrupt is. Hierdoor blijft de tool werken zelfs zonder
-# extern bestand.
-_FALLBACK_TEMPLATES = {
-    "binary_op": {
-        "+": {"wat": "Tel de twee getallen bij elkaar op.",
-              "hoe_zonder_breuk": "Voeg de twee getallen samen tot één som.",
-              "hoe_met_breuk": "Maak de noemers gelijknamig en tel de tellers op.",
-              "let_op_met_breuk": "Vergeet niet de noemers gelijk te maken."},
-        "×": {"wat": "Vermenigvuldig de twee getallen met elkaar.",
-              "hoe_zonder_breuk": "Bereken het product.",
-              "hoe_met_breuk": "Vermenigvuldig tellers en noemers afzonderlijk.",
-              "let_op_met_breuk": ""},
-        ":": {"wat": "Deel het eerste getal door het tweede.",
-              "hoe_zonder_breuk": "Deel teller door noemer.",
-              "hoe_met_breuk": "Vermenigvuldig met het omgekeerde van de tweede breuk.",
-              "let_op_met_breuk": ""},
-        "let_op_negatief": "Het minteken vóór deze bewerking werkt op het hele resultaat."
-    },
-    "manifold_op": {
-        "+": {"wat": "Tel deze {n} getallen bij elkaar op.",
-              "hoe_zonder_breuk": "De volgorde van optellen is vrij.",
-              "hoe_met_breuk": "Maak alle breuken gelijknamig met het KGV.",
-              "let_op_met_breuk": ""},
-        "×": {"wat": "Vermenigvuldig deze {n} factoren.",
-              "hoe_zonder_breuk": "De volgorde is vrij.",
-              "hoe_met_breuk": "Vermenigvuldig alle tellers en alle noemers.",
-              "let_op_met_breuk": ""},
-        "let_op_negatief": "Het minteken werkt op het hele resultaat."
-    },
-    "power": {"wat": "Verhef tot de macht {exp}.",
-              "hoe": "Vermenigvuldig {exp} keer met zichzelf.",
-              "let_op_negatief_even": "Negatief grondtal met even exponent geeft positief resultaat.",
-              "let_op_negatief_oneven": "Negatief grondtal met oneven exponent geeft negatief resultaat.",
-              "let_op_breuk": "Verhef teller en noemer apart tot de macht {exp}.",
-              "let_op_negatief": "Het minteken werkt op het hele resultaat."},
-    "root": {
-        "vierkantswortel": {"wat": "Trek de vierkantswortel.",
-                            "hoe": "Zoek het getal dat met zichzelf het radicand geeft."},
-        "machtswortel": {"wat": "Trek de {idx}-de machtswortel.",
-                         "hoe": "Zoek het getal dat tot de macht {idx} het radicand geeft."},
-        "let_op_breuk": "Bij een breuk: trek wortel uit teller en noemer apart."
-    },
-    "simplify_op": {"wat": "Vereenvoudig de breuk.",
-                    "hoe": "Deel teller en noemer door GGD = {ggd}.",
-                    "let_op": "Volledig vereenvoudigd als GGD = 1.",
-                    "voorbeeld": "{rt}/{rn} = {vt}/{vn}."},
-    "mixed_number_op": {"wat": "Schrijf de oneigenlijke breuk als gemengd getal.",
-                        "hoe": "Deel teller door noemer; quotiënt is het hele getal, rest is de nieuwe teller.",
-                        "let_op": "Alleen zinvol als teller >= noemer.",
-                        "voorbeeld_zonder_rest": "{rt}/{rn} = {int_geh}.",
-                        "voorbeeld_met_rest": "{rt}/{rn} = {int_geh} {abs_mt}/{mn}."},
-    "matroesjka_op": {"wat": "Werk de keten van {n} bewerkingen af.",
-                      "hoe": "Reken van binnen naar buiten.",
-                      "let_op": "De volgorde bij : en × is belangrijk."},
-    "feedback": {"bij_correct_root": "Dit is het goede antwoord, de opgave is klaar.",
-                 "bij_correct_tussen": "Correct, ga door.",
-                 "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening."}
-}
+def _ref(key: str, **params) -> "OrderedDict":
+    """Een taal-neutrale hint-referentie: {"key": ..., ["params": {...}]}.
 
-
-def _load_templates() -> Dict[str, Any]:
-    """Lees hints_templates.json met caching en fallback bij missend/corrupt bestand."""
-    global _templates_cache
-    if _templates_cache is not None:
-        return _templates_cache
-
-    if os.path.exists(_TEMPLATES_FILE):
-        try:
-            with open(_TEMPLATES_FILE, 'r', encoding='utf-8') as f:
-                tpl = json.load(f)
-            # Sleutels die met _ beginnen zijn meta-data en hoeven niet
-            tpl = {k: v for k, v in tpl.items() if not k.startswith('_')}
-            _templates_cache = tpl
-            return tpl
-        except (json.JSONDecodeError, IOError) as e:
-            print(f"[WAARSCHUWING] Kan hints_templates.json niet lezen: {e}")
-            print(f"[WAARSCHUWING] Terugvallen op ingebouwde defaults.")
-
-    _templates_cache = _FALLBACK_TEMPLATES
-    return _FALLBACK_TEMPLATES
-
-
-def reload_templates() -> Dict[str, Any]:
-    """Forceer herladen van templates (handig na handmatig bewerken)."""
-    global _templates_cache
-    _templates_cache = None
-    return _load_templates()
-
-
-def _fmt(s: str, **kwargs) -> str:
-    """Format een template-string met keyword arguments. Gemiste placeholders blijven staan."""
-    if not s:
-        return s
-    try:
-        return s.format(**kwargs)
-    except (KeyError, IndexError):
-        # Als de template een placeholder gebruikt die we niet hebben, geef
-        # de string ongewijzigd terug (beter dan crashen).
-        return s
+    De catalogus-sleutel `key` verwijst naar de sectie "hints" in de i18n-
+    catalogus; `params` zijn de runtime-waarden die de render in de placeholders
+    ({n}, {exp}, {ggd}, …) invult. Zonder params wordt het params-veld weggelaten.
+    """
+    r = OrderedDict([('key', key)])
+    if params:
+        r['params'] = OrderedDict((k, v) for k, v in params.items())
+    return r
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -159,155 +65,130 @@ def _has_fraction_input(node: Dict[str, Any]) -> bool:
 
 # ─── Hint-generators per type ─────────────────────────────────────────────────
 
-def _generate_binary_op_hints(node: Dict[str, Any]) -> Dict[str, str]:
+def _generate_binary_op_hints(node: Dict[str, Any]) -> Dict[str, Any]:
     """Hints voor binaire operaties (+, ×, :)."""
-    tpl = _load_templates().get('binary_op', {})
     op = node.get('operator', '?')
-    neg = node.get('is_negative', False)
-    left = node.get('left', {})
-    right = node.get('right', {})
-    has_fraction = _has_fraction_input(left) or _has_fraction_input(right)
-
-    op_tpl = tpl.get(op, {})
-    if not op_tpl:
+    name = _OP_NAME.get(op)
+    if name is None:
         return {}
 
-    hints = {'wat': op_tpl.get('wat', '')}
+    neg = node.get('is_negative', False)
+    has_fraction = (_has_fraction_input(node.get('left', {})) or
+                    _has_fraction_input(node.get('right', {})))
 
+    hints: Dict[str, Any] = {'wat': _ref('binary.%s.wat' % name)}
+    let_op: List[Any] = []
     if has_fraction:
-        hints['hoe'] = op_tpl.get('hoe_met_breuk', '')
-        let_op = op_tpl.get('let_op_met_breuk', '')
-        if let_op:
-            hints['let_op'] = let_op
+        hints['hoe'] = _ref('binary.%s.hoe.fraction' % name)
+        let_op.append(_ref('binary.%s.letop.fraction' % name))
     else:
-        hints['hoe'] = op_tpl.get('hoe_zonder_breuk', '')
-
+        hints['hoe'] = _ref('binary.%s.hoe.plain' % name)
     if neg:
-        bestaand = hints.get('let_op', '')
-        extra = tpl.get('let_op_negatief', '')
-        if extra:
-            hints['let_op'] = f"{bestaand} {extra}".strip()
-
+        let_op.append(_ref('binary.letop.negative'))
+    hints['let_op'] = let_op
     return hints
 
 
-def _generate_manifold_hints(node: Dict[str, Any]) -> Dict[str, str]:
-    """Hints voor MANIFOLD_OP."""
-    tpl = _load_templates().get('manifold_op', {})
+def _generate_manifold_hints(node: Dict[str, Any]) -> Dict[str, Any]:
+    """Hints voor MANIFOLD_OP (+, ×)."""
     op = node.get('operator', '?')
+    name = _OP_NAME.get(op)
+    if name is None:
+        return {}
+
     n = node.get('operand_count', len(node.get('operands', [])))
     neg = node.get('is_negative', False)
     has_fraction = any(_has_fraction_input(o) for o in node.get('operands', []))
 
-    op_tpl = tpl.get(op, {})
-    if not op_tpl:
-        return {}
-
-    hints = {'wat': _fmt(op_tpl.get('wat', ''), n=n)}
-
+    hints: Dict[str, Any] = {'wat': _ref('manifold.%s.wat' % name, n=n)}
+    let_op: List[Any] = []
     if has_fraction:
-        hints['hoe'] = _fmt(op_tpl.get('hoe_met_breuk', ''), n=n)
-        let_op = _fmt(op_tpl.get('let_op_met_breuk', ''), n=n)
-        if let_op:
-            hints['let_op'] = let_op
+        hints['hoe'] = _ref('manifold.%s.hoe.fraction' % name)
+        let_op.append(_ref('manifold.%s.letop.fraction' % name))
     else:
-        hints['hoe'] = _fmt(op_tpl.get('hoe_zonder_breuk', ''), n=n)
-
+        hints['hoe'] = _ref('manifold.%s.hoe.plain' % name)
     if neg:
-        bestaand = hints.get('let_op', '')
-        extra = tpl.get('let_op_negatief', '')
-        if extra:
-            hints['let_op'] = f"{bestaand} {extra}".strip()
-
+        let_op.append(_ref('manifold.letop.negative'))
+    hints['let_op'] = let_op
     return hints
 
 
-def _generate_power_hints(node: Dict[str, Any]) -> Dict[str, str]:
+def _generate_power_hints(node: Dict[str, Any]) -> Dict[str, Any]:
     """Hints voor POWER."""
-    tpl = _load_templates().get('power', {})
     exp = node.get('exponent', {}).get('value', '?')
     base = node.get('base', {})
     neg = node.get('is_negative', False)
 
-    hints = {
-        'wat': _fmt(tpl.get('wat', ''), exp=exp),
-        'hoe': _fmt(tpl.get('hoe', ''), exp=exp),
+    hints: Dict[str, Any] = {
+        'wat': _ref('power.wat', exp=exp),
+        'hoe': _ref('power.hoe', exp=exp),
     }
 
-    let_op = []
+    let_op: List[Any] = []
     if base.get('type') in ('NUMBER', 'FRACTION') and base.get('is_negative'):
         try:
             exp_int = int(exp)
             if exp_int % 2 == 0:
-                let_op.append(tpl.get('let_op_negatief_even', ''))
+                let_op.append(_ref('power.letop.negBaseEven'))
             else:
-                let_op.append(tpl.get('let_op_negatief_oneven', ''))
+                let_op.append(_ref('power.letop.negBaseOdd'))
         except (ValueError, TypeError):
             pass
 
     if base.get('type') == 'FRACTION' or _has_fraction_input(base):
-        let_op.append(_fmt(tpl.get('let_op_breuk', ''), exp=exp))
+        let_op.append(_ref('power.letop.fraction', exp=exp))
 
     if neg:
-        let_op.append(tpl.get('let_op_negatief', ''))
+        let_op.append(_ref('power.letop.negative'))
 
-    let_op = [s for s in let_op if s]
-    if let_op:
-        hints['let_op'] = ' '.join(let_op)
-
+    hints['let_op'] = let_op
     return hints
 
 
-def _generate_root_hints(node: Dict[str, Any]) -> Dict[str, str]:
+def _generate_root_hints(node: Dict[str, Any]) -> Dict[str, Any]:
     """Hints voor ROOT."""
-    tpl = _load_templates().get('root', {})
     idx = node.get('index', {}).get('value', 2)
 
     if str(idx) == '2':
-        sub = tpl.get('vierkantswortel', {})
+        hints: Dict[str, Any] = {
+            'wat': _ref('root.sqrt.wat'),
+            'hoe': _ref('root.sqrt.hoe'),
+        }
     else:
-        sub = tpl.get('machtswortel', {})
+        hints = {
+            'wat': _ref('root.nth.wat', idx=idx),
+            'hoe': _ref('root.nth.hoe', idx=idx),
+        }
 
-    hints = {
-        'wat': _fmt(sub.get('wat', ''), idx=idx),
-        'hoe': _fmt(sub.get('hoe', ''), idx=idx),
-    }
-
-    radicand = node.get('radicand', {})
-    if radicand.get('type') == 'FRACTION':
-        let_op = tpl.get('let_op_breuk', '')
-        if let_op:
-            hints['let_op'] = let_op
-
+    let_op: List[Any] = []
+    if node.get('radicand', {}).get('type') == 'FRACTION':
+        let_op.append(_ref('root.letop.fraction'))
+    hints['let_op'] = let_op
     return hints
 
 
-def _generate_simplify_hints(node: Dict[str, Any]) -> Dict[str, str]:
+def _generate_simplify_hints(node: Dict[str, Any]) -> Dict[str, Any]:
     """Hints voor SIMPLIFY_OP."""
-    tpl = _load_templates().get('simplify_op', {})
     ggd = node.get('ggd', '?')
     ruw = node.get('ruw', {})
     verv = node.get('vereenvoudigd', {})
 
-    hints = {
-        'wat': tpl.get('wat', ''),
-        'hoe': _fmt(tpl.get('hoe', ''), ggd=ggd),
-        'let_op': tpl.get('let_op', ''),
+    hints: Dict[str, Any] = {
+        'wat': _ref('simplify.wat'),
+        'hoe': _ref('simplify.hoe', ggd=ggd),
+        'let_op': [_ref('simplify.letop')],
     }
 
     if ruw and verv:
         rt, rn = ruw.get('teller'), ruw.get('noemer')
         vt, vn = verv.get('teller'), verv.get('noemer')
-        vb = tpl.get('voorbeeld', '')
-        if vb:
-            hints['voorbeeld'] = _fmt(vb, rt=rt, rn=rn, vt=vt, vn=vn, ggd=ggd)
+        hints['voorbeeld'] = _ref('simplify.voorbeeld', rt=rt, rn=rn, vt=vt, vn=vn, ggd=ggd)
 
     return hints
 
 
-def _generate_mixed_number_hints(node: Dict[str, Any]) -> Dict[str, str]:
+def _generate_mixed_number_hints(node: Dict[str, Any]) -> Dict[str, Any]:
     """Hints voor MIXED_NUMBER_OP."""
-    tpl = _load_templates().get('mixed_number_op', {})
     ruw = node.get('ruw', {})
     gm = node.get('gemengd', {})
 
@@ -317,10 +198,10 @@ def _generate_mixed_number_hints(node: Dict[str, Any]) -> Dict[str, str]:
     mt = gm.get('teller', '?')
     mn = gm.get('noemer', '?')
 
-    hints = {
-        'wat': tpl.get('wat', ''),
-        'hoe': tpl.get('hoe', ''),
-        'let_op': tpl.get('let_op', ''),
+    hints: Dict[str, Any] = {
+        'wat': _ref('mixed.wat'),
+        'hoe': _ref('mixed.hoe'),
+        'let_op': [_ref('mixed.letop')],
     }
 
     if rt != '?' and rn != '?':
@@ -331,15 +212,15 @@ def _generate_mixed_number_hints(node: Dict[str, Any]) -> Dict[str, str]:
             abs_mt = abs(int(mt)) if mt != 0 else 0
 
             if abs_mt == 0:
-                vb = tpl.get('voorbeeld_zonder_rest', '')
+                hints['voorbeeld'] = _ref(
+                    'mixed.voorbeeld.noRest',
+                    rt=rt, rn=rn, abs_rt=abs_rt, int_rn=int_rn, int_geh=int_geh,
+                )
             else:
-                vb = tpl.get('voorbeeld_met_rest', '')
-
-            if vb:
-                hints['voorbeeld'] = _fmt(
-                    vb,
+                hints['voorbeeld'] = _ref(
+                    'mixed.voorbeeld.rest',
                     rt=rt, rn=rn, abs_rt=abs_rt, int_rn=int_rn,
-                    int_geh=int_geh, abs_mt=abs_mt, mn=mn
+                    int_geh=int_geh, abs_mt=abs_mt, mn=mn,
                 )
         except (TypeError, ValueError):
             pass
@@ -347,34 +228,27 @@ def _generate_mixed_number_hints(node: Dict[str, Any]) -> Dict[str, str]:
     return hints
 
 
-def _generate_matroesjka_hints(node: Dict[str, Any]) -> Dict[str, str]:
+def _generate_matroesjka_hints(node: Dict[str, Any]) -> Dict[str, Any]:
     """Hints voor MATROESJKA_OP."""
-    tpl = _load_templates().get('matroesjka_op', {})
     n = node.get('shell_count', len(node.get('shells', [])))
     return {
-        'wat': _fmt(tpl.get('wat', ''), n=n),
-        'hoe': tpl.get('hoe', ''),
-        'let_op': tpl.get('let_op', ''),
+        'wat': _ref('matroesjka.wat', n=n),
+        'hoe': _ref('matroesjka.hoe'),
+        'let_op': [_ref('matroesjka.letop')],
     }
 
 
-def _generate_feedback(node: Dict[str, Any], is_root: bool = False) -> Dict[str, Any]:
-    """Standaard feedback voor goed/fout."""
-    tpl = _load_templates().get('feedback', {})
-
-    if is_root:
-        bij_correct = tpl.get('bij_correct_root', 'Dit is het goede antwoord op het gevraagde.')
-    else:
-        bij_correct = tpl.get('bij_correct_tussen', 'Correct, ga door.')
-
+def _generate_feedback(node: Dict[str, Any], is_root: bool = False) -> "OrderedDict":
+    """Standaard feedback voor goed/fout (taal-neutrale referenties)."""
+    bij_correct = _ref('feedback.correct.root' if is_root else 'feedback.correct.intermediate')
     return OrderedDict([
         ('bij_correct', bij_correct),
-        ('bij_fout_algemeen', tpl.get('bij_fout_algemeen', 'Klopt nog niet.')),
+        ('bij_fout_algemeen', _ref('feedback.wrong.general')),
         ('veelvoorkomende_fouten', []),
     ])
 
 
-def _generate_didactisch_placeholder() -> Dict[str, str]:
+def _generate_didactisch_placeholder() -> "OrderedDict":
     """Lege placeholder voor Type 3 didactische hints."""
     return OrderedDict([
         ('didactische_uitleg', ''),
@@ -385,7 +259,7 @@ def _generate_didactisch_placeholder() -> Dict[str, str]:
 
 # ─── Hoofdingang ──────────────────────────────────────────────────────────────
 
-def generate_hints(node: Dict[str, Any], is_root: bool = False) -> Dict[str, Any]:
+def generate_hints(node: Dict[str, Any], is_root: bool = False) -> "OrderedDict":
     """
     Genereer hints en feedback voor een mathblock.
 
@@ -396,9 +270,12 @@ def generate_hints(node: Dict[str, Any], is_root: bool = False) -> Dict[str, Any
 
     Returns:
         OrderedDict met:
-          - structureel: dict met 'wat', 'hoe', 'let_op' (Type 1)
-          - feedback: dict met 'bij_correct', 'bij_fout_algemeen', 'veelvoorkomende_fouten'
-          - didactisch: lege placeholder (Type 3)
+          - structureel: dict met 'wat', 'hoe', 'let_op' (+ soms 'voorbeeld').
+            Elk veld is een {"key","params"}-referentie; 'let_op' is een LIJST
+            van referenties (0..n fragmenten).
+          - feedback: dict met 'bij_correct', 'bij_fout_algemeen',
+            'veelvoorkomende_fouten' (referenties).
+          - didactisch: lege placeholder (Type 3).
     """
     t = node.get('type')
 
@@ -420,13 +297,12 @@ def generate_hints(node: Dict[str, Any], is_root: bool = False) -> Dict[str, Any
         structureel = {}
 
     return OrderedDict([
-        ('structureel', OrderedDict([
-            ('wat', structureel.get('wat', '')),
-            ('hoe', structureel.get('hoe', '')),
-            ('let_op', structureel.get('let_op', '')),
-        ] + (
-            [('voorbeeld', structureel['voorbeeld'])] if 'voorbeeld' in structureel else []
-        ))),
+        ('structureel', OrderedDict(
+            [('wat', structureel.get('wat', '')),
+             ('hoe', structureel.get('hoe', '')),
+             ('let_op', structureel.get('let_op', []))]
+            + ([('voorbeeld', structureel['voorbeeld'])] if 'voorbeeld' in structureel else [])
+        )),
         ('feedback', _generate_feedback(node, is_root=is_root)),
         ('didactisch', _generate_didactisch_placeholder()),
     ])
@@ -442,6 +318,8 @@ if __name__ == '__main__':
         {'type': 'BINARY_OP', 'operator': '×',
          'left': {'type': 'FRACTION', 'numerator': 3, 'denominator': 4},
          'right': {'type': 'FRACTION', 'numerator': 8, 'denominator': 9}},
+        {'type': 'MANIFOLD_OP', 'operator': '+', 'operand_count': 3, 'is_negative': True,
+         'operands': [{'type': 'FRACTION', 'numerator': 1, 'denominator': 9}]},
         {'type': 'POWER', 'base': {'type': 'NUMBER', 'value': -3, 'is_negative': True},
          'exponent': {'type': 'NUMBER', 'value': 2}},
         {'type': 'SIMPLIFY_OP', 'ggd': 12,
@@ -450,14 +328,11 @@ if __name__ == '__main__':
         {'type': 'MIXED_NUMBER_OP',
          'ruw': {'teller': 35, 'noemer': 12},
          'gemengd': {'geheel': 2, 'teller': 11, 'noemer': 12}},
-        {'type': 'MATROESJKA_OP', 'shell_count': 5, 'shells': [{}]*5},
+        {'type': 'MATROESJKA_OP', 'shell_count': 5, 'shells': [{}] * 5},
     ]
 
-    print(f"Templates geladen uit: {_TEMPLATES_FILE}")
-    print(f"Bestaat: {os.path.exists(_TEMPLATES_FILE)}\n")
-
     for n in test_nodes:
-        print(f"=== {n['type']} ===")
+        print(f"=== {n['type']} ({n.get('operator', '')}) ===")
         h = generate_hints(n, is_root=(n['type'] == 'MIXED_NUMBER_OP'))
         print(json.dumps(h, indent=2, ensure_ascii=False))
         print()

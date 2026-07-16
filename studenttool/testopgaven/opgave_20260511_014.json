@@ -131,13 +131,25 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
-          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -169,14 +181,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 9.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "27/90 = (27÷9)/(90÷9) = 3/10."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 9
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": 27,
+              "rn": 90,
+              "ggd": 9,
+              "vt": 3,
+              "vn": 10
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

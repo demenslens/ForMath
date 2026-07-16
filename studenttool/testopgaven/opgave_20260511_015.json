@@ -153,13 +153,28 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel deze 3 getallen bij elkaar op.",
-          "hoe": "Maak alle breuken gelijknamig met behulp van het KGV van alle noemers, tel daarna de tellers op.",
-          "let_op": "Bij meerdere breuken hoef je het KGV maar één keer te bepalen — daarna kun je alle tellers tegelijk omrekenen."
+          "wat": {
+            "key": "manifold.add.wat",
+            "params": {
+              "n": 3
+            }
+          },
+          "hoe": {
+            "key": "manifold.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "manifold.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -191,14 +206,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 2.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "50/72 = (50÷2)/(72÷2) = 25/36."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 2
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": 50,
+              "rn": 72,
+              "ggd": 2,
+              "vt": 25,
+              "vn": 36
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

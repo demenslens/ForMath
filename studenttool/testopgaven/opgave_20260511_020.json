@@ -193,13 +193,25 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
-          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -231,14 +243,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 16.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "-48/64 = (-48÷16)/(64÷16) = -3/4."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 16
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": -48,
+              "rn": 64,
+              "ggd": 16,
+              "vt": -3,
+              "vn": 4
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -265,13 +301,34 @@
       "output": "1/4",
       "hints": {
         "structureel": {
-          "wat": "Verhef het grondtal tot de macht 2.",
-          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
-          "let_op": "Bij een breuk: verhef zowel de teller als de noemer tot de macht 2."
+          "wat": {
+            "key": "power.wat",
+            "params": {
+              "exp": 2
+            }
+          },
+          "hoe": {
+            "key": "power.hoe",
+            "params": {
+              "exp": 2
+            }
+          },
+          "let_op": [
+            {
+              "key": "power.letop.fraction",
+              "params": {
+                "exp": 2
+              }
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -299,13 +356,37 @@
       "is_negative": true,
       "hints": {
         "structureel": {
-          "wat": "Verhef het grondtal tot de macht 2.",
-          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
-          "let_op": "Bij een breuk: verhef zowel de teller als de noemer tot de macht 2. Het minteken vóór de macht werkt op het hele resultaat."
+          "wat": {
+            "key": "power.wat",
+            "params": {
+              "exp": 2
+            }
+          },
+          "hoe": {
+            "key": "power.hoe",
+            "params": {
+              "exp": 2
+            }
+          },
+          "let_op": [
+            {
+              "key": "power.letop.fraction",
+              "params": {
+                "exp": 2
+              }
+            },
+            {
+              "key": "power.letop.negative"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -357,13 +438,25 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
-          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -395,14 +488,38 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Vereenvoudig de breuk.",
-          "hoe": "Bepaal de grootste gemeenschappelijke deler (GGD) van teller en noemer, en deel beide door die GGD. In dit geval: GGD = 4.",
-          "let_op": "Een breuk is volledig vereenvoudigd als de GGD van teller en noemer 1 is.",
-          "voorbeeld": "-20/64 = (-20÷4)/(64÷4) = -5/16."
+          "wat": {
+            "key": "simplify.wat"
+          },
+          "hoe": {
+            "key": "simplify.hoe",
+            "params": {
+              "ggd": 4
+            }
+          },
+          "let_op": [
+            {
+              "key": "simplify.letop"
+            }
+          ],
+          "voorbeeld": {
+            "key": "simplify.voorbeeld",
+            "params": {
+              "rt": -20,
+              "rn": 64,
+              "ggd": 4,
+              "vt": -5,
+              "vn": 16
+            }
+          }
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

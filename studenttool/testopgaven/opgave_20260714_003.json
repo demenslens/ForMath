@@ -249,13 +249,31 @@
       "output": "4",
       "hints": {
         "structureel": {
-          "wat": "Verhef het grondtal tot de macht 2.",
-          "hoe": "Vermenigvuldig het grondtal 2 keer met zichzelf.",
-          "let_op": "Een negatief grondtal met een even exponent geeft een positief resultaat."
+          "wat": {
+            "key": "power.wat",
+            "params": {
+              "exp": 2
+            }
+          },
+          "hoe": {
+            "key": "power.hoe",
+            "params": {
+              "exp": 2
+            }
+          },
+          "let_op": [
+            {
+              "key": "power.letop.negBaseEven"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -291,13 +309,28 @@
       "is_negative": true,
       "hints": {
         "structureel": {
-          "wat": "Vermenigvuldig deze 3 factoren met elkaar.",
-          "hoe": "De volgorde van vermenigvuldigen is vrij; groepeer factoren die samen ronde getallen geven.",
-          "let_op": "Het minteken vóór deze manifold werkt op het hele resultaat."
+          "wat": {
+            "key": "manifold.mul.wat",
+            "params": {
+              "n": 3
+            }
+          },
+          "hoe": {
+            "key": "manifold.mul.hoe.plain"
+          },
+          "let_op": [
+            {
+              "key": "manifold.letop.negative"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -328,13 +361,21 @@
       "output": "100",
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Voeg de twee getallen samen tot één som.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -362,13 +403,21 @@
       "output": "±10",
       "hints": {
         "structureel": {
-          "wat": "Trek de vierkantswortel.",
-          "hoe": "Zoek het getal dat met zichzelf vermenigvuldigd het radicand geeft.",
-          "let_op": ""
+          "wat": {
+            "key": "root.sqrt.wat"
+          },
+          "hoe": {
+            "key": "root.sqrt.hoe"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -399,13 +448,21 @@
       "output": "12",
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Voeg de twee getallen samen tot één som.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -435,13 +492,21 @@
       "output": "4",
       "hints": {
         "structureel": {
-          "wat": "Vermenigvuldig de twee getallen met elkaar.",
-          "hoe": "Bereken het product van de twee factoren.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.mul.wat"
+          },
+          "hoe": {
+            "key": "binary.mul.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -471,13 +536,21 @@
       "output": "3",
       "hints": {
         "structureel": {
-          "wat": "Deel het eerste getal door het tweede.",
-          "hoe": "Deel de teller door de noemer.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.div.wat"
+          },
+          "hoe": {
+            "key": "binary.div.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -508,13 +581,21 @@
       "output": "-8",
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Voeg de twee getallen samen tot één som.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -544,13 +625,21 @@
       "output": "-2",
       "hints": {
         "structureel": {
-          "wat": "Deel het eerste getal door het tweede.",
-          "hoe": "Deel de teller door de noemer.",
-          "let_op": ""
+          "wat": {
+            "key": "binary.div.wat"
+          },
+          "hoe": {
+            "key": "binary.div.hoe.plain"
+          },
+          "let_op": []
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {

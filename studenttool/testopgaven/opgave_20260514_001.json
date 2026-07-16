@@ -144,13 +144,25 @@
       },
       "hints": {
         "structureel": {
-          "wat": "Tel de twee getallen bij elkaar op.",
-          "hoe": "Als de noemers gelijk zijn: tel de tellers op en houd de noemer. Als de noemers verschillen: maak ze eerst gelijknamig met behulp van het KGV.",
-          "let_op": "Vergeet niet de noemers gelijk te maken voordat je de tellers optelt."
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.add.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Correct, ga door met de volgende bewerking.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
@@ -188,13 +200,25 @@
       "output": "27/2000",
       "hints": {
         "structureel": {
-          "wat": "Vermenigvuldig de twee getallen met elkaar.",
-          "hoe": "Vermenigvuldig de tellers en de noemers afzonderlijk: a/b × c/d = (a×c)/(b×d).",
-          "let_op": "Het kan handig zijn om eerst kruiselings te vereenvoudigen voor kleinere getallen."
+          "wat": {
+            "key": "binary.mul.wat"
+          },
+          "hoe": {
+            "key": "binary.mul.hoe.fraction"
+          },
+          "let_op": [
+            {
+              "key": "binary.mul.letop.fraction"
+            }
+          ]
         },
         "feedback": {
-          "bij_correct": "Dit is het goede antwoord op het gevraagde, de opgave is klaar.",
-          "bij_fout_algemeen": "Klopt nog niet. Controleer je berekening en probeer het opnieuw.",
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
           "veelvoorkomende_fouten": []
         },
         "didactisch": {
