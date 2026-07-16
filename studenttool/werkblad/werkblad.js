@@ -80,6 +80,11 @@
   // gebruikt deze state later.
   var isForkOpgave = false; // true als de opgave een ±√-fork bevat
   var forkInfo = null;      // { wortel, piek, sjabloon } of null
+  // Fork-modus. 'split' = de nieuwe koers: de leerling drukt op "splits ±" en de
+  // regel splitst VERTICAAL in twee kolommen. 'auto' = de oude horizontale Optie-A
+  // (automatisch +→−→S; blijft inactief maar bewaard).
+  var FORK_MODE = 'split';
+  var splitState = null;    // lopende verticale split (zie startVerticalSplit)
 
   // ══════════════════════════════════════
   // MATH EVALUATION
@@ -759,7 +764,7 @@
       // Herkende abc-opgave: de gevraagde uitkomst is een oplossingsverzameling,
       // niet één getal. (Het uitwerken van beide sporen komt in een latere fase;
       // beginUitkomst bevat voorlopig nog de +spoor-waarde.)
-      st('ok', window.ABCFORK.beschrijving(forkInfo));
+      st('ok', TT('fork.recognized', { answer: window.ABCFORK.beschrijving(forkInfo) }));
     } else if(beginUitkomst !== null){
       st('ok', 'Uitkomst: ' + math.format(beginUitkomst, {fraction:'ratio'}));
     } else {
@@ -778,13 +783,13 @@
     // meta.id is bv. "opgave_20260511_009"; strip de "opgave_"-prefix.
     var titelId = String(id).replace(/^opgave[_-]?/i, '');
     var nrEl = document.getElementById('opgave-nr');
-    if(nrEl) nrEl.textContent = 'Opgave ' + titelId;
+    if(nrEl) nrEl.textContent = TT('exercise.label') + ' ' + titelId;
 
     // Regel 2: alleen de opdracht-label (het nummer staat nu bovenaan).
     var rId = mkLine();
     var lbl = document.createElement('span');
     lbl.className = 'rl-opgave';
-    lbl.textContent = 'Vereenvoudig:';
+    lbl.textContent = TT('prompt.simplify');
     rId.appendChild(lbl);
     rules.appendChild(rId);
 
@@ -3958,6 +3963,29 @@
 
     var latexVal = getEditorLatex();
 
+    // abc-fork S-fase: de student geeft de oplossingsverzameling S = {p, q}. Dit
+    // is geen numerieke reductie, dus we bypassen de waarde-/matcher-check en
+    // laten ABCFORK de verzameling vergelijken.
+    if(isForkOpgave && window.ABCFORK && window.ABCFORK.inSFase && window.ABCFORK.inSFase()){
+      var _sres = window.ABCFORK.checkS(latexVal);
+      if(!_sres || !_sres.correct){
+        addMarginMark(currentLine, false);
+        st('er', TT('fork.s_wrong', { answer: (_sres && _sres.oplossing) || 'S = {p, q}' }));
+        return;
+      }
+      addMarginMark(currentLine, true);
+      opgaveVoltooid = true;
+      var _sMsg = TT('fork.s_correct', { answer: _sres.oplossing });
+      var _klaarS = document.createElement('span');
+      _klaarS.className = 'klaar-badge';
+      _klaarS.textContent = _sMsg;
+      currentLine.appendChild(_klaarS);
+      var _lfbS = currentLine.querySelector('.lf-btn'); if(_lfbS) _lfbS.remove();
+      st('ok', _sMsg);
+      updateLineInfo();
+      return;
+    }
+
     // Evaluate the current expression (canonical check)
     var currentResult = evaluateExpression(latexVal);
     var isCorrect = resultsEqual(currentResult, beginUitkomst);
@@ -4145,20 +4173,29 @@
       return;
     }
 
-    // abc-fork (Optie A): als de ±√-step zojuist is opgelost, splitst ABCFORK de
-    // uitwerking in sporen. De directive levert de latex van het EERSTE spoor;
-    // die zetten we (i.p.v. de ±-expressie) op de volgende regel, en de eind-
-    // waarde van dit spoor wordt de nieuwe beginUitkomst. (−spoor + S volgen in
-    // een latere slice.)
-    if(isForkOpgave && window.ABCFORK && window.ABCFORK.onResolve){
-      var _fd = window.ABCFORK.onResolve(
-        (pinResult && pinResult.resolved) || [], latexVal, forkInfo);
-      if(_fd && _fd.spoorLatex){
-        latexVal = _fd.spoorLatex;
-        previousLatex = latexVal;
-        var _bu = evaluateExpression(latexVal);
-        if(_bu !== null) beginUitkomst = _bu;
+    // abc-fork (Optie A): stuur de sequentiële flow aan. onCorrect levert een
+    // directive: het volgende spoor (splitsing bij ±√, of +→−) of de S-vraag.
+    var _forkSplitHint = false;   // eerste spoor: ±-markering op de bevroren regel
+    if(FORK_MODE === 'auto' && isForkOpgave && window.ABCFORK && window.ABCFORK.onCorrect){
+      var _resStr = (currentResult !== null)
+        ? math.format(currentResult, {fraction:'ratio'}) : '';
+      var _fd = window.ABCFORK.onCorrect(
+        (pinResult && pinResult.resolved) || [], latexVal, _resStr, forkInfo);
+      if(_fd){
         if(_fd.status) st('ok', _fd.status);
+        _forkSplitHint = !!_fd.splitHint;
+        if(_fd.vraagS){
+          // Lege S-regel; de student typt de oplossingsverzameling. Geen
+          // numerieke eind-waarde meer (de S-fase-intercept bovenin handelt af).
+          latexVal = '';
+          previousLatex = '';
+          beginUitkomst = null;
+        } else if(_fd.spoorLatex){
+          latexVal = _fd.spoorLatex;
+          previousLatex = latexVal;
+          var _bu = evaluateExpression(latexVal);
+          if(_bu !== null) beginUitkomst = _bu;
+        }
       }
     }
 
@@ -4210,7 +4247,55 @@
       nextLine.appendChild(sp); addLFButton(nextLine); sp.focus();
       attachCursorTracking(sp);
     }
+
+    // abc-fork: badge op ELKE spoor-regel ("uitrekenen spoor +/−", per fase, dus
+    // herhaald over alle regels van het spoor), en bij het eerste spoor een
+    // ±-markering op de zojuist bevroren regel.
+    if(FORK_MODE === 'auto' && isForkOpgave && window.ABCFORK && window.ABCFORK.spoorBadge && nextLine){
+      var _sp = window.ABCFORK.spoorBadge();
+      if(_sp){
+        var _spBadge = document.createElement('span');
+        _spBadge.className = 'spoor-badge spoor-' + _sp.spoor;
+        _spBadge.textContent = _sp.label;
+        nextLine.appendChild(_spBadge);   // positie via CSS (absoluut, links)
+      }
+    }
+    if(_forkSplitHint) markSplitHintOnRow(currentLine);
+
     updateLineInfo();
+  }
+
+  // Teken een hint-markering over het ±-teken op een (bevroren) regel — bij de
+  // splitsing van de abc-berekening in twee sporen. Beste-inspanning: zoekt het
+  // ±-glyph in de (shadow-)DOM van de math-field en legt er een accent-kader op.
+  function markSplitHintOnRow(row){
+    if(!row) return;
+    setTimeout(function(){
+      try {
+        var mf = row.querySelector('math-field, .label-mf, .label');
+        if(!mf) return;
+        var root = mf.shadowRoot || mf;
+        var els = root.querySelectorAll('span, .ML__cmr, .ML__mathit');
+        var target = null;
+        for(var i = 0; i < els.length; i++){
+          var t = (els[i].textContent || '').trim();
+          if(t === '±' || t === '±'){ target = els[i]; break; }
+        }
+        if(!target) return;
+        var r = target.getBoundingClientRect();
+        if(!r || !r.width) return;
+        var box = document.createElement('div');
+        box.className = '__hlbox split-hint-box';
+        box.style.position = 'fixed';
+        box.style.left = (r.left - 3) + 'px';
+        box.style.top = (r.top - 3) + 'px';
+        box.style.width = (r.width + 6) + 'px';
+        box.style.height = (r.height + 6) + 'px';
+        box.style.pointerEvents = 'none';
+        box.style.zIndex = '9998';
+        document.body.appendChild(box);
+      } catch(e){ /* markering is beste-inspanning */ }
+    }, 220);
   }
 
   // ══════════════════════════════════════
@@ -4624,6 +4709,183 @@
   }
 
   // ══════════════════════════════════════
+  // VERTICALE SPLIT (abc-fork, nieuwe koers)
+  // ══════════════════════════════════════
+  // "splits ±": de huidige ±-regel splitst in twee kolommen naast elkaar
+  // (links +, rechts −), elk met eigen LF en eigen (waarde-gedreven) reductie tot
+  // de wortel. Zodra BEIDE kolommen hun doel bereiken → één normale regel voor S.
+  function _kaalGetalLatex(latex){
+    return (window.ABCFORK && window.ABCFORK.kaalGetal)
+      ? window.ABCFORK.kaalGetal(latex)
+      : /^-?\d+(\.\d+)?$/.test(String(latex).replace(/\s|\{|\}|\\left|\\right/g,''));
+  }
+
+  // Maak een editor-regel in een kolom (math-field + eigen LF-knop voor dat spoor).
+  function _makeSplitRow(colEl, which, latex){
+    var row = document.createElement('div');
+    row.className = 'split-row active';
+    colEl.appendChild(row);
+    if(mathLiveReady){
+      var mf = document.createElement('math-field');
+      mf.setAttribute('virtual-keyboard-mode','onfocus');
+      mf.setAttribute('smart-mode','true');
+      mf.className = 'editor split-editor';
+      try { mf.minFontScale = 0.8; } catch(e){}
+      row.appendChild(mf);
+      var lf = document.createElement('button');
+      lf.className = 'lf-btn'; lf.textContent = 'LF';
+      lf.addEventListener('mousedown', function(e){ e.preventDefault(); });
+      lf.addEventListener('click', function(){ doColumnLF(which); });
+      row.appendChild(lf);
+      setTimeout(function(){
+        try { if(mf.setValue) mf.setValue(latex, {suppressChangeNotifications:true}); else mf.value = latex; }
+        catch(e){ try { mf.value = latex; } catch(e2){} }
+        hideMFChrome(mf);
+        mf.addEventListener('focus', function(){ mfRef = mf; });
+        try { mf.focus(); mfRef = mf; } catch(e){}
+      }, 120);
+    } else {
+      var sp = document.createElement('span');
+      sp.className = 'editor split-editor'; sp.contentEditable = 'true'; sp.textContent = latex;
+      row.appendChild(sp);
+      var lf2 = document.createElement('button');
+      lf2.className='lf-btn'; lf2.textContent='LF';
+      lf2.addEventListener('click', function(){ doColumnLF(which); });
+      row.appendChild(lf2);
+      mf = sp;
+    }
+    splitState[which].activeMf = mf;
+    splitState[which].activeRow = row;
+    return row;
+  }
+
+  function startVerticalSplit(){
+    if(!isForkOpgave){ st('info', 'Splitsen kan alleen bij een abc-opgave met ±.'); return; }
+    if(splitState){ st('info', 'Er is al gesplitst.'); return; }
+    var rules = document.getElementById('rules');
+    var currentLine = rules.children[activeLineIndex];
+    if(!currentLine) return;
+    var latexVal = getEditorLatex();
+    var tracks = (window.ABCFORK && window.ABCFORK.splitTracks)
+      ? window.ABCFORK.splitTracks(latexVal, forkInfo) : null;
+    if(!tracks){ st('er', 'Splitsen kan alleen op een regel met een ±-teken.'); return; }
+
+    // Bevries de huidige ±-regel als read-only label.
+    detachCursorTracking();
+    currentLine.classList.remove('active'); currentLine.id = '';
+    currentLine.innerHTML = '';
+    if(mathLiveReady){
+      var lab = document.createElement('math-field');
+      lab.setAttribute('read-only',''); lab.className = 'label-mf';
+      currentLine.appendChild(lab);
+      setTimeout(function(){ try{ lab.setValue(latexVal,{suppressChangeNotifications:true}); }catch(e){} styleMfChrome(lab); }, 100);
+    } else {
+      var ls = document.createElement('span'); ls.className='label'; ls.textContent=latexVal;
+      currentLine.appendChild(ls);
+    }
+    addMarginMark(currentLine, true);
+
+    // Split-container met twee kolommen naast elkaar.
+    var container = document.createElement('div');
+    container.className = 'split-container';
+    var colP = document.createElement('div'); colP.className = 'split-col split-plus';
+    var head1 = document.createElement('div'); head1.className='split-col-head'; head1.textContent=TT('fork.plus_branch');
+    colP.appendChild(head1);
+    var divi = document.createElement('div'); divi.className = 'split-divider';
+    var colM = document.createElement('div'); colM.className = 'split-col split-min';
+    var head2 = document.createElement('div'); head2.className='split-col-head'; head2.textContent=TT('fork.minus_branch');
+    colM.appendChild(head2);
+    container.appendChild(colP); container.appendChild(divi); container.appendChild(colM);
+    if(currentLine.nextSibling) rules.insertBefore(container, currentLine.nextSibling);
+    else rules.appendChild(container);
+
+    splitState = {
+      container: container,
+      plus: { col: colP, doel: tracks.plus.doel, doelFrac: evaluateExpression(tracks.plus.doel), done:false, activeMf:null, activeRow:null },
+      min:  { col: colM, doel: tracks.min.doel,  doelFrac: evaluateExpression(tracks.min.doel),  done:false, activeMf:null, activeRow:null },
+      oplossing: tracks.oplossing
+    };
+    _makeSplitRow(colP, 'plus', tracks.plus.latex);
+    _makeSplitRow(colM, 'min',  tracks.min.latex);
+    st('ok', TT('fork.split_status'));
+  }
+
+  // Vinkje/kruisje links in een kolom-regel (i.p.v. de hoofdregel-marge op -76px).
+  function _splitMark(row, correct){
+    var old = row.querySelector('.split-check'); if(old) old.remove();
+    var m = document.createElement('span');
+    m.className = 'split-check ' + (correct ? 'goed' : 'fout');
+    m.textContent = correct ? '✓' : '✗';
+    row.appendChild(m);
+  }
+
+  function doColumnLF(which){
+    if(!splitState || splitState[which].done) return;
+    var stt = splitState[which];
+    var mf = stt.activeMf; if(!mf) return;
+    var latex = '';
+    try { latex = mf.getValue ? mf.getValue('latex') : (mf.value||''); } catch(e){ latex = mf.value||''; }
+    latex = String(latex).trim();
+    var val = evaluateExpression(latex);
+    if(val === null || !resultsEqual(val, stt.doelFrac)){
+      _splitMark(stt.activeRow, false);
+      st('er', TT('fork.branch_error', {
+        branch: _branchNaam(which),
+        value: stt.doel,
+        now: (val!==null ? TT('fork.now_value', { value: math.format(val,{fraction:'ratio'}) }) : '')
+      }));
+      return;
+    }
+    // Correct: bevries de huidige kolom-regel.
+    var row = stt.activeRow;
+    row.classList.remove('active');
+    var lfb = row.querySelector('.lf-btn'); if(lfb) lfb.remove();
+    try { mf.setAttribute && mf.setAttribute('read-only',''); } catch(e){}
+    _splitMark(row, true);
+
+    if(_kaalGetalLatex(latex)){
+      stt.done = true;
+      var klaarMsg = TT('fork.branch_done', { branch: _branchNaam(which), value: stt.doel });
+      if(splitState.plus.done && splitState.min.done){
+        st('ok', klaarMsg);
+        endVerticalSplit();
+      } else {
+        var ander = (which==='plus') ? 'min' : 'plus';
+        st('ok', klaarMsg + ' ' + TT('fork.finish_other', { branch: _branchNaam(ander) }));
+      }
+    } else {
+      _makeSplitRow(stt.col, which, latex);   // volgende regel in deze kolom
+    }
+  }
+
+  function endVerticalSplit(){
+    if(!splitState) return;
+    var opl = splitState.oplossing;
+    var container = splitState.container;
+    var rules = document.getElementById('rules');
+    if(window.ABCFORK && window.ABCFORK.startSPhase) window.ABCFORK.startSPhase(opl);
+    splitState = null;
+
+    var line = mkLine(); line.className = 'rl active'; line.id = 'active-line';
+    if(container.nextSibling) rules.insertBefore(line, container.nextSibling);
+    else rules.appendChild(line);
+    activeLineIndex = Array.prototype.indexOf.call(rules.children, line);
+    beginUitkomst = null;
+    if(mathLiveReady){
+      var mf = document.createElement('math-field');
+      mf.id='mf-el'; mf.setAttribute('virtual-keyboard-mode','onfocus');
+      mf.setAttribute('smart-mode','true'); mf.className='editor';
+      try { mf.minFontScale = 0.8; } catch(e){}
+      line.appendChild(mf); addLFButton(line); mfRef = mf;
+      setTimeout(function(){ hideMFChrome(mf); mf.addEventListener('input', onEditorInput); attachCursorTracking(mf); try{ mf.focus(); }catch(e){} }, 150);
+    } else {
+      var sp = document.createElement('span'); sp.className='editor'; sp.contentEditable='true'; sp.id='ed';
+      sp.addEventListener('input', onEditorInput); line.appendChild(sp); addLFButton(line); sp.focus();
+    }
+    st('ok', TT('fork.both_done', { answer: opl }));
+  }
+
+  // ══════════════════════════════════════
   // CHECK BUTTON — same as LF validation but without moving
   // ══════════════════════════════════════
   // 'Check'-knop vervallen (PPTE): de foutcontrole gebeurt nu volledig op LF
@@ -4692,6 +4954,12 @@
       }
     });
   });
+
+  // "splits ±" is een ACTIE-knop (geen insert): splitst de regel in twee takken.
+  var _splitsBtn = document.getElementById('btn-splits-pm');
+  if(_splitsBtn){
+    _splitsBtn.addEventListener('mousedown', function(e){ e.preventDefault(); startVerticalSplit(); });
+  }
 
   // Zichtbaarheid van quick-buttons: de balk hoort bij het schrift en is
   // altijd zichtbaar (ook vóór een opgave geladen is). De knoppen werken op
@@ -4916,6 +5184,12 @@
   // STATUS & UTILS
   // ══════════════════════════════════════
   function st(c,t){ document.getElementById('dot').className='dot '+c; document.getElementById('stxt').textContent=t; }
+
+  // i18n-helper voor JS-gerenderde (dynamische) strings. Valt terug op de key
+  // zelf als de catalogus (nog) niet geladen is — bij runtime-teksten is I18N
+  // altijd gereed. Statische chrome loopt via [data-i18n]/applyI18n.
+  function TT(key, params){ return (window.I18N && window.I18N.t) ? window.I18N.t(key, params) : key; }
+  function _branchNaam(which){ return TT(which==='plus' ? 'fork.plus_branch' : 'fork.minus_branch'); }
   function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
   // ══════════════════════════════════════

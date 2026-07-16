@@ -1,0 +1,80 @@
+{
+  "meta": {
+    "base": "en",
+    "languages": ["en", "nl", "de", "fr", "zh", "it"],
+    "review_status": {
+      "en": "source",
+      "nl": "compleet",
+      "de": "draft — native review nodig",
+      "fr": "draft — native review nodig",
+      "zh": "draft — native review nodig",
+      "it": "draft — native review nodig"
+    },
+    "language_names": {
+      "en": "English", "nl": "Nederlands", "de": "Deutsch",
+      "fr": "Français", "zh": "中文", "it": "Italiano"
+    }
+  },
+
+  "locale": {
+    "_comment": "Wiskunde-lokalisatie per taal. NOG NIET ingehaakt in de reken-engine; dit documenteert de bedoeling. decimal = decimaalteken, division = deel-teken.",
+    "en": { "decimal": ".", "division": ":" },
+    "nl": { "decimal": ",", "division": ":" },
+    "de": { "decimal": ",", "division": ":" },
+    "fr": { "decimal": ",", "division": ":" },
+    "zh": { "decimal": ".", "division": ":" },
+    "it": { "decimal": ",", "division": ":" }
+  },
+
+  "glossary": {
+    "mathblock":     { "en": "math block",     "nl": "mathblok",              "de": "Rechenblock",    "fr": "bloc de calcul",     "zh": "运算块",   "it": "blocco di calcolo" },
+    "step":          { "en": "step",           "nl": "stap",                  "de": "Schritt",        "fr": "étape",              "zh": "步骤",     "it": "passaggio" },
+    "branch":        { "en": "branch",         "nl": "spoor",                 "de": "Zweig",          "fr": "branche",            "zh": "分支",     "it": "ramo" },
+    "square_root":   { "en": "square root",    "nl": "vierkantswortel",       "de": "Quadratwurzel",  "fr": "racine carrée",      "zh": "平方根",   "it": "radice quadrata" },
+    "root":          { "en": "root",           "nl": "wortel",                "de": "Wurzel",         "fr": "racine",             "zh": "根",       "it": "radice" },
+    "discriminant":  { "en": "discriminant",   "nl": "discriminant",          "de": "Diskriminante",  "fr": "discriminant",       "zh": "判别式",   "it": "discriminante" },
+    "solution_set":  { "en": "solution set",   "nl": "oplossingsverzameling", "de": "Lösungsmenge",   "fr": "ensemble solution",  "zh": "解集",     "it": "insieme delle soluzioni" },
+    "fraction":      { "en": "fraction",       "nl": "breuk",                 "de": "Bruch",          "fr": "fraction",           "zh": "分数",     "it": "frazione" },
+    "power":         { "en": "power",          "nl": "macht",                 "de": "Potenz",         "fr": "puissance",          "zh": "幂",       "it": "potenza" },
+    "simplify":      { "en": "simplify",       "nl": "vereenvoudigen",        "de": "vereinfachen",   "fr": "simplifier",         "zh": "化简",     "it": "semplificare" },
+    "exercise":      { "en": "exercise",       "nl": "opgave",                "de": "Aufgabe",        "fr": "exercice",           "zh": "习题",     "it": "esercizio" },
+    "worksheet":     { "en": "worksheet",      "nl": "werkblad",              "de": "Arbeitsblatt",   "fr": "feuille de travail", "zh": "练习页",   "it": "foglio di lavoro" },
+    "hint":          { "en": "hint",           "nl": "hint",                  "de": "Hinweis",        "fr": "indice",             "zh": "提示",     "it": "suggerimento" },
+    "answer":        { "en": "answer",         "nl": "uitkomst",              "de": "Ergebnis",       "fr": "résultat",           "zh": "答案",     "it": "risultato" },
+    "abc_formula":   { "en": "quadratic formula", "nl": "abc-formule",        "de": "Mitternachtsformel", "fr": "formule quadratique", "zh": "求根公式", "it": "formula risolutiva" }
+  },
+
+  "ui": {
+    "app.subtitle":       { "en": "Student tool: worksheet", "nl": "Studenttool: werkblad", "de": "Schülertool: Arbeitsblatt", "fr": "Outil élève : feuille de travail", "zh": "学生工具：练习页", "it": "Strumento studente: foglio di lavoro" },
+    "sidebar.batches":     { "en": "Batches",       "nl": "Batches",       "de": "Serien",         "fr": "Séries",         "zh": "批次",     "it": "Serie" },
+    "sidebar.batches_sub": { "en": "Exercise sets", "nl": "Reeksen opgaven","de": "Aufgabenserien", "fr": "Séries d'exercices","zh": "习题集",  "it": "Serie di esercizi" },
+    "sidebar.exercises":     { "en": "Exercises",    "nl": "Opgaven",        "de": "Aufgaben",      "fr": "Exercices",      "zh": "习题",     "it": "Esercizi" },
+    "sidebar.exercises_sub": { "en": "Math worksheet","nl": "Wiskunde werkblad","de": "Mathe-Arbeitsblatt","fr": "Feuille de maths","zh": "数学练习页","it": "Foglio di matematica" },
+    "sidebar.loading":     { "en": "Loading exercises…", "nl": "Opgaven laden…", "de": "Aufgaben laden…", "fr": "Chargement des exercices…", "zh": "正在加载习题…", "it": "Caricamento esercizi…" },
+    "sidebar.reload":      { "en": "🔄 Reload exercise list", "nl": "🔄 Herlaad opgavenlijst", "de": "🔄 Aufgabenliste neu laden", "fr": "🔄 Recharger la liste", "zh": "🔄 重新加载习题列表", "it": "🔄 Ricarica elenco esercizi" },
+    "toolbar.split_pm":    { "en": "split ±",      "nl": "splits ±",      "de": "± teilen",       "fr": "scinder ±",      "zh": "拆分 ±",   "it": "dividi ±" },
+    "prompt.simplify":     { "en": "Simplify:",    "nl": "Vereenvoudig:", "de": "Vereinfache:",   "fr": "Simplifie :",    "zh": "化简：",   "it": "Semplifica:" },
+    "name.label":          { "en": "Name:",        "nl": "Naam:",         "de": "Name:",          "fr": "Nom :",          "zh": "姓名：",   "it": "Nome:" },
+    "empty.choose":        { "en": "Choose an exercise from the list", "nl": "Kies een opgave uit de lijst", "de": "Wähle eine Aufgabe aus der Liste", "fr": "Choisis un exercice dans la liste", "zh": "从列表中选择一道习题", "it": "Scegli un esercizio dall'elenco" },
+    "result.title":        { "en": "Result",       "nl": "Resultaat",     "de": "Ergebnis",       "fr": "Résultat",       "zh": "结果",     "it": "Risultato" },
+    "result.sub":          { "en": "Progress & answer", "nl": "Voortgang & uitkomst", "de": "Fortschritt & Ergebnis", "fr": "Progression & résultat", "zh": "进度与答案", "it": "Progresso e risultato" },
+    "result.empty":        { "en": "Empty",        "nl": "Nog leeg",      "de": "Noch leer",      "fr": "Vide",           "zh": "空",       "it": "Vuoto" },
+    "footer.schema":       { "en": "Diagram",      "nl": "Schema",        "de": "Diagramm",       "fr": "Schéma",         "zh": "图示",     "it": "Diagramma" },
+    "footer.keyboard":     { "en": "Keyboard",     "nl": "Toetsenbord",   "de": "Tastatur",       "fr": "Clavier",        "zh": "键盘",     "it": "Tastiera" },
+    "footer.hints":        { "en": "Hints",        "nl": "Hints",         "de": "Hinweise",       "fr": "Indices",        "zh": "提示",     "it": "Suggerimenti" },
+    "footer.hints_plus":   { "en": "Hints+",       "nl": "Hints+",        "de": "Hinweise+",      "fr": "Indices+",       "zh": "提示+",    "it": "Suggerimenti+" },
+    "exercise.label":      { "en": "Exercise",     "nl": "Opgave",        "de": "Aufgabe",        "fr": "Exercice",       "zh": "习题",     "it": "Esercizio" },
+
+    "fork.split_status":   { "en": "Split into two branches: work out the + branch on the left and the − branch on the right.", "nl": "Gesplitst: werk links het +spoor en rechts het −spoor uit tot de wortel.", "de": "In zwei Zweige geteilt: links den +Zweig, rechts den −Zweig ausrechnen.", "fr": "Scindé en deux branches : résous la branche + à gauche et la branche − à droite.", "zh": "已拆分为两个分支：左侧计算 + 分支，右侧计算 − 分支。", "it": "Diviso in due rami: risolvi il ramo + a sinistra e il ramo − a destra." },
+    "fork.plus_branch":    { "en": "+ branch",     "nl": "+ spoor",       "de": "+ Zweig",        "fr": "branche +",      "zh": "+ 分支",   "it": "ramo +" },
+    "fork.minus_branch":   { "en": "− branch",     "nl": "− spoor",       "de": "− Zweig",        "fr": "branche −",      "zh": "− 分支",   "it": "ramo −" },
+    "fork.branch_done":    { "en": "{branch} done (→ {value}).", "nl": "{branch} klaar (→ {value}).", "de": "{branch} fertig (→ {value}).", "fr": "{branch} terminée (→ {value}).", "zh": "{branch} 完成 (→ {value})。", "it": "{branch} completato (→ {value})." },
+    "fork.finish_other":   { "en": "Now finish the {branch}.", "nl": "Maak nu het {branch} af.", "de": "Jetzt den {branch} abschließen.", "fr": "Termine maintenant la {branch}.", "zh": "现在完成 {branch}。", "it": "Ora completa il {branch}." },
+    "fork.both_done":      { "en": "Both branches done. Now give the solution set {answer} (button S={ }).", "nl": "Beide takken klaar. Geef nu de oplossingsverzameling {answer} (knop S={ }).", "de": "Beide Zweige fertig. Gib nun die Lösungsmenge {answer} an (Schaltfläche S={ }).", "fr": "Les deux branches sont terminées. Donne maintenant l'ensemble solution {answer} (bouton S={ }).", "zh": "两个分支都已完成。现在给出解集 {answer}（按钮 S={ }）。", "it": "Entrambi i rami completati. Ora indica l'insieme delle soluzioni {answer} (pulsante S={ })." },
+    "fork.branch_error":   { "en": "{branch}: error — the answer should be {value}{now}.", "nl": "{branch}: fout — de uitkomst hoort {value} te zijn{now}.", "de": "{branch}: Fehler — das Ergebnis sollte {value} sein{now}.", "fr": "{branch} : erreur — le résultat doit être {value}{now}.", "zh": "{branch}：错误——答案应为 {value}{now}。", "it": "{branch}: errore — il risultato dovrebbe essere {value}{now}." },
+    "fork.now_value":      { "en": " (now {value})", "nl": " (nu {value})", "de": " (jetzt {value})", "fr": " (actuellement {value})", "zh": "（现在 {value}）", "it": " (ora {value})" },
+    "fork.s_correct":      { "en": "✓ Correct! {answer} — you're done.", "nl": "✓ Correct! {answer} — je bent klaar.", "de": "✓ Richtig! {answer} — du bist fertig.", "fr": "✓ Correct ! {answer} — c'est terminé.", "zh": "✓ 正确！{answer} — 完成了。", "it": "✓ Corretto! {answer} — hai finito." },
+    "fork.s_wrong":        { "en": "Not yet — give both roots as a set, e.g. {answer}.", "nl": "Nog niet — geef beide wortels als verzameling, bv. {answer}.", "de": "Noch nicht — gib beide Wurzeln als Menge an, z. B. {answer}.", "fr": "Pas encore — donne les deux racines sous forme d'ensemble, p. ex. {answer}.", "zh": "还不对——请以集合形式给出两个根，例如 {answer}。", "it": "Non ancora — indica entrambe le radici come insieme, es. {answer}." },
+    "fork.recognized":     { "en": "Quadratic exercise — determine {answer}.", "nl": "abc-opgave herkend — bepaal {answer}.", "de": "Quadratische Aufgabe — bestimme {answer}.", "fr": "Exercice quadratique — détermine {answer}.", "zh": "识别为求根习题——求 {answer}。", "it": "Esercizio di secondo grado — determina {answer}." }
+  }
+}

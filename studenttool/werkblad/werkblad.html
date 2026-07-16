@@ -21,7 +21,7 @@
   })();
 </script>
 
-<link rel="stylesheet" href="werkblad.css?v=224">
+<link rel="stylesheet" href="werkblad.css?v=229">
 </head>
 <body>
 
@@ -43,13 +43,14 @@
                 stroke-width="1" stroke-dasharray="2 1.5"/>
         </svg>
       </span>
-      <h1>ForMath <span class="brand-sub">Studenttool: werkblad</span></h1>
+      <h1>ForMath <span class="brand-sub" data-i18n="app.subtitle">Student tool: worksheet</span></h1>
     </div>
+    <select id="lang-select" class="lang-select" aria-label="Language" title="Language"></select>
     <button type="button"
             class="header-settings-btn"
             id="btn-header-settings"
-            aria-label="Instellingen"
-            title="Instellingen">
+            aria-label="Settings"
+            title="Settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
            stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
         <circle cx="12" cy="12" r="3"/>
@@ -64,8 +65,8 @@
     <!-- Sidebar 1: Batches (links) -->
     <aside class="side side-wide" id="batches-side" aria-label="Batches">
       <div class="side-head">
-        <h2>Batches</h2>
-        <p>Reeksen opgaven</p>
+        <h2 data-i18n="sidebar.batches">Batches</h2>
+        <p data-i18n="sidebar.batches_sub">Exercise sets</p>
       </div>
       <div class="batch-list">
         <div class="batch-item">Batch 01</div>
@@ -76,15 +77,15 @@
 
     <!-- Sidebar 2: Opgaven (bestaand) -->
     <aside class="side" id="opgaven-side">
-      <div class="side-head"><h2>Opgaven</h2><p>Wiskunde werkblad</p></div>
+      <div class="side-head"><h2 data-i18n="sidebar.exercises">Exercises</h2><p data-i18n="sidebar.exercises_sub">Math worksheet</p></div>
       <div class="opg-list" id="opg-list">
-        <div class="side-loading" id="opg-loading">Opgaven laden...</div>
+        <div class="side-loading" id="opg-loading" data-i18n="sidebar.loading">Loading exercises…</div>
       </div>
       <div class="side-foot" id="side-foot">—</div>
       <div style="padding:8px 12px;">
         <button id="refresh-btn"
                 style="width:100%;padding:6px;border:1px solid rgba(255,255,255,0.12);border-radius:6px;background:rgba(255,255,255,0.04);font-family:'IBM Plex Sans',sans-serif;font-size:12px;cursor:pointer;color:inherit;opacity:0.75;">
-          🔄 Herlaad opgavenlijst
+          <span data-i18n="sidebar.reload">🔄 Reload exercise list</span>
         </button>
       </div>
     </aside>
@@ -98,7 +99,7 @@
         <div class="page lines-per-row">
           <div class="holes"><span></span><span></span><span></span></div>
           <div class="opgave-nr" id="opgave-nr"></div>
-          <div class="naam-bar">Naam: ________________</div>
+          <div class="naam-bar"><span data-i18n="name.label">Name:</span> ________________</div>
 
           <!-- Quick-buttons: snelle invoer voor wortels, machten en breuken.
                Werkt op de mathfield met de huidige focus. -->
@@ -136,6 +137,17 @@
             <button type="button" class="qb" data-insert="\pm" title="Plus-minus (±) — o.a. voor de abc-formule">
               <span class="qb-pm">±</span>
             </button>
+            <!-- Splits ±: splitst de huidige ±-regel in twee takken (+ en −) -->
+            <button type="button" class="qb qb-splits" id="btn-splits-pm"
+                    title="Splits ± — splits de berekening in twee takken (+ en −)">
+              <span class="qb-splits-label" data-i18n="toolbar.split_pm">split ±</span>
+            </button>
+            <span class="qb-sep"></span>
+            <!-- Oplossingsverzameling S = { .. } -->
+            <button type="button" class="qb" data-insert="S=\left\{#0,#?\right\}"
+                    title="Oplossingsverzameling S = { .. }">
+              <span class="qb-set">S={ }</span>
+            </button>
           </div>
 
           <div class="green-bar"></div>
@@ -143,7 +155,7 @@
           <div class="rules" id="rules">
             <div class="empty-state" id="empty-state">
               <div class="icon">📐</div>
-              Kies een opgave uit de lijst
+              <span data-i18n="empty.choose">Choose an exercise from the list</span>
             </div>
           </div>
         </div>
@@ -174,15 +186,15 @@
 
       <div class="bar">
         <div class="bar-l">
-          <div style="display:flex;align-items:center"><span class="dot ok" id="dot"></span><span id="stxt">Gereed</span></div>
+          <div style="display:flex;align-items:center"><span class="dot ok" id="dot"></span><span id="stxt">Ready</span></div>
           <span id="line-info">—</span>
           <span id="block-info" style="font-weight:600;color:var(--accent);"></span>
         </div>
         <div class="bar-r">
-          <button class="bar-btn" id="svg-btn">📊 Schema</button>
-          <button class="bar-btn" id="kb-btn">⌨ Toetsenbord</button>
-          <button class="bar-btn" id="hints-btn">💡 Hints</button>
-          <button class="bar-btn" id="hints-plus-btn">💡 Hints+</button>
+          <button class="bar-btn" id="svg-btn">📊 <span data-i18n="footer.schema">Diagram</span></button>
+          <button class="bar-btn" id="kb-btn">⌨ <span data-i18n="footer.keyboard">Keyboard</span></button>
+          <button class="bar-btn" id="hints-btn">💡 <span data-i18n="footer.hints">Hints</span></button>
+          <button class="bar-btn" id="hints-plus-btn">💡 <span data-i18n="footer.hints_plus">Hints+</span></button>
         </div>
       </div>
     </div>
@@ -194,10 +206,10 @@
     <!-- Sidebar 3: Resultaat (rechts) -->
     <aside class="side side-wide side-right" id="resultaat-side" aria-label="Resultaat">
       <div class="side-head">
-        <h2>Resultaat</h2>
-        <p>Voortgang &amp; uitkomst</p>
+        <h2 data-i18n="result.title">Result</h2>
+        <p data-i18n="result.sub">Progress &amp; answer</p>
       </div>
-      <div class="side-empty">Nog leeg</div>
+      <div class="side-empty" data-i18n="result.empty">Empty</div>
     </aside>
 
   </div><!-- /.app-body -->
@@ -287,13 +299,16 @@
      (mlGo). De oude ongepinde <script src="unpkg.com/mathlive"> brak toen unpkg
      'latest' naar een dist/-layout wees (404 + geweigerde MIME-type). -->
 
+<!-- i18n (meertalige catalogus + taalwissel) — laadt vóór de rest -->
+<script src="i18n.js?v=1"></script>
+
 <!-- Matcher + verankering (bewezen mechaniek, herbruikbaar) -->
 <script src="matcher.browser.js?v=9"></script>
 <script src="verankering.js?v=16"></script>
-<script src="abc_fork.js?v=2"></script>
+<script src="abc_fork.js?v=9"></script>
 
 <!-- Application -->
-<script src="werkblad.js?v=205"></script>
+<script src="werkblad.js?v=212"></script>
 
 <!-- Settings + thema (klein blokje, geen interferentie met werkblad.js) -->
 <script>
