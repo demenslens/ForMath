@@ -10,7 +10,7 @@ in vier **fasen**. Per fase houden we status, datums en voortgang bij.
 > Houd dit bestand bij na elke werksessie. Claude Code leest de verwijzing in
 > `CLAUDE.md` en opent dit overzicht wanneer relevant.
 
-Laatst bijgewerkt: 2026-07-04
+Laatst bijgewerkt: 2026-07-16
 
 ---
 
@@ -65,6 +65,33 @@ keten t/m step 8 dichtlopen; tweeling-variant ambigue waarden (gelijke waarden,
 | test-fase      | nog te starten |       |      |  0 |
 
 Notities: (vul aan — concept bestaat al bij Henk).
+
+### Meertaligheid (i18n) — cross-cutting, beursklaar voor Frankfurt
+
+Raakt authortool + studenttool. Doel: alles meertalig met **Engels als default**
+voor de Frankfurter Buchmesse. Talen: EN (bron) + NL compleet; DE/FR/ZH/IT draft.
+**Technisch overzicht + volledige to-do: zie [`I18N.md`](I18N.md).**
+
+| Onderdeel                                   | Status   | % |
+|---------------------------------------------|----------|---|
+| Studenttool UI (chrome, meldingen, dialogen)| afronden | 100 |
+| Authortool web-UI                           | afronden | 100 |
+| Hint-content (Fase A: generator {key,params} + gedeelde catalogus + 27 opgaven) | afronden | 100 |
+| Native review DE/FR/ZH/IT                   | nog te starten | 0 |
+| Browser-check in 6 talen                    | nog te starten | 0 |
+
+Notities: één gedeelde catalogus (`i18n.json`, secties glossary/ui/hints),
+verbatim gedeeld tussen de tools (15 glossary-termen + 48 hint-templates,
+geverifieerd 0 verschillen). `window.I18N.t()` + `_hintText`-resolver met
+backward-compat. Generator emit taal-neutrale `{key,params}`; `hints_templates.json`
+verwijderd (één bron). Gepusht naar `main` (t/m commit 2a4f5ad).
+
+RESTEREND (zie I18N.md §10): native review + browser-check (blokkerend voor
+"beursklaar in alle talen"); `operatie.beschrijving`-labels nog NL;
+efficiëntie-redenen Groep B/C (authortool-intern) nog NL; `locale`-sectie
+(decimaalkomma, deelteken) gedocumenteerd maar **nog niet ingehaakt** op de
+reken-engine. forquest erft de i18n niet automatisch; de toekomstige
+`letters/`-module moet óók keys emitteren.
 
 ---
 
