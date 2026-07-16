@@ -1,3 +1,10 @@
+/* ─── i18n-helper ─────────────────────────────────────────────────────
+ * Korte wrapper rond window.I18N.t (geladen via i18n.js, vóór dit bestand).
+ * Valt terug op de sleutel als de catalogus (nog) niet geladen is. */
+function i18nt(key, params) {
+    return (window.I18N && window.I18N.t) ? window.I18N.t(key, params) : key;
+}
+
 /* ─── DOM refs ────────────────────────────────────────────────────── */
 const mathField        = document.getElementById('math-input');
 const textInput        = document.getElementById('text-input');
@@ -212,7 +219,7 @@ function clearStatus() {
 function renderError(data) {
     const detail = data.error_detail;
     if (!detail) {
-        setStatus('Fout: ' + escapeHtml(data.error || 'onbekend'), 'error');
+        setStatus(i18nt('status.error_generic', { detail: escapeHtml(data.error || i18nt('status.unknown')) }), 'error');
         return;
     }
     let html = '<strong>' + escapeHtml(detail.message) + '</strong>';
@@ -472,21 +479,21 @@ function clearAll() {
 async function processExpression() {
     const latex = getExpression();
     if (!latex) {
-        setStatus('Voer eerst een expressie in.', 'error');
+        setStatus(i18nt('status.enter_expression_first'), 'error');
         return;
     }
     // Als er een opgave geselecteerd is en edit niet is toegestaan,
     // blokkeer Parse — anders zou je per ongeluk de view van de
     // opgave herberekenen met dezelfde input.
     if (selectedOpgaveId && !editMode) {
-        setStatus('Klik eerst op <strong>Edit toestaan</strong> om de expressie te kunnen aanpassen.', 'info');
+        setStatus(i18nt('status.click_allow_edit'), 'info');
         return;
     }
 
     // Tijdens parsen: knoppen tijdelijk uit
     if (btnOk) btnOk.disabled = true;
     if (btnJson) btnJson.disabled = true;
-    setStatus('<span class="spinner"></span>Verwerken…', 'info');
+    setStatus(i18nt('status.processing'), 'info');
 
     try {
         const response = await fetch('/api/process', {
@@ -518,8 +525,7 @@ async function processExpression() {
 
         // ±-abc: de preview toont de ±-opgave zelf (A1-A4, ±√) mét sjabloon.
         if (data.fork) {
-            setStatus('±-abc herkend — de preview en de JSON tonen de ±-opgave ' +
-                '(A4 = ±√) met het sjabloon. Export maakt één opgave.', 'info');
+            setStatus(i18nt('status.abc_recognized'), 'info');
         }
 
         // Header meta: mathblocks + steps (best-effort uit AST data)
@@ -560,7 +566,7 @@ async function processExpression() {
         showRandvoorwaardenSection(true);
         fillRandvoorwaardenUI();
 
-        setStatus('Schema gegenereerd.', 'success');
+        setStatus(i18nt('status.schema_generated'), 'success');
 
         // Focus herstel
         setTimeout(() => {
@@ -571,7 +577,7 @@ async function processExpression() {
         }, 100);
 
     } catch (err) {
-        setStatus('Verbindingsfout: ' + escapeHtml(err.message), 'error');
+        setStatus(i18nt('status.connection_error', { msg: escapeHtml(err.message) }), 'error');
     } finally {
         // Knop-states opnieuw bepalen op basis van actuele state
         updateButtonStates();
@@ -615,12 +621,12 @@ function countNodes(node) {
 
 async function requestExport() {
     if (!lastProcessed) {
-        setStatus('Eerst parsen (druk op Parse) voordat je exporteert.', 'error');
+        setStatus(i18nt('status.parse_before_export'), 'error');
         return;
     }
 
     if (btnJson) btnJson.disabled = true;
-    setStatus('<span class="spinner"></span>Duplicaten controleren…', 'info');
+    setStatus(i18nt('status.checking_duplicates'), 'info');
 
     try {
         const resp = await fetch('/api/check_export', {
@@ -632,7 +638,7 @@ async function requestExport() {
         clearStatus();
 
         if (!data.success) {
-            setStatus('Fout: ' + escapeHtml(data.error || 'onbekend'), 'error');
+            setStatus(i18nt('status.error_generic', { detail: escapeHtml(data.error || i18nt('status.unknown')) }), 'error');
             updateButtonStates();
             return;
         }
@@ -665,7 +671,7 @@ async function requestExport() {
         openExportDialog();
 
     } catch (err) {
-        setStatus('Verbindingsfout: ' + escapeHtml(err.message), 'error');
+        setStatus(i18nt('status.connection_error', { msg: escapeHtml(err.message) }), 'error');
         updateButtonStates();
     }
 }
@@ -673,7 +679,7 @@ async function requestExport() {
 function openExportDialog() {
     dialog.hidden = false;
     dialogConfirm.disabled = false;
-    dialogConfirm.textContent = 'Exporteren';
+    dialogConfirm.textContent = i18nt('export.confirm');
     // Focus op bevestigingsknop zodat Enter direct werkt
     setTimeout(() => dialogConfirm.focus(), 50);
 }
@@ -687,7 +693,7 @@ async function confirmExport() {
     if (!lastProcessed) { closeExportDialog(); return; }
 
     dialogConfirm.disabled = true;
-    dialogConfirm.textContent = 'Bezig…';
+    dialogConfirm.textContent = i18nt('btn.busy');
 
     // Lees de export-keuze als die zichtbaar was
     let overwriteId = null;
@@ -767,7 +773,7 @@ async function confirmExport() {
             // Classificatie-sectie moet juist bewerkbaar BLIJVEN zodat de
             // auteur direct na opslaan de metadata kan invullen/aanpassen.
             editMode = false;
-            btnEdit.textContent = 'Edit toestaan';
+            btnEdit.textContent = i18nt('btn.allow_edit');
             applyEditLock();
             // Classificatie en Randvoorwaarden expliciet ontgrendelen
             // (overschrijft de lock van applyEditLock, die alles op slot zet)
@@ -796,11 +802,11 @@ async function confirmExport() {
         } else if (data.error_detail) {
             renderError(data);
         } else {
-            setStatus('Fout: ' + escapeHtml(data.error || 'onbekend'), 'error');
+            setStatus(i18nt('status.error_generic', { detail: escapeHtml(data.error || i18nt('status.unknown')) }), 'error');
         }
     } catch (err) {
         closeExportDialog();
-        setStatus('Verbindingsfout: ' + escapeHtml(err.message), 'error');
+        setStatus(i18nt('status.connection_error', { msg: escapeHtml(err.message) }), 'error');
     } finally {
         updateButtonStates();
     }
@@ -1760,11 +1766,11 @@ function _updateZusterBar() {
  */
 async function genereerZuster() {
     if (!selectedOpgaveId) {
-        setStatus('Geen opgave geladen.', 'error');
+        setStatus(i18nt('status.no_exercise_loaded'), 'error');
         return;
     }
     const btn = document.getElementById('btn-genereer-zuster');
-    if (btn) { btn.disabled = true; btn.textContent = 'Bezig…'; }
+    if (btn) { btn.disabled = true; btn.textContent = i18nt('btn.busy'); }
     try {
         const r = await fetch('/api/genereer_zuster', {
             method: 'POST',
@@ -1773,10 +1779,11 @@ async function genereerZuster() {
         });
         const data = await r.json();
         if (data.success) {
-            setStatus('−wortel-zuster <code class="mono">' + escapeHtml(data.zuster_id) +
-                '</code> + relatie <code class="mono">' + escapeHtml(data.relatie_id) +
-                '</code> gemaakt (vingerafdruk ' + escapeHtml(data.vingerafdruk || '') + ').',
-                'success');
+            setStatus(i18nt('status.zuster_created', {
+                zuster: escapeHtml(data.zuster_id),
+                relatie: escapeHtml(data.relatie_id),
+                fp: escapeHtml(data.vingerafdruk || '')
+            }), 'success');
             await loadOpgavenLijst();
         } else {
             let msg = data.error || 'Genereren mislukt.';
@@ -1785,9 +1792,9 @@ async function genereerZuster() {
             setStatus(msg, 'error');
         }
     } catch (e) {
-        setStatus('Genereren mislukt: ' + e, 'error');
+        setStatus(i18nt('status.generate_failed', { detail: escapeHtml(String(e)) }), 'error');
     } finally {
-        if (btn) { btn.disabled = false; btn.textContent = 'Genereer −wortel-zuster + relatie'; }
+        if (btn) { btn.disabled = false; btn.textContent = i18nt('btn.gen_zuster'); }
     }
 }
 
@@ -1797,7 +1804,7 @@ async function genereerZuster() {
  */
 async function saveHintsEdits() {
     if (!selectedOpgaveId || !selectedOpgaveJson) {
-        setStatus('Geen opgave geladen om hints op te slaan.', 'error');
+        setStatus(i18nt('status.no_exercise_for_hints'), 'error');
         return;
     }
 
@@ -1823,7 +1830,7 @@ async function saveHintsEdits() {
     // Omdat we niet alleen hints-wijzigingen maar ook evt. andere velden
     // hebben, schrijven we de hele JSON opnieuw via een nieuw endpoint.
     btnHintsSave.disabled = true;
-    btnHintsSave.textContent = 'Bezig…';
+    btnHintsSave.textContent = i18nt('btn.busy');
     try {
         const r = await fetch('/api/save_hints', {
             method: 'POST',
@@ -1835,8 +1842,7 @@ async function saveHintsEdits() {
         });
         const data = await r.json();
         if (data.success) {
-            setStatus('Opgeslagen voor <code class="mono">' +
-                escapeHtml(selectedOpgaveId) + '</code>', 'success');
+            setStatus(i18nt('status.hints_saved', { id: escapeHtml(selectedOpgaveId) }), 'success');
             // Original updaten naar huidige edits (niet meer dirty)
             for (const id of Object.keys(hintsState.edits)) {
                 hintsState.original[id] = _cloneHints(hintsState.edits[id]);
@@ -1850,13 +1856,13 @@ async function saveHintsEdits() {
             _updateZusterBar();
             _updateHintsSavebar();
         } else {
-            setStatus('Fout bij opslaan: ' + escapeHtml(data.error || 'onbekend'), 'error');
+            setStatus(i18nt('status.save_failed', { detail: escapeHtml(data.error || i18nt('status.unknown')) }), 'error');
         }
     } catch (err) {
-        setStatus('Verbindingsfout: ' + escapeHtml(err.message), 'error');
+        setStatus(i18nt('status.connection_error', { msg: escapeHtml(err.message) }), 'error');
     } finally {
         btnHintsSave.disabled = false;
-        btnHintsSave.textContent = 'Opslaan';
+        btnHintsSave.textContent = i18nt('btn.save');
     }
 }
 
@@ -1872,7 +1878,7 @@ function discardHintsEdits() {
     _renderHintsAccordion();
     _updateZusterBar();
     _updateHintsSavebar();
-    setStatus('Wijzigingen ongedaan gemaakt.', 'info');
+    setStatus(i18nt('status.changes_undone'), 'info');
 }
 
 /**
@@ -1912,8 +1918,7 @@ let currentFormule = 'algemeen';
 function onFormuleKeuze(soort) {
     currentFormule = soort || 'algemeen';
     if (currentFormule !== 'abc' && currentFormule !== 'algemeen') {
-        setStatus('Soort "' + escapeHtml(currentFormule) + '" — sjabloon nog niet ' +
-            'geïmplementeerd (alleen Algemeen en abc formule doen nu iets).', 'info');
+        setStatus(i18nt('status.formule_not_implemented', { soort: escapeHtml(currentFormule) }), 'info');
         return;
     }
     let latex;
@@ -1933,8 +1938,8 @@ function onFormuleKeuze(soort) {
         try { mathField.setValue(nieuw); } catch (e) {}
         hasUnparsedChanges = true;
         setStatus(currentFormule === 'abc'
-            ? 'abc-formule: de wortel staat nu op ± — druk op Parse.'
-            : 'Formule op Algemeen — de wortel staat weer op +.', 'info');
+            ? i18nt('status.abc_pm_set')
+            : i18nt('status.formule_general_set'), 'info');
     }
 }
 
@@ -2124,7 +2129,7 @@ function renderFolder(folder, opgaven) {
         if (opgaven.length === 0) {
             const empty = document.createElement('div');
             empty.className = 'ol-folder-empty';
-            empty.textContent = 'Folder is leeg. Maak een eerste opgave door op Nieuw te klikken.';
+            empty.textContent = i18nt('folder.empty');
             contents.appendChild(empty);
         } else {
             for (let i = 0; i < opgaven.length; i++) {
@@ -2266,7 +2271,7 @@ async function selectOpgave(id, options = {}) {
         const r = await fetch('/api/load_opgave?id=' + encodeURIComponent(id));
         const data = await r.json();
         if (!data.success) {
-            setStatus('Kon opgave niet laden: ' + escapeHtml(data.error || id), 'error');
+            setStatus(i18nt('status.load_failed', { detail: escapeHtml(data.error || id) }), 'error');
             return;
         }
         selectedOpgaveId = id;
@@ -2421,9 +2426,9 @@ async function selectOpgave(id, options = {}) {
         // bij selectie vanuit lijst-klik is hij al false (geen save-actie)
         btnEdit.hidden = false;
         if (btnDelete) btnDelete.hidden = false;
-        btnEdit.textContent = 'Edit toestaan';
+        btnEdit.textContent = i18nt('btn.allow_edit');
 
-        setStatus('Opgave <code class="mono">' + escapeHtml(id) + '</code> geladen.', 'info');
+        setStatus(i18nt('status.exercise_loaded', { id: escapeHtml(id) }), 'info');
 
         // Update lijst-selectie visueel
         for (const el of olList.querySelectorAll('.ol-item')) {
@@ -2465,7 +2470,7 @@ async function selectOpgave(id, options = {}) {
             applyRandvoorwaardenLock(false);
         }
     } catch (err) {
-        setStatus('Verbindingsfout: ' + escapeHtml(err.message), 'error');
+        setStatus(i18nt('status.connection_error', { msg: escapeHtml(err.message) }), 'error');
     }
 }
 
@@ -2539,9 +2544,9 @@ function toggleEdit() {
     justSaved = false;
     editSessionTouched = false;  // nieuwe edit-sessie: nog niets gebeurd
     applyEditLock();
-    btnEdit.textContent = editMode ? 'Edit vergrendelen' : 'Edit toestaan';
+    btnEdit.textContent = editMode ? i18nt('btn.lock_edit') : i18nt('btn.allow_edit');
     if (editMode) {
-        setStatus('Bewerking toegestaan. Na <strong>Parse</strong> en <strong>Opslaan</strong> kun je kiezen om de bestaande opgave te overschrijven.', 'info');
+        setStatus(i18nt('status.edit_allowed'), 'info');
         try { mathField.focus(); } catch (e) {}
     }
     updateButtonStates();
@@ -2644,7 +2649,7 @@ async function confirmDelete() {
     if (!pendingDeleteOpgave) { closeDeleteDialog(); return; }
     const {id, folder} = pendingDeleteOpgave;
     deleteConfirmBtn.disabled = true;
-    deleteConfirmBtn.textContent = 'Bezig…';
+    deleteConfirmBtn.textContent = i18nt('btn.busy');
     try {
         const r = await fetch('/api/move_opgave', {
             method: 'POST',
@@ -2671,11 +2676,10 @@ async function confirmDelete() {
             }
             loadOpgavenLijst();
         } else {
-            setStatus('Kon niet verplaatsen: ' +
-                      escapeHtml(data.error || 'onbekend'), 'error');
+            setStatus(i18nt('status.move_failed', { detail: escapeHtml(data.error || i18nt('status.unknown')) }), 'error');
         }
     } catch (err) {
-        setStatus('Verbindingsfout: ' + escapeHtml(err.message), 'error');
+        setStatus(i18nt('status.connection_error', { msg: escapeHtml(err.message) }), 'error');
     } finally {
         closeDeleteDialog();
         deleteConfirmBtn.disabled = false;
@@ -2710,7 +2714,7 @@ const metadataStatusEl     = document.getElementById('metadata-status');
 function openMetadataDialog() {
     // Eis: er moet een geparste expressie zijn (anders kan requestExport niets)
     if (!lastProcessed) {
-        setStatus('Eerst parsen (druk op Parse) voordat je opslaat.', 'error');
+        setStatus(i18nt('status.parse_before_save'), 'error');
         return;
     }
     // Vul velden vanuit de current-state (= huidige opgave of laatste defaults)
@@ -2722,7 +2726,7 @@ function openMetadataDialog() {
     document.getElementById('md-notitie').value         = currentNotitie;
     if (metadataStatusEl) metadataStatusEl.hidden = true;
     metadataConfirmBtn.disabled = false;
-    metadataConfirmBtn.textContent = 'Opslaan';
+    metadataConfirmBtn.textContent = i18nt('btn.save');
     metadataDialog.hidden = false;
     setTimeout(() => {
         document.getElementById('md-soort').focus();
@@ -2902,7 +2906,7 @@ async function openSettingsDialog() {
         hideSettingsStatus();
     }
     settingsConfirmBtn.disabled = false;
-    settingsConfirmBtn.textContent = 'Opslaan';
+    settingsConfirmBtn.textContent = i18nt('btn.save');
     settingsDialog.hidden = false;
     settingsInput.focus();
 }
@@ -3043,14 +3047,14 @@ async function storageActionAdd() {
         });
         const data = await r.json();
         if (data.success) {
-            showStorageStatus(`Folder '${name}' aangemaakt.`, 'success');
+            showStorageStatus(i18nt('storage.folder_created', { name: name }), 'success');
             await loadStorageFolders();
             loadOpgavenLijst();
         } else {
-            showStorageStatus('Fout: ' + (data.error || 'onbekend'), 'error');
+            showStorageStatus(i18nt('storage.error', { detail: data.error || i18nt('status.unknown') }), 'error');
         }
     } catch (err) {
-        showStorageStatus('Verbindingsfout: ' + err.message, 'error');
+        showStorageStatus(i18nt('status.connection_error', { msg: err.message }), 'error');
     }
 }
 
@@ -3069,15 +3073,15 @@ async function storageActionRename() {
         });
         const data = await r.json();
         if (data.success) {
-            showStorageStatus(`Folder hernoemd naar '${newName}'.`, 'success');
+            showStorageStatus(i18nt('storage.folder_renamed', { name: newName }), 'success');
             storageSelectedFolder = newName.trim();
             await loadStorageFolders();
             loadOpgavenLijst();
         } else {
-            showStorageStatus('Fout: ' + (data.error || 'onbekend'), 'error');
+            showStorageStatus(i18nt('storage.error', { detail: data.error || i18nt('status.unknown') }), 'error');
         }
     } catch (err) {
-        showStorageStatus('Verbindingsfout: ' + err.message, 'error');
+        showStorageStatus(i18nt('status.connection_error', { msg: err.message }), 'error');
     }
 }
 
@@ -3092,15 +3096,15 @@ async function storageActionDelete() {
         });
         const data = await r.json();
         if (data.success) {
-            showStorageStatus(`Folder '${storageSelectedFolder}' verwijderd.`, 'success');
+            showStorageStatus(i18nt('storage.folder_deleted', { name: storageSelectedFolder }), 'success');
             storageSelectedFolder = null;
             await loadStorageFolders();
             loadOpgavenLijst();
         } else {
-            showStorageStatus('Fout: ' + (data.error || 'onbekend'), 'error');
+            showStorageStatus(i18nt('storage.error', { detail: data.error || i18nt('status.unknown') }), 'error');
         }
     } catch (err) {
-        showStorageStatus('Verbindingsfout: ' + err.message, 'error');
+        showStorageStatus(i18nt('status.connection_error', { msg: err.message }), 'error');
     }
 }
 
@@ -3123,14 +3127,14 @@ async function storageActionCopy() {
         });
         const data = await r.json();
         if (data.success) {
-            showStorageStatus(`Folder gekopieerd naar '${data.name}'.`, 'success');
+            showStorageStatus(i18nt('storage.folder_copied', { name: data.name }), 'success');
             await loadStorageFolders();
             loadOpgavenLijst();
         } else {
-            showStorageStatus('Fout: ' + (data.error || 'onbekend'), 'error');
+            showStorageStatus(i18nt('storage.error', { detail: data.error || i18nt('status.unknown') }), 'error');
         }
     } catch (err) {
-        showStorageStatus('Verbindingsfout: ' + err.message, 'error');
+        showStorageStatus(i18nt('status.connection_error', { msg: err.message }), 'error');
     }
 }
 
@@ -3218,7 +3222,7 @@ function saveRandvoorwaarden() {
     rv.feedback_aan = feedback;
 
     _hideRandvoorwaardenError();
-    setStatus('Randvoorwaarden opgeslagen.', 'success');
+    setStatus(i18nt('status.rv_saved'), 'success');
 }
 
 function applyRandvoorwaardenLock(locked) {
@@ -3303,7 +3307,7 @@ async function saveSettings(createIfMissing) {
         return;
     }
     settingsConfirmBtn.disabled = true;
-    settingsConfirmBtn.textContent = 'Bezig…';
+    settingsConfirmBtn.textContent = i18nt('btn.busy');
     try {
         const r = await fetch('/api/settings', {
             method:  'POST',
@@ -3341,7 +3345,7 @@ async function saveSettings(createIfMissing) {
         settingsStatus.hidden = false;
     } finally {
         settingsConfirmBtn.disabled = false;
-        settingsConfirmBtn.textContent = 'Opslaan';
+        settingsConfirmBtn.textContent = i18nt('btn.save');
     }
 }
 
@@ -3358,7 +3362,7 @@ async function confirmSettingsCreate() {
         return;
     }
     settingsCreateConfirm.disabled = true;
-    settingsCreateConfirm.textContent = 'Bezig…';
+    settingsCreateConfirm.textContent = i18nt('btn.busy');
     // Zet het pad terug in het input veld (voor de zekerheid) en sla op met create_if_missing
     settingsInput.value = pendingCreatePath;
     settingsCreateDialog.hidden = true;
@@ -3460,7 +3464,7 @@ document.querySelectorAll('.info-label-copy').forEach(label => {
                 label.classList.add('is-copied');
                 setTimeout(() => label.classList.remove('is-copied'), 1500);
             } catch (e) {
-                setStatus('Kopiëren mislukt: ' + escapeHtml(err.message), 'error');
+                setStatus(i18nt('status.copy_failed', { detail: escapeHtml(err.message) }), 'error');
             }
         }
     });
@@ -3857,6 +3861,16 @@ window.addEventListener('resize', () => {
     if (helpOverlay && !helpOverlay.hidden) renderHelpLabels();
 });
 
+
+// Bij taalwissel: knop-labels die door JS gestuurd worden (niet door
+// een statische data-i18n) opnieuw zetten volgens de actuele toestand.
+if (window.I18N && window.I18N.onChange) {
+    window.I18N.onChange(() => {
+        if (btnEdit && !btnEdit.hidden) {
+            btnEdit.textContent = editMode ? i18nt('btn.lock_edit') : i18nt('btn.allow_edit');
+        }
+    });
+}
 
 // Laad de lijst met opgaven meteen zodat docent ziet wat er is.
 loadOpgavenLijst();

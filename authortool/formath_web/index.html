@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ForMath — Opgave Invoer</title>
+    <title data-i18n="doc.title">ForMath — Exercise input</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -43,6 +43,22 @@
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: rgba(255, 255, 255, 0.5) !important;
         }
+        /* Taalkiezer in de kop: schikt zich naar de (donkere) header-stijl. */
+        .lang-select {
+            margin-left: auto;
+            margin-right: 10px;
+            align-self: center;
+            font-family: 'IBM Plex Sans', system-ui, sans-serif;
+            font-size: 13px;
+            padding: 6px 8px;
+            color: inherit;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .lang-select:hover { border-color: rgba(255, 255, 255, 0.5); }
+        .lang-select option { color: #1c1f26; }
         .inspector-head-actions {
             display: inline-flex;
             align-items: center;
@@ -1106,13 +1122,15 @@
                           stroke-width="1" stroke-dasharray="2 1.5"/>
                 </svg>
             </span>
-            <h1>ForMath <span class="brand-sub">Authortool: invoer opgaven</span></h1>
+            <h1>ForMath <span class="brand-sub" data-i18n="app.subtitle">Author tool: exercise input</span></h1>
         </div>
+        <select id="lang-select" class="lang-select" aria-label="Language" title="Language"></select>
         <button type="button"
                 class="header-settings-btn header-help-btn"
                 id="btn-header-help"
                 aria-label="Help"
-                title="Help — toon labels bij elk onderdeel"
+                title="Help — show labels for each part"
+                data-i18n-title="header.help_title"
                 onclick="openHelpOverlay()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2"
@@ -1126,8 +1144,9 @@
         <button type="button"
                 class="header-settings-btn"
                 id="btn-header-settings"
-                aria-label="Instellingen"
-                title="Instellingen"
+                aria-label="Settings"
+                title="Settings"
+                data-i18n-title="header.settings_title"
                 onclick="openSettingsDialog()">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                  stroke="currentColor" stroke-width="2"
@@ -1144,16 +1163,17 @@
         <aside class="opgave-lijst" id="opgave-lijst" aria-label="Opgavenbeheer">
             <div class="inspector-head">
                 <div>
-                    <h2 class="inspector-title">Opgaven</h2>
+                    <h2 class="inspector-title" data-i18n="opgaven.title">Exercises</h2>
                     <div class="inspector-subtitle" id="ol-count">…</div>
                 </div>
                 <button type="button"
                         class="inspector-collapse-btn"
                         id="btn-ol-collapse"
-                        aria-label="Opgaven inklappen"
+                        aria-label="Collapse exercises"
                         aria-expanded="true"
                         aria-controls="ol-body"
-                        title="Opgaven inklappen"
+                        title="Collapse exercises"
+                        data-i18n-title="opgaven.collapse_title"
                         onclick="toggleOpgaveLijst()">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
                          stroke="currentColor" stroke-width="1.5"
@@ -1165,7 +1185,7 @@
             </div>
             <div class="inspector-body" id="ol-body">
                 <div class="ol-placeholder" id="ol-placeholder">
-                    Geen opgaven gevonden in <code class="mono" id="ol-placeholder-dir">…</code>
+                    <span data-i18n="opgaven.none_in">No exercises found in</span> <code class="mono" id="ol-placeholder-dir">…</code>
                 </div>
                 <ul class="ol-list" id="ol-list" role="listbox" aria-label="Opgaven"></ul>
             </div>
@@ -1174,8 +1194,9 @@
         <button type="button"
                 class="inspector-rail"
                 id="ol-rail"
-                aria-label="Opgaven openen"
-                title="Opgaven openen"
+                aria-label="Open exercises"
+                title="Open exercises"
+                data-i18n-title="opgaven.rail_title"
                 onclick="toggleOpgaveLijst()"
                 hidden>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -1184,7 +1205,7 @@
                  aria-hidden="true">
                 <polyline points="5 3 9 7 5 11"/>
             </svg>
-            <span class="inspector-rail-label">Opgaven</span>
+            <span class="inspector-rail-label" data-i18n="opgaven.rail_label">Exercises</span>
         </button>
 
         <section class="input-panel">
@@ -1196,23 +1217,23 @@
                      "Opgave-metadata"-modaal dat opent bij Opslaan. -->
                 <div class="meta-labels" id="meta-labels-row">
                     <span class="meta-label-pair">
-                        <span class="meta-label-key">Soort:</span>
+                        <span class="meta-label-key" data-i18n="meta.soort">Type:</span>
                         <span class="meta-label-val" id="meta-soort">—</span>
                     </span>
                     <span class="meta-label-pair">
-                        <span class="meta-label-key">Onderwijstype:</span>
+                        <span class="meta-label-key" data-i18n="meta.onderwijstype">Education type:</span>
                         <span class="meta-label-val" id="meta-onderwijstype">—</span>
                     </span>
                     <span class="meta-label-pair">
-                        <span class="meta-label-key">Niveau:</span>
+                        <span class="meta-label-key" data-i18n="meta.niveau">Level:</span>
                         <span class="meta-label-val" id="meta-onderwijsniveau">—</span>
                     </span>
                     <span class="meta-label-pair">
-                        <span class="meta-label-key">Opdracht:</span>
+                        <span class="meta-label-key" data-i18n="meta.opdracht">Task:</span>
                         <span class="meta-label-val" id="meta-opdracht">—</span>
                     </span>
                     <span class="meta-label-pair">
-                        <span class="meta-label-key">Productietype:</span>
+                        <span class="meta-label-key" data-i18n="meta.productie">Production type:</span>
                         <span class="meta-label-val" id="meta-productie">—</span>
                     </span>
                 </div>
@@ -1239,7 +1260,7 @@
                     <button id="mode-math" class="mode-btn is-active" data-mode="math"
                             onclick="setMode('math')" type="button">MathLive</button>
                     <button id="mode-text" class="mode-btn" data-mode="text"
-                            onclick="setMode('text')" type="button">Tekst</button>
+                            onclick="setMode('text')" type="button" data-i18n="mode.text">Text</button>
                 </div>
             </div>
 
@@ -1249,11 +1270,11 @@
                  focus terug op het math-field. -->
             <div id="quick-buttons" class="quick-buttons">
                 <!-- Vierkantswortel met geheel getal als radicand -->
-                <button type="button" class="qb" data-insert="\sqrt{#0}" title="Vierkantswortel met geheel getal (vul radicand in)">
+                <button type="button" class="qb" data-insert="\sqrt{#0}" title="Square root with an integer radicand (enter the radicand)" data-i18n-title="qb.sqrt_int_title">
                     <span class="qb-icon">√</span><span class="qb-sub">▢</span>
                 </button>
                 <!-- Vierkantswortel met breuk als radicand -->
-                <button type="button" class="qb" data-insert="\sqrt{\frac{#0}{#?}}" title="Vierkantswortel met breuk als radicand">
+                <button type="button" class="qb" data-insert="\sqrt{\frac{#0}{#?}}" title="Square root with a fraction as radicand" data-i18n-title="qb.sqrt_frac_title">
                     <span class="qb-icon">√</span><span class="qb-frac">
                         <span class="qb-frac-top">▢</span>
                         <span class="qb-frac-bot">▢</span>
@@ -1261,16 +1282,16 @@
                 </button>
                 <span class="qb-sep"></span>
                 <!-- Macht: hokje met kwadraat -->
-                <button type="button" class="qb" data-insert="{#0}^{2}" title="Kwadraat (vul grondtal in)">
+                <button type="button" class="qb" data-insert="{#0}^{2}" title="Square (enter the base)" data-i18n-title="qb.square_title">
                     <span class="qb-base">▢</span><span class="qb-sup">²</span>
                 </button>
                 <!-- Macht: hokje met algemene exponent -->
-                <button type="button" class="qb" data-insert="{#0}^{#?}" title="Macht (vul grondtal en exponent in)">
+                <button type="button" class="qb" data-insert="{#0}^{#?}" title="Power (enter base and exponent)" data-i18n-title="qb.power_title">
                     <span class="qb-base">▢</span><span class="qb-sup">▢</span>
                 </button>
                 <span class="qb-sep"></span>
                 <!-- Breuk -->
-                <button type="button" class="qb" data-insert="\frac{#0}{#?}" title="Breuk">
+                <button type="button" class="qb" data-insert="\frac{#0}{#?}" title="Fraction" data-i18n-title="qb.frac_title">
                     <span class="qb-frac">
                         <span class="qb-frac-top">▢</span>
                         <span class="qb-frac-bot">▢</span>
@@ -1281,7 +1302,8 @@
                      expressie splitst bij Export in een ±-worteltrek + splitsing. -->
                 <button type="button" class="qb"
                         data-insert="\pm"
-                        title="Plus-minus (±) — o.a. voor de abc-formule">
+                        title="Plus-minus (±) — e.g. for the quadratic formula"
+                        data-i18n-title="qb.pm_title">
                     <span class="qb-pm">±</span>
                 </button>
             </div>
@@ -1290,43 +1312,47 @@
                 <math-field id="math-input"
                     virtual-keyboard-mode="manual"
                     smart-mode
-                    placeholder="Typ hier je opgave">
+                    placeholder="Type your exercise here"
+                    data-i18n-placeholder="input.math_placeholder">
                 </math-field>
                 <input type="text" id="text-input"
-                    placeholder="Plak hier de expressie, bijv: [(3^2)*(12-9)^3]:…"
+                    placeholder="Paste the expression here, e.g.: [(3^2)*(12-9)^3]:…"
+                    data-i18n-placeholder="input.text_placeholder"
                     autocomplete="off" spellcheck="false">
             </div>
 
             <div class="action-row">
                 <button id="btn-ok" class="btn btn-primary" onclick="processExpression()" disabled>
-                    <span class="btn-label">Parse</span>
+                    <span class="btn-label" data-i18n="btn.parse">Parse</span>
                     <span class="btn-kbd">↵</span>
                 </button>
-                <button id="btn-json" class="btn btn-secondary" onclick="openMetadataDialog()" disabled>
-                    Opslaan
+                <button id="btn-json" class="btn btn-secondary" onclick="openMetadataDialog()" disabled
+                        data-i18n="btn.save">
+                    Save
                 </button>
                 <!-- Zichtbaar alleen als een opgave geselecteerd is -->
                 <button id="btn-edit" class="btn btn-ghost" onclick="toggleEdit()"
-                        type="button" hidden>
-                    Edit toestaan
+                        type="button" hidden data-i18n="btn.allow_edit">
+                    Allow edit
                 </button>
 
                 <!-- Spacer: duwt 'Nieuw' + het soort-keuzemenu naar rechts -->
                 <div class="action-spacer"></div>
 
                 <!-- 'Nieuw' labelt het keuzemenu ernaast (soort nieuwe opgave). -->
-                <button id="btn-clear" class="btn btn-ghost" onclick="clearAll()" disabled>
-                    Nieuw
+                <button id="btn-clear" class="btn btn-ghost" onclick="clearAll()" disabled
+                        data-i18n="btn.new">
+                    New
                 </button>
                 <select id="formule-keuze" class="formule-keuze-select"
-                        onchange="onFormuleKeuze(this.value)" aria-label="Soort nieuwe opgave">
-                    <option value="algemeen">Algemeen</option>
-                    <option value="abc">abc formule</option>
-                    <option value="pythagoras">stelling pythagoras</option>
-                    <option value="rente">samengestelde rente</option>
-                    <option value="standaardafwijking">standaard afwijking</option>
-                    <option value="slingertijd">slingertijd</option>
-                    <option value="snelheid">snelheid</option>
+                        onchange="onFormuleKeuze(this.value)" aria-label="Type of new exercise">
+                    <option value="algemeen" data-i18n="formule.algemeen">General</option>
+                    <option value="abc" data-i18n="formule.abc">quadratic formula</option>
+                    <option value="pythagoras" data-i18n="formule.pythagoras">Pythagorean theorem</option>
+                    <option value="rente" data-i18n="formule.rente">compound interest</option>
+                    <option value="standaardafwijking" data-i18n="formule.standaardafwijking">standard deviation</option>
+                    <option value="slingertijd" data-i18n="formule.slingertijd">pendulum period</option>
+                    <option value="snelheid" data-i18n="formule.snelheid">speed</option>
                 </select>
                 <div id="status" class="status"></div>
             </div>
@@ -1334,7 +1360,7 @@
 
         <section class="result-panel">
             <div class="result-head">
-                <span class="result-title">Schema</span>
+                <span class="result-title" data-i18n="result.schema_title">Diagram</span>
                 <div class="view-toggle" role="group" aria-label="Weergave">
                     <button id="view-svg" class="view-btn is-active"
                             onclick="setView('svg')" type="button">SVG</button>
@@ -1342,18 +1368,18 @@
                             onclick="setView('json')" type="button">JSON</button>
                 </div>
                 <div class="zoom-controls" aria-label="Zoomregelingen">
-                    <button class="zoom-btn" onclick="zoomOut()" title="Uitzoomen" type="button">−</button>
+                    <button class="zoom-btn" onclick="zoomOut()" title="Zoom out" data-i18n-title="zoom.out_title" type="button">−</button>
                     <span class="zoom-label" id="zoom-level">100%</span>
-                    <button class="zoom-btn" onclick="zoomIn()" title="Inzoomen" type="button">+</button>
-                    <button class="zoom-btn zoom-btn-wide" onclick="zoomFit()" title="Passend maken" type="button">Fit</button>
+                    <button class="zoom-btn" onclick="zoomIn()" title="Zoom in" data-i18n-title="zoom.in_title" type="button">+</button>
+                    <button class="zoom-btn zoom-btn-wide" onclick="zoomFit()" title="Fit to view" data-i18n-title="zoom.fit_title" type="button" data-i18n="zoom.fit">Fit</button>
                 </div>
             </div>
 
             <div id="svg-wrapper">
                 <div id="svg-container" class="is-empty">
                     <div id="placeholder-text">
-                        <span class="placeholder-big">Nog geen schema</span>
-                        <span class="placeholder-sub">Typ een expressie en druk op <kbd>Parse</kbd></span>
+                        <span class="placeholder-big" data-i18n="schema.empty_big">No diagram yet</span>
+                        <span class="placeholder-sub"><span data-i18n="schema.empty_sub_pre">Type an expression and press</span> <kbd>Parse</kbd></span>
                     </div>
                     <div id="svg-inner"></div>
                 </div>
@@ -1363,10 +1389,12 @@
             <aside class="pipeline-info" id="pipeline-info" hidden>
                 <dl>
                     <dt class="info-label-copy" data-target="info-tekst"
-                        title="Klik om te kopiëren">Expressie</dt>
+                        title="Click to copy" data-i18n-title="info.copy_title"
+                        data-i18n="info.expressie">Expression</dt>
                     <dd id="info-tekst" class="mono"></dd>
                     <dt class="info-label-copy" data-target="info-latex"
-                        title="Klik om te kopiëren">LaTeX voor export</dt>
+                        title="Click to copy" data-i18n-title="info.copy_title"
+                        data-i18n="info.latex">LaTeX for export</dt>
                     <dd id="info-latex" class="mono"></dd>
                 </dl>
             </aside>
@@ -1375,16 +1403,17 @@
         <aside class="inspector" id="inspector" aria-label="Inspector">
             <div class="inspector-head">
                 <div>
-                    <h2 class="inspector-title">Didactiek &amp; Classificatie</h2>
-                    <div class="inspector-subtitle" id="hints-subtitle">per opgave</div>
+                    <h2 class="inspector-title" data-i18n="inspector.title">Didactics &amp; Classification</h2>
+                    <div class="inspector-subtitle" id="hints-subtitle" data-i18n="inspector.subtitle">per exercise</div>
                 </div>
                 <button type="button"
                         class="inspector-collapse-btn"
                         id="btn-inspector-collapse"
-                        aria-label="Inspector inklappen"
+                        aria-label="Collapse inspector"
                         aria-expanded="true"
                         aria-controls="inspector-body"
-                        title="Inspector inklappen"
+                        title="Collapse inspector"
+                        data-i18n-title="inspector.collapse_title"
                         onclick="toggleInspector()">
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
                          stroke="currentColor" stroke-width="1.5"
@@ -1399,22 +1428,24 @@
                 <div class="hints-savebar" id="hints-savebar" hidden>
                     <span class="hints-dirty-indicator" id="hints-dirty-count">…</span>
                     <button class="btn btn-primary btn-small" id="btn-hints-save"
-                            onclick="saveHintsEdits()" type="button" disabled>
-                        Opslaan
+                            onclick="saveHintsEdits()" type="button" disabled
+                            data-i18n="btn.save">
+                        Save
                     </button>
                     <button class="btn btn-ghost btn-small"
-                            onclick="discardHintsEdits()" type="button">
-                        Ongedaan maken
+                            onclick="discardHintsEdits()" type="button"
+                            data-i18n="btn.undo">
+                        Undo
                     </button>
                 </div>
 
                 <!-- ±-wortel: genereer de tweede wortel + relatie (alleen bij een fork) -->
                 <div class="zuster-bar" id="zuster-bar" hidden>
-                    <div class="zuster-desc">±-fork gekozen. Sla eerst op
-                        (knop <strong>Opslaan</strong> hierboven), genereer dan de −wortel-zuster.</div>
+                    <div class="zuster-desc"><span data-i18n="zuster.desc_1">± fork chosen. Save first (button</span>
+                        <strong data-i18n="btn.save">Save</strong> <span data-i18n="zuster.desc_2">above), then generate the −root sister.</span></div>
                     <button class="btn btn-primary btn-small" id="btn-genereer-zuster"
-                            onclick="genereerZuster()" type="button">
-                        Genereer −wortel-zuster + relatie
+                            onclick="genereerZuster()" type="button" data-i18n="btn.gen_zuster">
+                        Generate −root sister + relation
                     </button>
                 </div>
 
@@ -1422,7 +1453,7 @@
                 <div class="hints-section" id="hints-section">
                     <div class="inspector-subhead inspector-subhead-blue"
                          onclick="toggleHintsSection()">
-                        <span class="inspector-subhead-title">Hints &amp; Feedback</span>
+                        <span class="inspector-subhead-title" data-i18n="hints.section_title">Hints &amp; Feedback</span>
                         <span class="inspector-subhead-meta" id="hints-mb-count">— mathblocks</span>
                         <svg width="10" height="10" viewBox="0 0 10 10"
                              id="hints-section-chevron" class="inspector-subhead-chevron"
@@ -1441,7 +1472,7 @@
                 <!-- Classificatie-sectie -->
                 <div class="cl-section" id="cl-section" hidden>
                     <div class="inspector-subhead inspector-subhead-green" onclick="toggleClSection()">
-                        <span class="inspector-subhead-title">Classificatie</span>
+                        <span class="inspector-subhead-title" data-i18n="classificatie.section_title">Classification</span>
                         <span class="inspector-subhead-meta" id="cl-progress">0 / 12</span>
                         <svg width="10" height="10" viewBox="0 0 10 10"
                              id="cl-chevron" class="inspector-subhead-chevron"
@@ -1463,66 +1494,66 @@
                                      aria-hidden="true">
                                     <polyline points="4 2 8 6 4 10"/>
                                 </svg>
-                                <span class="cl-mb-title">Statistieken</span>
+                                <span class="cl-mb-title" data-i18n="cl.stats_title">Statistics</span>
                                 <span class="cl-mb-meta" id="cl-stats-summary">—</span>
                             </div>
                             <div class="cl-mb-body">
                                 <div class="cl-stats-grid" id="cl-stats-grid">
-                                    <div class="cl-stats-section-title">Mathblocks</div>
+                                    <div class="cl-stats-section-title" data-i18n="cl.stats.mathblocks">Math blocks</div>
                                     <div class="cl-stats-row cl-stats-total">
-                                        <span class="cl-stats-key">Totaal</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.total">Total</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-total">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">binair (+, ×, :)</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.binary">binary (+, ×, :)</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-binary">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">manifold</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.manifold">manifold</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-manifold">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">matroesjka</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.matroesjka">matryoshka</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-matroesjka">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">vereenvoudigen</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.simplify">simplify</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-simplify">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">gemengd getal</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.mixed">mixed number</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-mixed">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">macht</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.power">power</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-power">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">wortel</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.root">root</span>
                                         <span class="cl-stats-val" id="cl-stat-mb-root">—</span>
                                     </div>
 
-                                    <div class="cl-stats-section-title">Externe inputs</div>
+                                    <div class="cl-stats-section-title" data-i18n="cl.stats.external_inputs">External inputs</div>
                                     <div class="cl-stats-row cl-stats-total">
-                                        <span class="cl-stats-key">Totaal</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.total">Total</span>
                                         <span class="cl-stats-val" id="cl-stat-in-total">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">gehele getallen</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.integers">integers</span>
                                         <span class="cl-stats-val" id="cl-stat-in-int">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">breuken</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.fractions">fractions</span>
                                         <span class="cl-stats-val" id="cl-stat-in-frac">—</span>
                                     </div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">decimale getallen</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.decimals">decimal numbers</span>
                                         <span class="cl-stats-val" id="cl-stat-in-dec">—</span>
                                     </div>
 
-                                    <div class="cl-stats-section-title">Stappen</div>
+                                    <div class="cl-stats-section-title" data-i18n="cl.stats.steps_section">Steps</div>
                                     <div class="cl-stats-row">
-                                        <span class="cl-stats-key">aantal stappen</span>
+                                        <span class="cl-stats-key" data-i18n="cl.stats.steps_count">number of steps</span>
                                         <span class="cl-stats-val" id="cl-stat-steps">—</span>
                                     </div>
                                 </div>
@@ -1538,11 +1569,11 @@
                                      aria-hidden="true">
                                     <polyline points="4 2 8 6 4 10"/>
                                 </svg>
-                                <span class="cl-mb-title">Inhoud</span>
+                                <span class="cl-mb-title" data-i18n="cl.inhoud_title">Content</span>
                             </div>
                             <div class="cl-mb-body">
                                 <div class="cl-row">
-                                    <label class="cl-label" for="cl-domein">Domein</label>
+                                    <label class="cl-label" for="cl-domein" data-i18n="cl.domein">Domain</label>
                                     <select class="cl-select" id="cl-domein">
                                         <option value="">—</option>
                                         <option value="getallen">getallen</option>
@@ -1560,27 +1591,30 @@
                                 </div>
                                 <div class="cl-row-2col">
                                     <div>
-                                        <label class="cl-label" for="cl-onderwerp">Onderwerp</label>
+                                        <label class="cl-label" for="cl-onderwerp" data-i18n="cl.onderwerp">Topic</label>
                                         <input type="text" class="cl-input cl-mono"
-                                               id="cl-onderwerp" placeholder="bv. breuken"
+                                               id="cl-onderwerp" placeholder="e.g. fractions"
+                                               data-i18n-placeholder="cl.onderwerp_ph"
                                                list="cl-onderwerp-list" />
                                         <datalist id="cl-onderwerp-list"></datalist>
                                     </div>
                                     <div>
-                                        <label class="cl-label" for="cl-subonderwerp">Subonderwerp</label>
+                                        <label class="cl-label" for="cl-subonderwerp" data-i18n="cl.subonderwerp">Subtopic</label>
                                         <input type="text" class="cl-input cl-mono"
-                                               id="cl-subonderwerp" placeholder="bv. optellen"
+                                               id="cl-subonderwerp" placeholder="e.g. adding"
+                                               data-i18n-placeholder="cl.subonderwerp_ph"
                                                list="cl-subonderwerp-list" />
                                         <datalist id="cl-subonderwerp-list"></datalist>
                                     </div>
                                 </div>
                                 <div class="cl-row">
-                                    <label class="cl-label">Tags</label>
+                                    <label class="cl-label" data-i18n="cl.tags">Tags</label>
                                     <div class="cl-tags" id="cl-tags-container"
                                          onclick="document.getElementById('cl-tag-input').focus()">
                                         <input type="text" class="cl-tag-input"
                                                id="cl-tag-input"
                                                placeholder="+ tag…"
+                                               data-i18n-placeholder="cl.tags_ph"
                                                list="cl-tag-list" />
                                         <datalist id="cl-tag-list"></datalist>
                                     </div>
@@ -1597,12 +1631,12 @@
                                      aria-hidden="true">
                                     <polyline points="4 2 8 6 4 10"/>
                                 </svg>
-                                <span class="cl-mb-title">Cognitie</span>
+                                <span class="cl-mb-title" data-i18n="cl.cognitie_title">Cognition</span>
                             </div>
                             <div class="cl-mb-body">
                                 <div class="cl-row-2col">
                                     <div>
-                                        <label class="cl-label" for="cl-type">Type</label>
+                                        <label class="cl-label" for="cl-type" data-i18n="cl.type">Type</label>
                                         <select class="cl-select" id="cl-type">
                                             <option value="">—</option>
                                             <option value="procedureel">procedureel</option>
@@ -1614,7 +1648,7 @@
                                         </select>
                                     </div>
                                     <div>
-                                        <label class="cl-label">RTTI</label>
+                                        <label class="cl-label" data-i18n="cl.rtti">RTTI</label>
                                         <div class="cl-seg" id="cl-rtti">
                                             <div class="cl-seg-opt" data-value="R">R</div>
                                             <div class="cl-seg-opt" data-value="T1">T1</div>
@@ -1625,7 +1659,7 @@
                                 </div>
                                 <div class="cl-row">
                                     <div class="cl-diff-row">
-                                        <label class="cl-label" style="margin-bottom:0;">Moeilijkheid</label>
+                                        <label class="cl-label" style="margin-bottom:0;" data-i18n="cl.moeilijkheid">Difficulty</label>
                                         <span class="cl-diff-value" id="cl-diff-value">—</span>
                                     </div>
                                     <div class="cl-diff-bars" id="cl-diff-bars">
@@ -1648,11 +1682,11 @@
                                      aria-hidden="true">
                                     <polyline points="4 2 8 6 4 10"/>
                                 </svg>
-                                <span class="cl-mb-title">Doelgroep</span>
+                                <span class="cl-mb-title" data-i18n="cl.doelgroep_title">Target group</span>
                             </div>
                             <div class="cl-mb-body">
                                 <div class="cl-row">
-                                    <label class="cl-label">Leerjaar</label>
+                                    <label class="cl-label" data-i18n="cl.leerjaar">Year</label>
                                     <div class="cl-year-grid" id="cl-leerjaar">
                                         <button type="button" class="cl-year-btn" data-value="1">1</button>
                                         <button type="button" class="cl-year-btn" data-value="2">2</button>
@@ -1663,7 +1697,7 @@
                                     </div>
                                 </div>
                                 <div class="cl-row">
-                                    <label class="cl-label">Stroom</label>
+                                    <label class="cl-label" data-i18n="cl.stroom">Track</label>
                                     <div class="cl-pills" id="cl-stroom">
                                         <span class="cl-pill" data-value="vmbo_bb">vmbo-bb</span>
                                         <span class="cl-pill" data-value="vmbo_kb">vmbo-kb</span>
@@ -1678,7 +1712,7 @@
                                 </div>
                                 <div class="cl-row-2col">
                                     <div>
-                                        <label class="cl-label">Ref. niveau</label>
+                                        <label class="cl-label" data-i18n="cl.refniveau">Ref. level</label>
                                         <div class="cl-seg" id="cl-refniveau">
                                             <div class="cl-seg-opt" data-value="1F">1F</div>
                                             <div class="cl-seg-opt" data-value="1S">1S</div>
@@ -1689,7 +1723,7 @@
                                         </div>
                                     </div>
                                     <div>
-                                        <label class="cl-label" for="cl-examendomein">Examen-dom.</label>
+                                        <label class="cl-label" for="cl-examendomein" data-i18n="cl.examendomein">Exam dom.</label>
                                         <select class="cl-select" id="cl-examendomein">
                                             <option value="">—</option>
                                             <option value="A">A</option>
@@ -1703,7 +1737,7 @@
                                     </div>
                                 </div>
                                 <div class="cl-row">
-                                    <label class="cl-label" for="cl-refdomein">Ref. domein</label>
+                                    <label class="cl-label" for="cl-refdomein" data-i18n="cl.refdomein">Ref. domain</label>
                                     <select class="cl-select" id="cl-refdomein">
                                         <option value="">—</option>
                                         <option value="getallen">getallen</option>
@@ -1724,26 +1758,28 @@
                                      aria-hidden="true">
                                     <polyline points="4 2 8 6 4 10"/>
                                 </svg>
-                                <span class="cl-mb-title">Administratie</span>
+                                <span class="cl-mb-title" data-i18n="cl.administratie_title">Administration</span>
                                 <span class="cl-mb-meta" id="cl-adm-summary">—</span>
                             </div>
                             <div class="cl-mb-body">
                                 <div class="cl-row-2col">
                                     <div>
-                                        <label class="cl-label" for="cl-bron">Bron</label>
+                                        <label class="cl-label" for="cl-bron" data-i18n="cl.bron">Source</label>
                                         <input type="text" class="cl-input cl-mono"
-                                               id="cl-bron" placeholder="eigen" />
+                                               id="cl-bron" placeholder="own"
+                                               data-i18n-placeholder="cl.bron_ph" />
                                     </div>
                                     <div>
-                                        <label class="cl-label" for="cl-auteur">Auteur</label>
+                                        <label class="cl-label" for="cl-auteur" data-i18n="cl.auteur">Author</label>
                                         <input type="text" class="cl-input cl-mono"
                                                id="cl-auteur" placeholder="HNL" />
                                     </div>
                                 </div>
                                 <div class="cl-row">
-                                    <label class="cl-label" for="cl-opmerkingen">Opmerkingen</label>
+                                    <label class="cl-label" for="cl-opmerkingen" data-i18n="cl.opmerkingen">Remarks</label>
                                     <textarea class="cl-input" id="cl-opmerkingen"
-                                              placeholder="Toelichting bij niet-evidente keuzes"></textarea>
+                                              placeholder="Explanation of non-obvious choices"
+                                              data-i18n-placeholder="cl.opmerkingen_ph"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -1754,7 +1790,7 @@
                 <!-- Randvoorwaarden-sectie (derde harmonica, mosterd) -->
                 <div class="rv-section" id="rv-section" hidden>
                     <div class="inspector-subhead inspector-subhead-amber" onclick="toggleRvSection()">
-                        <span class="inspector-subhead-title">Randvoorwaarden</span>
+                        <span class="inspector-subhead-title" data-i18n="rv.section_title">Constraints</span>
                         <span class="inspector-subhead-meta" id="rv-progress"></span>
                         <svg width="10" height="10" viewBox="0 0 10 10"
                              id="rv-chevron" class="inspector-subhead-chevron"
@@ -1766,58 +1802,59 @@
                     </div>
                     <div class="rv-body" id="rv-body" hidden>
                         <div class="rv-row">
-                            <span class="rv-label">1. Antwoord in breuken</span>
+                            <span class="rv-label" data-i18n="rv.breuken">1. Answer in fractions</span>
                             <div class="rv-control">
-                                <label class="rv-radio"><input type="radio" name="rv-breuken" value="ja"><span>Ja</span></label>
-                                <label class="rv-radio"><input type="radio" name="rv-breuken" value="nee"><span>Nee</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-breuken" value="ja"><span data-i18n="common.yes">Yes</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-breuken" value="nee"><span data-i18n="common.no">No</span></label>
                             </div>
                         </div>
                         <div class="rv-row">
-                            <span class="rv-label">2. Antwoord in decimalen</span>
+                            <span class="rv-label" data-i18n="rv.decimalen">2. Answer in decimals</span>
                             <div class="rv-control">
-                                <label class="rv-radio"><input type="radio" name="rv-decimalen" value="ja"><span>Ja</span></label>
-                                <label class="rv-radio"><input type="radio" name="rv-decimalen" value="nee"><span>Nee</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-decimalen" value="ja"><span data-i18n="common.yes">Yes</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-decimalen" value="nee"><span data-i18n="common.no">No</span></label>
                             </div>
                         </div>
                         <div class="rv-row rv-row-sub" id="rv-row-decimalen-afronden">
-                            <label class="rv-label" for="rv-input-decimalen-afronden">Afronden op decimalen achter de komma</label>
+                            <label class="rv-label" for="rv-input-decimalen-afronden" data-i18n="rv.decimalen_afronden">Round to decimals after the point</label>
                             <div class="rv-control">
                                 <input type="number" id="rv-input-decimalen-afronden" class="rv-input"
                                        min="0" max="15" step="1" value="2">
                             </div>
                         </div>
                         <div class="rv-row">
-                            <label class="rv-label" for="rv-input-pi-decimalen">3. Aantal decimalen voor π</label>
+                            <label class="rv-label" for="rv-input-pi-decimalen" data-i18n="rv.pi_decimalen">3. Number of decimals for π</label>
                             <div class="rv-control">
                                 <input type="number" id="rv-input-pi-decimalen" class="rv-input"
                                        min="0" max="15" step="1" value="2">
                             </div>
                         </div>
                         <div class="rv-row">
-                            <span class="rv-label">4. Uitkomst als gemengd getal</span>
+                            <span class="rv-label" data-i18n="rv.gemengd">4. Result as a mixed number</span>
                             <div class="rv-control">
-                                <label class="rv-radio"><input type="radio" name="rv-gemengd" value="ja"><span>Ja</span></label>
-                                <label class="rv-radio"><input type="radio" name="rv-gemengd" value="nee"><span>Nee</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-gemengd" value="ja"><span data-i18n="common.yes">Yes</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-gemengd" value="nee"><span data-i18n="common.no">No</span></label>
                             </div>
                         </div>
                         <div class="rv-row">
-                            <span class="rv-label">5. Hints staan aan</span>
+                            <span class="rv-label" data-i18n="rv.hints_aan">5. Hints are on</span>
                             <div class="rv-control">
-                                <label class="rv-radio"><input type="radio" name="rv-hints" value="ja"><span>Ja</span></label>
-                                <label class="rv-radio"><input type="radio" name="rv-hints" value="nee"><span>Nee</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-hints" value="ja"><span data-i18n="common.yes">Yes</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-hints" value="nee"><span data-i18n="common.no">No</span></label>
                             </div>
                         </div>
                         <div class="rv-row">
-                            <span class="rv-label">6. Feedback staat aan</span>
+                            <span class="rv-label" data-i18n="rv.feedback_aan">6. Feedback is on</span>
                             <div class="rv-control">
-                                <label class="rv-radio"><input type="radio" name="rv-feedback" value="ja"><span>Ja</span></label>
-                                <label class="rv-radio"><input type="radio" name="rv-feedback" value="nee"><span>Nee</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-feedback" value="ja"><span data-i18n="common.yes">Yes</span></label>
+                                <label class="rv-radio"><input type="radio" name="rv-feedback" value="nee"><span data-i18n="common.no">No</span></label>
                             </div>
                         </div>
                         <div id="rv-error" class="rv-error" hidden></div>
                         <div class="rv-actions">
-                            <button class="btn btn-primary" type="button" onclick="saveRandvoorwaarden()">
-                                Opslaan
+                            <button class="btn btn-primary" type="button" onclick="saveRandvoorwaarden()"
+                                    data-i18n="btn.save">
+                                Save
                             </button>
                         </div>
                     </div>
@@ -1825,8 +1862,8 @@
 
                 <!-- Placeholder als er nog geen opgave is geladen -->
                 <div class="inspector-placeholder" id="hints-placeholder">
-                    Laad een opgave of druk op <strong>Parse</strong> om hints en feedback
-                    per mathblock te zien en te bewerken.
+                    <span data-i18n="hints.placeholder_1">Load an exercise or press</span> <strong>Parse</strong>
+                    <span data-i18n="hints.placeholder_2">to see and edit hints and feedback per math block.</span>
                 </div>
             </div>
         </aside>
@@ -1835,8 +1872,9 @@
         <button type="button"
                 class="inspector-rail"
                 id="inspector-rail"
-                aria-label="Inspector openen"
-                title="Inspector openen"
+                aria-label="Open inspector"
+                title="Open inspector"
+                data-i18n-title="inspector.rail_title"
                 onclick="toggleInspector()"
                 hidden>
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"
@@ -1845,7 +1883,7 @@
                  aria-hidden="true">
                 <polyline points="9 3 5 7 9 11"/>
             </svg>
-            <span class="inspector-rail-label">Inspector</span>
+            <span class="inspector-rail-label" data-i18n="inspector.rail_label">Inspector</span>
         </button>
     </main>
 
@@ -1858,42 +1896,42 @@
     <div id="export-dialog" class="dialog-overlay" hidden>
         <div class="dialog" role="dialog" aria-labelledby="dialog-title" aria-modal="true">
             <header class="dialog-head">
-                <h2 id="dialog-title">JSON exporteren</h2>
-                <button class="dialog-close" onclick="closeExportDialog()" aria-label="Sluiten" type="button">×</button>
+                <h2 id="dialog-title" data-i18n="export.title">Export JSON</h2>
+                <button class="dialog-close" onclick="closeExportDialog()" aria-label="Close" type="button">×</button>
             </header>
             <div class="dialog-body">
                 <div class="dialog-row">
-                    <span class="dialog-key">Expressie</span>
+                    <span class="dialog-key" data-i18n="export.expressie">Expression</span>
                     <code class="dialog-val mono" id="dialog-expr"></code>
                 </div>
                 <div class="dialog-row">
-                    <span class="dialog-key">Opslaan in</span>
+                    <span class="dialog-key" data-i18n="export.save_in">Save in</span>
                     <code class="dialog-val mono" id="dialog-dir"></code>
                 </div>
                 <div id="dialog-dup-warning" class="dialog-warning" hidden>
-                    <strong>Let op</strong> — deze expressie is al eerder geëxporteerd:
+                    <strong data-i18n="common.attention">Note</strong> <span data-i18n="export.dup_warn">— this expression has been exported before:</span>
                     <ul id="dialog-dup-list"></ul>
-                    Een nieuwe export krijgt een nieuw volgnummer; bestaande bestanden blijven staan.
+                    <span data-i18n="export.dup_note">A new export gets a new sequence number; existing files remain.</span>
                 </div>
                 <!-- Keuze bij geselecteerde opgave (overschrijven of als nieuwe) -->
                 <div id="dialog-overwrite-choice" class="dialog-choice" hidden>
-                    <div class="dialog-choice-title">Geselecteerde opgave
+                    <div class="dialog-choice-title"><span data-i18n="export.selected_exercise">Selected exercise</span>
                         <code class="mono" id="dialog-overwrite-id"></code></div>
                     <label class="dialog-radio">
                         <input type="radio" name="export-mode" value="overwrite" checked>
-                        <span><strong>Bestaande wijzigen</strong>
-                            <span class="dialog-radio-help">Overschrijft dezelfde opgave met de huidige expressie</span></span>
+                        <span><strong data-i18n="export.overwrite_label">Modify existing</strong>
+                            <span class="dialog-radio-help" data-i18n="export.overwrite_help">Overwrites the same exercise with the current expression</span></span>
                     </label>
                     <label class="dialog-radio">
                         <input type="radio" name="export-mode" value="new">
-                        <span><strong>Als nieuwe opslaan</strong>
-                            <span class="dialog-radio-help">Maakt een opgave aan met een nieuw ID; origineel blijft staan</span></span>
+                        <span><strong data-i18n="export.new_label">Save as new</strong>
+                            <span class="dialog-radio-help" data-i18n="export.new_help">Creates an exercise with a new ID; the original remains</span></span>
                     </label>
                 </div>
             </div>
             <footer class="dialog-foot">
-                <button class="btn btn-ghost" onclick="closeExportDialog()" type="button">Annuleren</button>
-                <button class="btn btn-primary" id="dialog-confirm" onclick="confirmExport()" type="button">Exporteren</button>
+                <button class="btn btn-ghost" onclick="closeExportDialog()" type="button" data-i18n="common.cancel">Cancel</button>
+                <button class="btn btn-primary" id="dialog-confirm" onclick="confirmExport()" type="button" data-i18n="export.confirm">Export</button>
             </footer>
         </div>
     </div>
@@ -1902,22 +1940,26 @@
     <div id="settings-dialog" class="dialog-overlay" hidden>
         <div class="dialog settings-modal" role="dialog" aria-labelledby="settings-title" aria-modal="true">
             <header class="dialog-head">
-                <h2 id="settings-title">Instellingen</h2>
-                <button class="dialog-close" onclick="closeSettingsDialog()" aria-label="Sluiten" type="button">×</button>
+                <h2 id="settings-title" data-i18n="settings.title">Settings</h2>
+                <button class="dialog-close" onclick="closeSettingsDialog()" aria-label="Close" type="button">×</button>
             </header>
             <div class="settings-layout">
                 <!-- Linker sidebar met menu-items -->
-                <nav class="settings-sidebar" aria-label="Instellingen-secties">
-                    <button class="settings-nav-item is-active" data-section="general" type="button">
-                        Instellingen
+                <nav class="settings-sidebar" aria-label="Settings sections">
+                    <button class="settings-nav-item is-active" data-section="general" type="button"
+                            data-i18n="settings.nav_general">
+                        Settings
                     </button>
-                    <button class="settings-nav-item" data-section="storage" type="button">
-                        Opslag Exercises Beheren
+                    <button class="settings-nav-item" data-section="storage" type="button"
+                            data-i18n="settings.nav_storage">
+                        Manage exercise storage
                     </button>
-                    <button class="settings-nav-item" data-section="author" type="button">
-                        Gegevens Author
+                    <button class="settings-nav-item" data-section="author" type="button"
+                            data-i18n="settings.nav_author">
+                        Author details
                     </button>
-                    <button class="settings-nav-item" data-section="appearance" type="button">
+                    <button class="settings-nav-item" data-section="appearance" type="button"
+                            data-i18n="settings.nav_appearance">
                         Appearance
                     </button>
                 </nav>
@@ -1928,10 +1970,11 @@
                     <!-- Sectie: Instellingen (output_dir) -->
                     <section class="settings-section is-active" data-section="general">
                         <p class="dialog-help">
-                            De directory waarin JSON- en SVG-bestanden worden gelezen en weggeschreven.
-                            Een absoluut pad of pad met <code class="mono">~</code> is toegestaan.
+                            <span data-i18n="settings.general_help">The directory where JSON and SVG files are read from and written to.
+                            An absolute path or a path with</span> <code class="mono">~</code> <span data-i18n="settings.general_help_2">is allowed.</span>
                         </p>
-                        <label for="settings-output-dir" class="dialog-label">
+                        <label for="settings-output-dir" class="dialog-label"
+                               data-i18n="settings.output_dir_label">
                             Output directory:
                         </label>
                         <input type="text"
@@ -1943,49 +1986,51 @@
                         <div class="dialog-status" id="settings-status" hidden></div>
                         <div class="settings-section-footer">
                             <button class="btn btn-primary" id="settings-confirm"
-                                    onclick="saveSettings()" type="button">Opslaan</button>
+                                    onclick="saveSettings()" type="button" data-i18n="btn.save">Save</button>
                         </div>
                     </section>
 
                     <!-- Sectie: Opslag Exercises Beheren -->
                     <section class="settings-section" data-section="storage">
-                        <p class="dialog-help">
-                            Beheer de folders waarin opgaven worden opgeslagen. Klik op een folder
-                            om hem te selecteren, daarna verschijnen de beschikbare acties onderaan.
+                        <p class="dialog-help" data-i18n="settings.storage_help">
+                            Manage the folders in which exercises are stored. Click a folder
+                            to select it, then the available actions appear at the bottom.
                         </p>
                         <div class="storage-folder-list" id="storage-folder-list">
                             <!-- folders worden door JS gerenderd -->
                         </div>
                         <div class="storage-actions">
                             <button class="btn" id="storage-add"
-                                    onclick="storageActionAdd()" type="button">+ Toevoegen</button>
+                                    onclick="storageActionAdd()" type="button" data-i18n="settings.storage_add">+ Add</button>
                             <button class="btn" id="storage-rename" disabled
-                                    onclick="storageActionRename()" type="button">Hernoemen</button>
+                                    onclick="storageActionRename()" type="button" data-i18n="settings.storage_rename">Rename</button>
                             <button class="btn" id="storage-delete" disabled
-                                    onclick="storageActionDelete()" type="button">Verwijderen</button>
+                                    onclick="storageActionDelete()" type="button" data-i18n="settings.storage_delete">Delete</button>
                             <button class="btn" id="storage-move" disabled
-                                    title="Niet beschikbaar zolang er maar één niveau folders is"
-                                    type="button">Verplaatsen</button>
+                                    title="Not available while there is only one level of folders"
+                                    data-i18n-title="settings.storage_move_title"
+                                    type="button" data-i18n="settings.storage_move">Move</button>
                             <button class="btn" id="storage-copy" disabled
-                                    onclick="storageActionCopy()" type="button">Kopiëren</button>
+                                    onclick="storageActionCopy()" type="button" data-i18n="settings.storage_copy">Copy</button>
                             <button class="btn" id="storage-dedicated" disabled
-                                    title="Nog niet beschikbaar"
-                                    type="button">Dedicated maken</button>
+                                    title="Not available yet"
+                                    data-i18n-title="settings.storage_dedicated_title"
+                                    type="button" data-i18n="settings.storage_dedicated">Make dedicated</button>
                         </div>
                         <div class="dialog-status" id="storage-status" hidden></div>
                     </section>
 
                     <!-- Sectie: Gegevens Author (placeholder) -->
                     <section class="settings-section" data-section="author">
-                        <p class="settings-placeholder">
-                            Komt binnenkort. Hier kun je straks gegevens over de auteur invullen.
+                        <p class="settings-placeholder" data-i18n="settings.author_placeholder">
+                            Coming soon. Here you will be able to fill in author details.
                         </p>
                     </section>
 
                     <!-- Sectie: Appearance (placeholder) -->
                     <section class="settings-section" data-section="appearance">
-                        <p class="settings-placeholder">
-                            Komt binnenkort. Hier kun je straks het uiterlijk van de Authortool aanpassen.
+                        <p class="settings-placeholder" data-i18n="settings.appearance_placeholder">
+                            Coming soon. Here you will be able to adjust the appearance of the author tool.
                         </p>
                     </section>
 
@@ -1998,17 +2043,17 @@
     <div id="settings-create-dialog" class="dialog-overlay" hidden>
         <div class="dialog" role="dialog" aria-labelledby="settings-create-title" aria-modal="true">
             <header class="dialog-head">
-                <h2 id="settings-create-title">Directory bestaat nog niet</h2>
-                <button class="dialog-close" onclick="closeSettingsCreateDialog()" aria-label="Sluiten" type="button">×</button>
+                <h2 id="settings-create-title" data-i18n="settings.create_title">Directory does not exist yet</h2>
+                <button class="dialog-close" onclick="closeSettingsCreateDialog()" aria-label="Close" type="button">×</button>
             </header>
             <div class="dialog-body">
-                <p>De directory <code class="mono" id="settings-create-path"></code> bestaat nog niet.</p>
-                <p class="dialog-help">Wil je deze nu aanmaken?</p>
+                <p><span data-i18n="settings.create_not_exist_1">The directory</span> <code class="mono" id="settings-create-path"></code> <span data-i18n="settings.create_not_exist_2">does not exist yet.</span></p>
+                <p class="dialog-help" data-i18n="settings.create_ask">Do you want to create it now?</p>
             </div>
             <footer class="dialog-foot">
-                <button class="btn btn-ghost" onclick="closeSettingsCreateDialog()" type="button">Nee, annuleren</button>
+                <button class="btn btn-ghost" onclick="closeSettingsCreateDialog()" type="button" data-i18n="settings.create_cancel">No, cancel</button>
                 <button class="btn btn-primary" id="settings-create-confirm"
-                        onclick="confirmSettingsCreate()" type="button">Ja, aanmaken</button>
+                        onclick="confirmSettingsCreate()" type="button" data-i18n="settings.create_confirm">Yes, create</button>
             </footer>
         </div>
     </div>
@@ -2021,26 +2066,26 @@
         <div class="dialog" role="dialog"
              aria-labelledby="integrity-title" aria-modal="true">
             <header class="dialog-head">
-                <h2 id="integrity-title">Opgave-integriteit faalt</h2>
+                <h2 id="integrity-title" data-i18n="integrity.title">Exercise integrity fails</h2>
                 <button class="dialog-close" onclick="closeIntegrityDialog()"
-                        aria-label="Sluiten" type="button">×</button>
+                        aria-label="Close" type="button">×</button>
             </header>
             <div class="dialog-body">
-                <p class="dialog-help">
-                    De gegenereerde JSON voldoet niet aan de structurele
-                    verwachtingen. Opslaan is geblokkeerd om corruptie te
-                    voorkomen. Hieronder de gevonden problemen:
+                <p class="dialog-help" data-i18n="integrity.help">
+                    The generated JSON does not meet the structural
+                    expectations. Saving is blocked to prevent corruption.
+                    The problems found are below:
                 </p>
                 <ul class="integrity-errors" id="integrity-error-list"></ul>
                 <div class="integrity-warnings-wrap" id="integrity-warnings-wrap" hidden>
-                    <p class="dialog-help">Daarnaast werden deze
-                        waarschuwingen gemeld:</p>
+                    <p class="dialog-help" data-i18n="integrity.warnings_intro">In addition, these
+                        warnings were reported:</p>
                     <ul class="integrity-warnings" id="integrity-warning-list"></ul>
                 </div>
             </div>
             <footer class="dialog-foot">
                 <button class="btn btn-primary"
-                        onclick="closeIntegrityDialog()" type="button">Sluiten</button>
+                        onclick="closeIntegrityDialog()" type="button" data-i18n="common.close">Close</button>
             </footer>
         </div>
     </div>
@@ -2051,21 +2096,21 @@
         <div class="dialog metadata-modal" role="dialog"
              aria-labelledby="metadata-title" aria-modal="true">
             <header class="dialog-head">
-                <h2 id="metadata-title">Opgave-gegevens</h2>
+                <h2 id="metadata-title" data-i18n="metadata.title">Exercise details</h2>
                 <button class="dialog-close" onclick="closeMetadataDialog()"
-                        aria-label="Sluiten" type="button">×</button>
+                        aria-label="Close" type="button">×</button>
             </header>
             <div class="dialog-body metadata-body">
                 <div class="metadata-field">
-                    <label for="md-soort" class="dialog-label">Soort opgave</label>
+                    <label for="md-soort" class="dialog-label" data-i18n="metadata.soort">Exercise type</label>
                     <select id="md-soort" class="dialog-input">
-                        <option value="rekenen_getallen">Rekenen met getallen</option>
-                        <option value="rekenen_letters">Rekenen met letters</option>
-                        <option value="simpele_vergelijkingen">Simpele vergelijkingen</option>
+                        <option value="rekenen_getallen" data-i18n="md.soort.rekenen_getallen">Arithmetic with numbers</option>
+                        <option value="rekenen_letters" data-i18n="md.soort.rekenen_letters">Arithmetic with letters</option>
+                        <option value="simpele_vergelijkingen" data-i18n="md.soort.simpele_vergelijkingen">Simple equations</option>
                     </select>
                 </div>
                 <div class="metadata-field">
-                    <label for="md-onderwijstype" class="dialog-label">Onderwijstype</label>
+                    <label for="md-onderwijstype" class="dialog-label" data-i18n="metadata.onderwijstype">Education type</label>
                     <select id="md-onderwijstype" class="dialog-input">
                         <option value="basisonderwijs">Basisonderwijs</option>
                         <option value="vmbo">vmbo</option>
@@ -2077,66 +2122,67 @@
                     </select>
                 </div>
                 <div class="metadata-field">
-                    <label for="md-onderwijsniveau" class="dialog-label">Onderwijsniveau</label>
+                    <label for="md-onderwijsniveau" class="dialog-label" data-i18n="metadata.onderwijsniveau">Education level</label>
                     <select id="md-onderwijsniveau" class="dialog-input">
-                        <option value="brugklas">Brugklas</option>
-                        <option value="onderbouw">Onderbouw</option>
-                        <option value="bovenbouw">Bovenbouw</option>
+                        <option value="brugklas" data-i18n="md.niveau.brugklas">First year</option>
+                        <option value="onderbouw" data-i18n="md.niveau.onderbouw">Lower years</option>
+                        <option value="bovenbouw" data-i18n="md.niveau.bovenbouw">Upper years</option>
                     </select>
                 </div>
                 <div class="metadata-field">
-                    <label for="md-opdracht" class="dialog-label">Opdracht voor de leerling</label>
+                    <label for="md-opdracht" class="dialog-label" data-i18n="metadata.opdracht">Task for the student</label>
                     <select id="md-opdracht" class="dialog-input">
-                        <option value="reken_uit">Reken uit</option>
-                        <option value="vereenvoudig">Vereenvoudig</option>
+                        <option value="reken_uit" data-i18n="md.opdracht.reken_uit">Calculate</option>
+                        <option value="vereenvoudig" data-i18n="md.opdracht.vereenvoudig">Simplify</option>
                     </select>
                 </div>
                 <div class="metadata-field">
-                    <label for="md-productie" class="dialog-label">Productietype</label>
+                    <label for="md-productie" class="dialog-label" data-i18n="metadata.productie">Production type</label>
                     <select id="md-productie" class="dialog-input">
-                        <option value="enkelvoudig">Enkelvoudig</option>
-                        <option value="sjabloon">Sjabloon</option>
+                        <option value="enkelvoudig" data-i18n="md.productie.enkelvoudig">Single</option>
+                        <option value="sjabloon" data-i18n="md.productie.sjabloon">Template</option>
                     </select>
                 </div>
                 <div class="metadata-field">
-                    <label for="md-notitie" class="dialog-label">Notitie</label>
+                    <label for="md-notitie" class="dialog-label" data-i18n="metadata.notitie">Note</label>
                     <textarea id="md-notitie" class="dialog-input"
                               rows="3"
-                              placeholder="Optionele opmerking voor de auteur"></textarea>
+                              placeholder="Optional remark for the author"
+                              data-i18n-placeholder="metadata.notitie_ph"></textarea>
                 </div>
                 <div class="dialog-status" id="metadata-status" hidden></div>
             </div>
             <footer class="dialog-foot">
                 <button class="btn btn-ghost"
-                        onclick="closeMetadataDialog()" type="button">Annuleren</button>
+                        onclick="closeMetadataDialog()" type="button" data-i18n="common.cancel">Cancel</button>
                 <button class="btn btn-primary" id="metadata-confirm"
-                        onclick="confirmMetadataSave()" type="button">Opslaan</button>
+                        onclick="confirmMetadataSave()" type="button" data-i18n="btn.save">Save</button>
             </footer>
         </div>
     </div>
 
     <!-- Context-menu voor rechtsklik op opgaven -->
     <div id="opgave-contextmenu" class="contextmenu" hidden>
-        <button class="contextmenu-item" id="ctx-delete" type="button">
-            Verwijderen
+        <button class="contextmenu-item" id="ctx-delete" type="button" data-i18n="ctx.delete">
+            Delete
         </button>
     </div>
 
     <div id="delete-dialog" class="dialog-overlay" hidden>
         <div class="dialog" role="dialog" aria-labelledby="delete-title" aria-modal="true">
             <header class="dialog-head">
-                <h2 id="delete-title">Opgave naar prullenbak?</h2>
-                <button class="dialog-close" onclick="closeDeleteDialog()" aria-label="Sluiten" type="button">×</button>
+                <h2 id="delete-title" data-i18n="delete.title">Move exercise to trash?</h2>
+                <button class="dialog-close" onclick="closeDeleteDialog()" aria-label="Close" type="button">×</button>
             </header>
             <div class="dialog-body">
-                <p>Opgave <code class="mono" id="delete-id"></code> wordt verplaatst naar de Prullenbak.</p>
-                <p class="dialog-help">De opgave is daarna nog terug te vinden in de Prullenbak-folder.
-                    Vanuit daar kan hij later permanent verwijderd worden.</p>
+                <p><span data-i18n="delete.body_1">Exercise</span> <code class="mono" id="delete-id"></code> <span data-i18n="delete.body_2">will be moved to the trash.</span></p>
+                <p class="dialog-help" data-i18n="delete.help">The exercise can then still be found in the Trash folder.
+                    From there it can later be permanently deleted.</p>
             </div>
             <footer class="dialog-foot">
-                <button class="btn btn-ghost" onclick="closeDeleteDialog()" type="button">Nee, annuleren</button>
+                <button class="btn btn-ghost" onclick="closeDeleteDialog()" type="button" data-i18n="delete.cancel">No, cancel</button>
                 <button class="btn btn-primary" id="delete-confirm"
-                        onclick="confirmDelete()" type="button">Ja, naar prullenbak</button>
+                        onclick="confirmDelete()" type="button" data-i18n="delete.confirm">Yes, to trash</button>
             </footer>
         </div>
     </div>
@@ -2154,9 +2200,11 @@
         <svg id="help-overlay-svg" class="help-overlay-svg"
              xmlns="http://www.w3.org/2000/svg" aria-hidden="true"></svg>
         <div id="help-overlay-labels" class="help-overlay-labels"></div>
-        <div class="help-overlay-hint">Klik ergens om te sluiten</div>
+        <div class="help-overlay-hint" data-i18n="help.close_hint">Click anywhere to close</div>
     </div>
 
+    <!-- i18n (meertalige catalogus + taalwissel) — laadt vóór app.js -->
+    <script src="i18n.js?v=1"></script>
     <script src="app.js" defer></script>
 </body>
 </html>
