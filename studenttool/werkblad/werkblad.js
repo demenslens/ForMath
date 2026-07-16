@@ -4592,9 +4592,9 @@
     var s = (mb.hints && mb.hints.structureel) || {};
     var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
     _maakMbPopup(TT('hint.popup_hint_title', {id: bid}) + (opBesch ? ' · ' + opBesch : ''),
-      [ { label: TT('hint.label_what'),    tekst: s.wat },
-        { label: TT('hint.label_how'),     tekst: s.hoe },
-        { label: TT('hint.label_caution'), tekst: s.let_op } ],
+      [ { label: TT('hint.label_what'),    tekst: _hintText(s.wat) },
+        { label: TT('hint.label_how'),     tekst: _hintText(s.hoe) },
+        { label: TT('hint.label_caution'), tekst: _hintText(s.let_op) } ],
       TT('hint.empty_structural'));
   }
 
@@ -4605,10 +4605,10 @@
     if(!mb){ st('er', TT('hint.no_mathblock', {id: bid})); return; }
     var fb = (mb.hints && mb.hints.feedback) || {};
     var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
-    var items = [ { label: TT('hint.label_feedback'), tekst: fb.bij_fout_algemeen } ];
+    var items = [ { label: TT('hint.label_feedback'), tekst: _hintText(fb.bij_fout_algemeen) } ];
     (fb.veelvoorkomende_fouten || []).forEach(function(v, i){
-      var t = (typeof v === 'string') ? v
-            : (v && (v.feedback || v.tekst || v.uitleg)) || null;
+      var t = _hintText(v);
+      if(!t && v && typeof v === 'object') t = v.feedback || v.tekst || v.uitleg || '';
       if(t) items.push({ label: TT('hint.label_common_error', {n: (i+1)}), tekst: t });
     });
     _maakMbPopup(TT('hint.popup_feedback_title', {id: bid}) + (opBesch ? ' · ' + opBesch : ''),
@@ -5191,6 +5191,18 @@
   function TT(key, params){ return (window.I18N && window.I18N.t) ? window.I18N.t(key, params) : key; }
   function _branchNaam(which){ return TT(which==='plus' ? 'fork.plus_branch' : 'fork.minus_branch'); }
   function _takNaam(tak){ return TT(tak==='laag' ? 'hint.branch_low' : 'hint.branch_high'); }
+
+  // Hint-content-resolver (Fase A). Een hint-veld kan zijn:
+  //  - een string       → oude opgave (NL-proza), toon ongewijzigd (backward-compat)
+  //  - {key, params}    → nieuwe opgave, vertaal via de hints-catalogus
+  //  - een array daarvan → meerdere fragmenten (bv. let_op), aan elkaar geplakt
+  function _hintText(v){
+    if(v == null) return '';
+    if(typeof v === 'string') return v;
+    if(Array.isArray(v)) return v.map(_hintText).filter(Boolean).join(' ');
+    if(v.key) return TT(v.key, v.params || null);
+    return '';
+  }
   function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
   // ══════════════════════════════════════
