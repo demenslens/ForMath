@@ -73,7 +73,7 @@
   }
 
   function load() {
-    fetch('i18n.json?v=1').then(function (r) { return r.json(); }).then(function (data) {
+    fetch('i18n.json?v=2').then(function (r) { return r.json(); }).then(function (data) {
       catalog = data;
       if (languages().indexOf(lang) === -1) lang = base;
       document.documentElement.setAttribute('lang', lang);
