@@ -559,7 +559,7 @@
         prefetchPreviews();
       })
       .catch(function(err){
-        document.getElementById('opg-loading').textContent = 'Fout: ' + err.message;
+        document.getElementById('opg-loading').textContent = TT('sidebar.load_error', {msg: err.message});
       });
   }
 
@@ -4167,7 +4167,7 @@
     if(opgaveVoltooid){
       var klaar = document.createElement('span');
       klaar.className = 'klaar-badge';
-      klaar.textContent = '✓ Uitkomst bereikt — je bent klaar met deze opgave';
+      klaar.textContent = TT('status.answer_reached');
       currentLine.appendChild(klaar);
       updateLineInfo();
       return;
@@ -4335,9 +4335,9 @@
     // skipClear: bij de gecombineerde weergave (hoog + laag) wissen we één keer
     // vooraf en tekenen we beide takken zonder elkaar weg te vegen.
     if (!skipClear) V.clearBoxes();
-    if (!currentOpgave) { st('er', 'Geen opgave geladen'); return {reden:'geen opgave geladen'}; }
+    if (!currentOpgave) { st('er', TT('status.no_exercise')); return {reden:'geen opgave geladen'}; }
     var ast = currentOpgave.metadata && currentOpgave.metadata.expressie && currentOpgave.metadata.expressie.ast;
-    if (!ast || !ast.node_map) { st('er', 'Geen AST/node_map in opgave'); return {reden:'geen AST/node_map'}; }
+    if (!ast || !ast.node_map) { st('er', TT('status.no_ast')); return {reden:'geen AST/node_map'}; }
 
     // Pak GEGARANDEERD de actieve invoer-mathfield, niet een zijbalk-preview.
     // Het werkblad heeft veel math-fields in de DOM (één per opgave-preview);
@@ -4346,7 +4346,7 @@
           || document.querySelector('.rl.active math-field')
           || mfRef
           || document.querySelector('math-field');
-    if (!mf) { st('er', 'Geen invoerveld actief'); return {reden:'geen invoerveld actief'}; }
+    if (!mf) { st('er', TT('status.no_input')); return {reden:'geen invoerveld actief'}; }
 
     // Verankering op de GEËVOLUEERDE boom (genLatexTokens). Na elke correcte
     // LF klapt de tree-evolutie opgeloste mathblocks in tot numerieke bladeren
@@ -4381,7 +4381,7 @@
     }
     var _uniqMb = function(arr){ var s={}; arr.forEach(function(x){ if(x!=null){ s[x]=(s[x]||0)+1; } }); return s; };
     if (!teTonen.length) {
-      st('ok', 'Geen ' + tak + '-mathblocks deze step');
+      st('ok', TT('hint.no_blocks', {branch: _takNaam(tak)}));
       return {reden:'teTonen leeg', tak:tak, teTonen:teTonen};
     }
 
@@ -4490,7 +4490,7 @@
         getekend++;
       }
     });
-    st('ok', 'Hint: ' + getekend + ' mathblock(s) omkaderd (' + tak + ')');
+    st('ok', TT('hint.boxed', {count: getekend, branch: _takNaam(tak)}));
     // Diagnose als RETURNWAARDE → direct zichtbaar in de console, immuun voor
     // console-filters en de atomMap-ruis (i.p.v. losse dbg-regels die verdrinken).
     return {
@@ -4588,7 +4588,7 @@
   // Hint-popup (klik op een groen/grijs kader) — structurele hints Wat/Hoe/Let op.
   function toonMathblockHints(bid){
     var mb = findMathblock(bid);
-    if(!mb){ st('er', 'Geen mathblock ' + bid); return; }
+    if(!mb){ st('er', TT('hint.no_mathblock', {id: bid})); return; }
     var s = (mb.hints && mb.hints.structureel) || {};
     var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
     _maakMbPopup('Hint — ' + bid + (opBesch ? ' · ' + opBesch : ''),
@@ -4602,7 +4602,7 @@
   // uit hints.feedback: bij_fout_algemeen + eventuele veelvoorkomende_fouten.
   function toonMathblockFeedback(bid){
     var mb = findMathblock(bid);
-    if(!mb){ st('er', 'Geen mathblock ' + bid); return; }
+    if(!mb){ st('er', TT('hint.no_mathblock', {id: bid})); return; }
     var fb = (mb.hints && mb.hints.feedback) || {};
     var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
     var items = [ { label:'Feedback', tekst: fb.bij_fout_algemeen } ];
@@ -5003,7 +5003,7 @@
   }
 
   hintsBtn.onclick = function(){
-    if(!currentOpgave){ st('er','Geen opgave geladen'); return; }
+    if(!currentOpgave){ st('er', TT('status.no_exercise')); return; }
     hintKadersHoog = !hintKadersHoog;
     tekenHintKaders();
     // De hint-inhoud komt nu per mathblock: klik op een (groen) kader → popup
@@ -5011,7 +5011,7 @@
     // automatisch geopend.
   };
   hintsPlusBtn.onclick = function(){
-    if(!currentOpgave){ st('er','Geen opgave geladen'); return; }
+    if(!currentOpgave){ st('er', TT('status.no_exercise')); return; }
     hintKadersLaag = !hintKadersLaag;
     tekenHintKaders();
   };
@@ -5022,10 +5022,10 @@
   function renderHints(){
     var body = document.getElementById('hints-body');
     body.innerHTML = '';
-    document.getElementById('hints-step-badge').textContent = 'Step ' + currentStep;
+    document.getElementById('hints-step-badge').textContent = TT('status.step', {n: currentStep});
 
     if(!currentOpgave || !currentOpgave.duo_verzameling) {
-      body.innerHTML = '<div class="hints-empty">Geen hints beschikbaar</div>';
+      body.innerHTML = '<div class="hints-empty">' + TT('hint.none_available') + '</div>';
       return;
     }
 
@@ -5043,7 +5043,7 @@
     if(hoogIds.length === 0){
       var empty = document.createElement('div');
       empty.className = 'hints-empty';
-      empty.textContent = 'Geen verplichte bewerkingen';
+      empty.textContent = TT('hint.no_required');
       hoogSection.appendChild(empty);
     } else {
       hoogIds.forEach(function(id){
@@ -5079,7 +5079,7 @@
     if(laagIds.length === 0){
       var empty2 = document.createElement('div');
       empty2.className = 'hints-empty';
-      empty2.textContent = 'Geen optionele bewerkingen';
+      empty2.textContent = TT('hint.no_optional');
       laagSection.appendChild(empty2);
     } else {
       laagIds.forEach(function(id){
@@ -5190,6 +5190,7 @@
   // altijd gereed. Statische chrome loopt via [data-i18n]/applyI18n.
   function TT(key, params){ return (window.I18N && window.I18N.t) ? window.I18N.t(key, params) : key; }
   function _branchNaam(which){ return TT(which==='plus' ? 'fork.plus_branch' : 'fork.minus_branch'); }
+  function _takNaam(tak){ return TT(tak==='laag' ? 'hint.branch_low' : 'hint.branch_high'); }
   function esc(s){ var d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
 
   // ══════════════════════════════════════
@@ -5337,12 +5338,12 @@
 
   if(svgBtn && svgOverlay){
     svgBtn.onclick = function(){
-      if(!currentOpgave){ st('er','Geen opgave geladen'); return; }
+      if(!currentOpgave){ st('er', TT('status.no_exercise')); return; }
       var meta = currentOpgave.metadata || {};
       var id = meta.id || '';
-      if(!id){ st('er','Geen opgave ID'); return; }
+      if(!id){ st('er', TT('status.no_exercise_id')); return; }
       
-      svgBody.innerHTML = '<p style="color:#888;text-align:center;padding:40px;">Schema laden...</p>';
+      svgBody.innerHTML = '<p style="color:#888;text-align:center;padding:40px;">' + TT('schema.loading') + '</p>';
       svgOverlay.classList.add('open');
       
       // Try to load SVG from testopgaven directory
@@ -5367,7 +5368,7 @@
               svgBody.innerHTML = svgText;
             })
             .catch(function(err2){
-              svgBody.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:40px;">Schema niet gevonden:<br><code>' + esc(svgUrl) + '</code><br><code>' + esc(svgUrl2) + '</code></p>';
+              svgBody.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:40px;">' + TT('schema.not_found') + '<br><code>' + esc(svgUrl) + '</code><br><code>' + esc(svgUrl2) + '</code></p>';
             });
         });
     };

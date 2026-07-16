@@ -116,6 +116,24 @@
     "settings.display_help":{ "en": "Choose a light or dark appearance.", "nl": "Kies een lichte of donkere uitvoering.", "de": "Wähle eine helle oder dunkle Darstellung.", "fr": "Choisis un thème clair ou sombre.", "zh": "选择浅色或深色外观。", "it": "Scegli un aspetto chiaro o scuro." },
     "settings.light":      { "en": "Light", "nl": "Licht", "de": "Hell", "fr": "Clair", "zh": "浅色", "it": "Chiaro" },
     "settings.dark":       { "en": "Dark", "nl": "Donker", "de": "Dunkel", "fr": "Sombre", "zh": "深色", "it": "Scuro" },
-    "settings.done":       { "en": "Done", "nl": "Klaar", "de": "Fertig", "fr": "Terminé", "zh": "完成", "it": "Fatto" }
+    "settings.done":       { "en": "Done", "nl": "Klaar", "de": "Fertig", "fr": "Terminé", "zh": "完成", "it": "Fatto" },
+
+    "status.no_exercise":    { "en": "No exercise loaded", "nl": "Geen opgave geladen", "de": "Keine Aufgabe geladen", "fr": "Aucun exercice chargé", "zh": "未加载习题", "it": "Nessun esercizio caricato" },
+    "status.no_exercise_id": { "en": "No exercise ID", "nl": "Geen opgave-ID", "de": "Keine Aufgaben-ID", "fr": "Aucun ID d'exercice", "zh": "没有习题 ID", "it": "Nessun ID esercizio" },
+    "status.no_ast":         { "en": "No AST/node_map in the exercise", "nl": "Geen AST/node_map in opgave", "de": "Kein AST/node_map in der Aufgabe", "fr": "Aucun AST/node_map dans l'exercice", "zh": "习题中没有 AST/node_map", "it": "Nessun AST/node_map nell'esercizio" },
+    "status.no_input":       { "en": "No active input field", "nl": "Geen invoerveld actief", "de": "Kein aktives Eingabefeld", "fr": "Aucun champ de saisie actif", "zh": "没有活动的输入框", "it": "Nessun campo di input attivo" },
+    "status.answer_reached": { "en": "✓ Answer reached — you're done with this exercise", "nl": "✓ Uitkomst bereikt — je bent klaar met deze opgave", "de": "✓ Ergebnis erreicht — du bist mit dieser Aufgabe fertig", "fr": "✓ Résultat atteint — tu as terminé cet exercice", "zh": "✓ 已得出答案——本习题完成", "it": "✓ Risultato raggiunto — hai finito questo esercizio" },
+
+    "hint.branch_high":    { "en": "high", "nl": "hoog", "de": "hoch", "fr": "haut", "zh": "高", "it": "alto" },
+    "hint.branch_low":     { "en": "low", "nl": "laag", "de": "niedrig", "fr": "bas", "zh": "低", "it": "basso" },
+    "hint.no_blocks":      { "en": "No {branch} blocks this step", "nl": "Geen {branch}-mathblocks deze step", "de": "Keine {branch}-Blöcke in diesem Schritt", "fr": "Aucun bloc {branch} à cette étape", "zh": "本步骤没有{branch}运算块", "it": "Nessun blocco {branch} in questo passaggio" },
+    "hint.boxed":          { "en": "Hint: {count} block(s) outlined ({branch})", "nl": "Hint: {count} mathblock(s) omkaderd ({branch})", "de": "Hinweis: {count} Block/Blöcke umrahmt ({branch})", "fr": "Indice : {count} bloc(s) encadré(s) ({branch})", "zh": "提示：已框出 {count} 个运算块（{branch}）", "it": "Suggerimento: {count} blocco/i evidenziato/i ({branch})" },
+    "hint.no_mathblock":   { "en": "No math block {id}", "nl": "Geen mathblock {id}", "de": "Kein Rechenblock {id}", "fr": "Aucun bloc de calcul {id}", "zh": "没有运算块 {id}", "it": "Nessun blocco di calcolo {id}" },
+    "hint.none_available": { "en": "No hints available", "nl": "Geen hints beschikbaar", "de": "Keine Hinweise verfügbar", "fr": "Aucun indice disponible", "zh": "没有可用提示", "it": "Nessun suggerimento disponibile" },
+    "hint.no_required":    { "en": "No required operations", "nl": "Geen verplichte bewerkingen", "de": "Keine erforderlichen Operationen", "fr": "Aucune opération obligatoire", "zh": "没有必需的运算", "it": "Nessuna operazione obbligatoria" },
+    "hint.no_optional":    { "en": "No optional operations", "nl": "Geen optionele bewerkingen", "de": "Keine optionalen Operationen", "fr": "Aucune opération facultative", "zh": "没有可选的运算", "it": "Nessuna operazione facoltativa" },
+    "sidebar.load_error":  { "en": "Error: {msg}", "nl": "Fout: {msg}", "de": "Fehler: {msg}", "fr": "Erreur : {msg}", "zh": "错误：{msg}", "it": "Errore: {msg}" },
+    "schema.not_found":    { "en": "Diagram not found:", "nl": "Schema niet gevonden:", "de": "Diagramm nicht gefunden:", "fr": "Schéma introuvable :", "zh": "未找到图示：", "it": "Diagramma non trovato:" },
+    "schema.loading":      { "en": "Loading diagram…", "nl": "Schema laden…", "de": "Diagramm wird geladen…", "fr": "Chargement du schéma…", "zh": "正在加载图示…", "it": "Caricamento del diagramma…" }
   }
 }
