@@ -27,7 +27,10 @@
 
   function t(key, params) {
     if (!catalog) return key;
-    var e = (catalog.ui && catalog.ui[key]) || (catalog.glossary && catalog.glossary[key]);
+    // ui = chrome, glossary = vaktermen, hints = content-templates (Fase A).
+    var e = (catalog.ui && catalog.ui[key]) ||
+            (catalog.glossary && catalog.glossary[key]) ||
+            (catalog.hints && catalog.hints[key]);
     var s = e ? (e[lang] || e[base] || key) : key;
     if (params) for (var k in params) {
       if (params.hasOwnProperty(k)) s = s.split('{' + k + '}').join(params[k]);
@@ -81,7 +84,7 @@
   }
 
   function load() {
-    fetch('i18n.json?v=1').then(function (r) { return r.json(); }).then(function (data) {
+    fetch('i18n.json?v=2').then(function (r) { return r.json(); }).then(function (data) {
       catalog = data;
       if (languages().indexOf(lang) === -1) lang = base;
       document.documentElement.setAttribute('lang', lang);

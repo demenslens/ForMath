@@ -5,6 +5,21 @@ function i18nt(key, params) {
     return (window.I18N && window.I18N.t) ? window.I18N.t(key, params) : key;
 }
 
+/* ─── hint-resolver ───────────────────────────────────────────────────
+ * Lost een gegenereerd hint-veld op naar weergavetekst. Een hint-veld is:
+ *   - string                  → oude opgave (NL-proza) — ongewijzigd tonen
+ *   - { key, params }         → nieuwe opgave — vertaal via de hints-catalogus
+ *   - lijst van bovenstaande  → fragmenten, met spaties aaneen (bv. let_op)
+ * Gespiegeld van _hintText() in de studenttool. Zonder deze resolver zou
+ * een {key,params}-object als "[object Object]" in het tekstveld belanden. */
+function _hintText(v) {
+    if (v == null) return '';
+    if (typeof v === 'string') return v;
+    if (Array.isArray(v)) return v.map(_hintText).filter(Boolean).join(' ');
+    if (v.key) return i18nt(v.key, v.params || null);
+    return '';
+}
+
 /* ─── DOM refs ────────────────────────────────────────────────────── */
 const mathField        = document.getElementById('math-input');
 const textInput        = document.getElementById('text-input');
@@ -1599,13 +1614,16 @@ function _renderHintsBody(mbId) {
     const d = edits.didactisch || {};
 
     const fld = (label, path, value, rows) => {
-        const isEmpty = !value;
+        // Los gegenereerde {key,params}-hints (of lijsten daarvan) op naar
+        // weergavetekst; oude NL-proza (string) blijft ongewijzigd.
+        const text = _hintText(value);
+        const isEmpty = !text;
         return `
             <div class="hints-field">
                 <label class="hints-field-label">${escapeHtml(label)}</label>
                 <textarea class="hints-field-input mono ${isEmpty ? 'is-empty' : ''}"
                           data-field="${path}"
-                          rows="${rows || 2}">${escapeHtml(value || '')}</textarea>
+                          rows="${rows || 2}">${escapeHtml(text)}</textarea>
             </div>
         `;
     };
@@ -3868,6 +3886,12 @@ if (window.I18N && window.I18N.onChange) {
     window.I18N.onChange(() => {
         if (btnEdit && !btnEdit.hidden) {
             btnEdit.textContent = editMode ? i18nt('btn.lock_edit') : i18nt('btn.allow_edit');
+        }
+        // Herrender de hints-accordeon zodat gegenereerde {key,params}-hints
+        // in de nieuwe taal getoond worden. Edits blijven in hintsState staan,
+        // dus reeds bewerkte (string-)velden veranderen niet mee.
+        if (hintsState && hintsState.mathblocks && hintsState.mathblocks.length) {
+            _renderHintsAccordion();
         }
     });
 }
