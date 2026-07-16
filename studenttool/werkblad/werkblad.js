@@ -4567,13 +4567,13 @@
     if(!enige){
       var geen = document.createElement('div');
       geen.style.cssText = 'font-size:13px;color:var(--ink-dim,#87889a);margin-bottom:10px;';
-      geen.textContent = geenTekst || 'Geen informatie voor dit mathblock.';
+      geen.textContent = geenTekst || TT('hint.empty_generic');
       card.appendChild(geen);
     }
 
     var sluit = document.createElement('button');
     sluit.type = 'button';
-    sluit.textContent = 'Sluit';
+    sluit.textContent = TT('common.close');
     sluit.style.cssText = 'margin-top:8px;padding:8px 18px;border:1px solid var(--rule-strong,#b8b09a);'
       + 'border-radius:7px;background:var(--accent-soft,#efe0b6);color:var(--accent-ink,#6a4807);'
       + 'font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;';
@@ -4591,11 +4591,11 @@
     if(!mb){ st('er', TT('hint.no_mathblock', {id: bid})); return; }
     var s = (mb.hints && mb.hints.structureel) || {};
     var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
-    _maakMbPopup('Hint — ' + bid + (opBesch ? ' · ' + opBesch : ''),
-      [ { label:'Wat', tekst: s.wat },
-        { label:'Hoe', tekst: s.hoe },
-        { label:'Let op', tekst: s.let_op } ],
-      'Geen structurele hints voor dit mathblock.');
+    _maakMbPopup(TT('hint.popup_hint_title', {id: bid}) + (opBesch ? ' · ' + opBesch : ''),
+      [ { label: TT('hint.label_what'),    tekst: s.wat },
+        { label: TT('hint.label_how'),     tekst: s.hoe },
+        { label: TT('hint.label_caution'), tekst: s.let_op } ],
+      TT('hint.empty_structural'));
   }
 
   // Feedback-popup (klik op een ROOD fout-kader) — de feedback van het mathblock
@@ -4605,14 +4605,14 @@
     if(!mb){ st('er', TT('hint.no_mathblock', {id: bid})); return; }
     var fb = (mb.hints && mb.hints.feedback) || {};
     var opBesch = (mb.operatie && mb.operatie.beschrijving) ? mb.operatie.beschrijving : '';
-    var items = [ { label:'Feedback', tekst: fb.bij_fout_algemeen } ];
+    var items = [ { label: TT('hint.label_feedback'), tekst: fb.bij_fout_algemeen } ];
     (fb.veelvoorkomende_fouten || []).forEach(function(v, i){
       var t = (typeof v === 'string') ? v
             : (v && (v.feedback || v.tekst || v.uitleg)) || null;
-      if(t) items.push({ label:'Veelgemaakte fout ' + (i+1), tekst: t });
+      if(t) items.push({ label: TT('hint.label_common_error', {n: (i+1)}), tekst: t });
     });
-    _maakMbPopup('Feedback — ' + bid + (opBesch ? ' · ' + opBesch : ''),
-      items, 'Geen feedback voor dit mathblock.', 'var(--err,#983018)');
+    _maakMbPopup(TT('hint.popup_feedback_title', {id: bid}) + (opBesch ? ' · ' + opBesch : ''),
+      items, TT('hint.empty_feedback'), 'var(--err,#983018)');
   }
 
   // FASE 1b — FOUT-MARKERING via student-verankering (window.VERANKERING)

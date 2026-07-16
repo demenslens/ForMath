@@ -134,6 +134,18 @@
     "hint.no_optional":    { "en": "No optional operations", "nl": "Geen optionele bewerkingen", "de": "Keine optionalen Operationen", "fr": "Aucune opération facultative", "zh": "没有可选的运算", "it": "Nessuna operazione facoltativa" },
     "sidebar.load_error":  { "en": "Error: {msg}", "nl": "Fout: {msg}", "de": "Fehler: {msg}", "fr": "Erreur : {msg}", "zh": "错误：{msg}", "it": "Errore: {msg}" },
     "schema.not_found":    { "en": "Diagram not found:", "nl": "Schema niet gevonden:", "de": "Diagramm nicht gefunden:", "fr": "Schéma introuvable :", "zh": "未找到图示：", "it": "Diagramma non trovato:" },
-    "schema.loading":      { "en": "Loading diagram…", "nl": "Schema laden…", "de": "Diagramm wird geladen…", "fr": "Chargement du schéma…", "zh": "正在加载图示…", "it": "Caricamento del diagramma…" }
+    "schema.loading":      { "en": "Loading diagram…", "nl": "Schema laden…", "de": "Diagramm wird geladen…", "fr": "Chargement du schéma…", "zh": "正在加载图示…", "it": "Caricamento del diagramma…" },
+
+    "hint.label_what":     { "en": "What", "nl": "Wat", "de": "Was", "fr": "Quoi", "zh": "做什么", "it": "Cosa" },
+    "hint.label_how":      { "en": "How", "nl": "Hoe", "de": "Wie", "fr": "Comment", "zh": "怎么做", "it": "Come" },
+    "hint.label_caution":  { "en": "Note", "nl": "Let op", "de": "Achtung", "fr": "Attention", "zh": "注意", "it": "Attenzione" },
+    "hint.label_feedback": { "en": "Feedback", "nl": "Feedback", "de": "Feedback", "fr": "Retour", "zh": "反馈", "it": "Feedback" },
+    "hint.label_common_error": { "en": "Common mistake {n}", "nl": "Veelgemaakte fout {n}", "de": "Häufiger Fehler {n}", "fr": "Erreur fréquente {n}", "zh": "常见错误 {n}", "it": "Errore comune {n}" },
+    "hint.popup_hint_title":     { "en": "Hint — {id}", "nl": "Hint — {id}", "de": "Hinweis — {id}", "fr": "Indice — {id}", "zh": "提示 — {id}", "it": "Suggerimento — {id}" },
+    "hint.popup_feedback_title": { "en": "Feedback — {id}", "nl": "Feedback — {id}", "de": "Feedback — {id}", "fr": "Retour — {id}", "zh": "反馈 — {id}", "it": "Feedback — {id}" },
+    "hint.empty_structural": { "en": "No structural hints for this math block.", "nl": "Geen structurele hints voor dit mathblock.", "de": "Keine strukturellen Hinweise für diesen Rechenblock.", "fr": "Aucun indice structurel pour ce bloc de calcul.", "zh": "此运算块没有结构性提示。", "it": "Nessun suggerimento strutturale per questo blocco." },
+    "hint.empty_feedback":   { "en": "No feedback for this math block.", "nl": "Geen feedback voor dit mathblock.", "de": "Kein Feedback für diesen Rechenblock.", "fr": "Aucun retour pour ce bloc de calcul.", "zh": "此运算块没有反馈。", "it": "Nessun riscontro per questo blocco." },
+    "hint.empty_generic":    { "en": "No information for this math block.", "nl": "Geen informatie voor dit mathblock.", "de": "Keine Informationen für diesen Rechenblock.", "fr": "Aucune information pour ce bloc de calcul.", "zh": "此运算块没有信息。", "it": "Nessuna informazione per questo blocco." },
+    "common.close":        { "en": "Close", "nl": "Sluit", "de": "Schließen", "fr": "Fermer", "zh": "关闭", "it": "Chiudi" }
   }
 }
