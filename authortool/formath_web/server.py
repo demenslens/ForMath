@@ -576,6 +576,20 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
+        # DEMO-MODUS (omgevingsvariabele AUTHORTOOL_DEMO=1): blokkeer elk endpoint
+        # dat opgaven WEGSCHRIJFT of WIJZIGT. Bezoekers kunnen dus alles bekijken
+        # en expressies laten parsen (/api/process schrijft niets weg), maar niet
+        # opslaan/exporteren/verwijderen/verplaatsen. Default UIT → lokaal
+        # auteuren verandert niet. Dit is de VEILIGE backstop: ook een namaak-
+        # verzoek schrijft niets weg.
+        if os.environ.get('AUTHORTOOL_DEMO', '') in ('1', 'true', 'yes') and self.path in (
+                '/api/export_json', '/api/delete_opgave', '/api/save_hints',
+                '/api/genereer_zuster', '/api/move_opgave',
+                '/api/folders/create', '/api/folders/rename', '/api/folders/delete',
+                '/api/folders/move', '/api/folders/copy'):
+            self._send_json({'success': False,
+                             'error': 'Demo-modus: opgaven wegschrijven of wijzigen is uitgeschakeld.'})
+            return
         if self.path == '/api/process':
             self._handle_process()
         elif self.path == '/api/export_json':
