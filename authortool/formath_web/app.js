@@ -3898,3 +3898,20 @@ if (window.I18N && window.I18N.onChange) {
 
 // Laad de lijst met opgaven meteen zodat docent ziet wat er is.
 loadOpgavenLijst();
+
+// ── Demo-modus: dim de schrijf-knoppen (server met AUTHORTOOL_DEMO=1) ──────────
+// De knoppen blijven ZICHTBAAR maar vaag, zodat duidelijk is dat opslaan/wijzigen
+// bestaat maar in de demo uit staat. Klikken toont de server-melding.
+(function () {
+  var WRITE_IDS = ['btn-genereer-zuster', 'btn-hints-save', 'ctx-delete',
+                   'delete-confirm', 'dialog-confirm', 'storage-add', 'storage-copy',
+                   'storage-move', 'storage-rename', 'storage-delete'];
+  fetch('/api/mode').then(function (r) { return r.json(); }).then(function (m) {
+    if (!m || !m.demo) return;
+    document.body.classList.add('demo-readonly');
+    WRITE_IDS.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.title = 'In de demo uitgeschakeld — opslaan/wijzigen kan niet.';
+    });
+  }).catch(function () { /* geen /api/mode → geen demo-modus */ });
+})();

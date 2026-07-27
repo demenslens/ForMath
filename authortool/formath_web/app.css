@@ -1789,3 +1789,19 @@ body.text-mode #text-input { display: block; }
     .action-row .status { flex-basis: 100%; margin-left: 0; }
     .dialog-row { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* Demo-modus (AUTHORTOOL_DEMO=1): schrijf-knoppen VAAG — zichtbaar maar duidelijk
+   uitgeschakeld. Ze blijven klikbaar; de server weigert het schrijven met een
+   melding. JSON-/SVG-weergave en het genereren van AST's blijven normaal. */
+body.demo-readonly #btn-genereer-zuster,
+body.demo-readonly #btn-hints-save,
+body.demo-readonly #ctx-delete,
+body.demo-readonly #delete-confirm,
+body.demo-readonly #dialog-confirm,
+body.demo-readonly #storage-add,
+body.demo-readonly #storage-copy,
+body.demo-readonly #storage-move,
+body.demo-readonly #storage-rename,
+body.demo-readonly #storage-delete {
+  opacity: 0.4;
+}

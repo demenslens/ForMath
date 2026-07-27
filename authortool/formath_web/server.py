@@ -571,6 +571,10 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         if self.path == '/api/settings':
             self._handle_get_settings()
             return
+        if self.path == '/api/mode':
+            # Demo-modus? De UI gebruikt dit om de schrijf-knoppen te dimmen.
+            self._send_json({'demo': os.environ.get('AUTHORTOOL_DEMO', '') in ('1', 'true', 'yes')})
+            return
         # Standaard static serving
         if self.path == '/' or self.path == '/index.html':
             self.path = '/index.html'
