@@ -9,8 +9,25 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
 
-    <link rel="stylesheet" href="https://unpkg.com/mathlive/dist/mathlive-fonts.css">
-    <script defer src="https://unpkg.com/mathlive"></script>
+    <!-- MathLive 0.110.0 GEPIND als ES-module (zelfde fix als de studenttool):
+         de ongepinde <script src="unpkg.com/mathlive"> laadt op een verse load
+         (Render) niet, want unpkg 'latest' redirect naar een ESM-build die als
+         klassiek script faalt. import() registreert <math-field>. -->
+    <script>
+      (function loadML(i){
+        var urls = ['https://unpkg.com/mathlive@0.110.0/mathlive.min.mjs',
+                    'https://cdn.jsdelivr.net/npm/mathlive@0.110.0/mathlive.min.mjs'];
+        if(i >= urls.length){ console.warn('[ML] MathLive kon niet geladen worden'); return; }
+        import(urls[i]).then(function(mod){
+          try {
+            if(mod && mod.MathfieldElement){
+              if(typeof window.MathfieldElement === 'undefined') window.MathfieldElement = mod.MathfieldElement;
+              if(!customElements.get('math-field')) customElements.define('math-field', mod.MathfieldElement);
+            }
+          } catch(e){ /* al geregistreerd */ }
+        }).catch(function(e){ console.warn('[ML] laadfout ' + urls[i] + ': ' + (e && e.message)); loadML(i + 1); });
+      })(0);
+    </script>
 
     <link rel="stylesheet" href="app.css">
 
