@@ -63,7 +63,8 @@ print("[OK] ForMath AST pipeline geladen (default: getallen)")
 print(f"     Pipeline directory: {PIPELINE_DIR}")
 
 
-PORT = 8765
+# Poort: lokaal 8765; op een host (bv. Render) via de omgevingsvariabele PORT.
+PORT = int(os.environ.get('PORT', '8765'))
 
 
 # ============================================================

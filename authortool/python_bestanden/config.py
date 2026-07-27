@@ -66,7 +66,18 @@ def get_output_dir() -> str:
 
     Dit is de **root** van de opgaven-opslag. Sinds 2026-05-12 worden
     opgaven niet meer plat hierin opgeslagen, maar in sub-folders.
+
+    Deploy-override: als de omgevingsvariabele FORMATH_OUTPUT_DIR is gezet
+    (bv. op Render), wint die. Een relatief pad wordt opgelost t.o.v. de
+    repo-root, zodat `FORMATH_OUTPUT_DIR=studenttool/testopgaven` op elke
+    checkout werkt. Env leeg → onveranderd (config.json / default).
     """
+    env = os.environ.get('FORMATH_OUTPUT_DIR')
+    if env:
+        p = os.path.expanduser(env)
+        if not os.path.isabs(p):
+            p = str(Path(__file__).resolve().parents[2] / p)  # …/formath (repo-root)
+        return os.path.abspath(p)
     cfg = _load_raw()
     return expand_path(cfg['output_dir'])
 

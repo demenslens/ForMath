@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForMath &amp; ForQuest — wiskunde leren, stap voor stap</title>
+<meta name="description" content="ForMath en ForQuest: interactieve wiskunde-tools die leerlingen stap voor stap begeleiden.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root{
+    --bg:#f6f4ed; --bg-panel:#fbfaf5; --bg-sunken:#ede9dd;
+    --ink:#1c1f26; --ink-soft:#4d5260; --ink-dim:#87889a;
+    --rule:#dcd7c6; --rule-strong:#b8b09a;
+    --accent:#ae7a15; --accent-ink:#6a4807; --accent-soft:#efe0b6;
+    --ok:#2f6d3f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16181d; --bg-panel:#1e2128; --bg-sunken:#12141a;
+      --ink:#ecebe4; --ink-soft:#b3b4c0; --ink-dim:#7d7f8e;
+      --rule:#33363f; --rule-strong:#4a4d58;
+      --accent:#d9a441; --accent-ink:#f0d29a; --accent-soft:#3a2f18;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1040px; margin:0 auto; padding:48px 24px 64px;}
+
+  header.hero{display:flex; align-items:center; gap:18px; margin-bottom:8px;}
+  .brand-mark{width:56px; height:52px; color:var(--accent); flex:none;}
+  header.hero h1{
+    font-family:Fraunces,serif; font-weight:600; font-size:34px; margin:0; letter-spacing:-.01em;
+  }
+  header.hero .sub{color:var(--ink-soft); font-size:15px; margin-top:2px;}
+  .lead{color:var(--ink-soft); font-size:17px; max-width:60ch; margin:18px 0 40px;}
+
+  .section-title{
+    font-family:Fraunces,serif; font-size:14px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--ink-dim); margin:40px 0 16px;
+  }
+
+  .products{display:grid; grid-template-columns:1fr 1fr; gap:22px;}
+  @media (max-width:720px){ .products{grid-template-columns:1fr;} }
+
+  .product{
+    background:var(--bg-panel); border:1px solid var(--rule); border-radius:14px;
+    padding:24px; display:flex; flex-direction:column;
+  }
+  .product-head{display:flex; align-items:center; gap:14px; margin-bottom:4px;}
+  .glyph{
+    width:46px; height:46px; border-radius:11px; flex:none;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--accent-soft); color:var(--accent-ink);
+    font-family:Fraunces,serif; font-size:26px;
+  }
+  .product h2{font-family:Fraunces,serif; font-size:22px; margin:0; font-weight:600;}
+  .product .level{font-size:13px; color:var(--ink-dim);}
+  .product p{color:var(--ink-soft); font-size:14.5px; margin:10px 0 18px;}
+
+  .tools{display:flex; gap:12px; margin-top:auto;}
+  @media (max-width:420px){ .tools{flex-direction:column;} }
+  .tool{
+    flex:1; text-decoration:none; color:inherit;
+    background:var(--bg-sunken); border:1px solid var(--rule); border-radius:10px;
+    padding:14px 16px; transition:border-color .15s, transform .15s, box-shadow .15s;
+  }
+  .tool:hover{border-color:var(--accent); transform:translateY(-2px);
+    box-shadow:0 8px 22px rgba(0,0,0,.08);}
+  .tool.soon{opacity:.55; pointer-events:none;}
+  .tag.muted{background:var(--bg-sunken); color:var(--ink-dim); border:1px solid var(--rule);}
+  .tool .tname{font-weight:600; font-size:15px; display:flex; align-items:center; gap:8px;}
+  .tool .tdesc{font-size:12.5px; color:var(--ink-dim); margin-top:3px;}
+  .tag{
+    font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
+    padding:2px 7px; border-radius:20px; background:var(--accent-soft); color:var(--accent-ink);
+  }
+
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:18px;}
+  @media (max-width:720px){ .cards{grid-template-columns:1fr;} }
+  .card{
+    background:var(--bg-panel); border:1px solid var(--rule); border-radius:12px;
+    padding:20px; position:relative;
+  }
+  .card.soon{opacity:.72;}
+  .card h3{font-family:Fraunces,serif; font-size:17px; margin:0 0 6px; font-weight:600;}
+  .card p{font-size:13.5px; color:var(--ink-soft); margin:0;}
+  .badge-soon{
+    position:absolute; top:16px; right:16px;
+    font-size:10.5px; font-weight:600; text-transform:uppercase; letter-spacing:.05em;
+    padding:3px 9px; border-radius:20px; background:var(--bg-sunken); color:var(--ink-dim);
+    border:1px solid var(--rule);
+  }
+
+  footer{margin-top:56px; padding-top:22px; border-top:1px solid var(--rule);
+    color:var(--ink-dim); font-size:13px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 44 40" fill="none" stroke="currentColor" width="100%" height="100%">
+        <path d="M 2 24 L 7 22 L 12 36 L 17 8 L 42 8" stroke-width="1.75" stroke-linejoin="miter" stroke-linecap="round"/>
+        <rect x="22" y="15.5" width="13" height="8" rx="1" stroke-width="1" stroke-dasharray="2 1.5"/>
+        <line x1="21" y1="26.5" x2="36" y2="26.5" stroke-width="1.25"/>
+        <rect x="22" y="29.5" width="13" height="8" rx="1" stroke-width="1" stroke-dasharray="2 1.5"/>
+      </svg>
+    </span>
+    <div>
+      <h1>ForMath &amp; ForQuest</h1>
+      <div class="sub">Wiskunde leren, stap voor stap</div>
+    </div>
+  </header>
+
+  <p class="lead">
+    Interactieve wiskunde-tools die leerlingen niet alleen een antwoord laten
+    invullen, maar hen <strong>stap voor stap</strong> begeleiden — met gerichte
+    hints en feedback op elke bewerking. Kies hieronder een tool.
+  </p>
+
+  <div class="section-title">Kies een tool</div>
+
+  <div class="products">
+
+    <!-- ForMath -->
+    <div class="product">
+      <div class="product-head">
+        <span class="glyph" aria-hidden="true">√</span>
+        <div>
+          <h2>ForMath</h2>
+          <div class="level">VMBO / MBO — numeriek rekenen</div>
+        </div>
+      </div>
+      <p>Reken stap voor stap uit: breuken, machten, wortels — met validatie en hints per bewerking.</p>
+      <div class="tools">
+        <a class="tool" href="./formath/">
+          <div class="tname">Studenttool</div>
+          <div class="tdesc">Voor leerlingen — het werkblad</div>
+        </a>
+        <a class="tool" href="./formath-authortool/">
+          <div class="tname">Authortool <span class="tag">Auteurs</span></div>
+          <div class="tdesc">Opgaven maken</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- ForQuest -->
+    <div class="product">
+      <div class="product-head">
+        <span class="glyph" aria-hidden="true">∫</span>
+        <div>
+          <h2>ForQuest</h2>
+          <div class="level">HAVO / VWO — algebra &amp; analyse</div>
+        </div>
+      </div>
+      <p>Herschrijf symbolische expressies: substituties en rekenregels — strategisch leren denken.</p>
+      <div class="tools">
+        <div class="tool soon">
+          <div class="tname">Studenttool <span class="tag muted">Binnenkort</span></div>
+          <div class="tdesc">Voor leerlingen — het werkblad</div>
+        </div>
+        <a class="tool" href="./forquest-authortool/">
+          <div class="tname">Authortool <span class="tag">Auteurs</span></div>
+          <div class="tdesc">Opgaven bekijken</div>
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section-title">Binnenkort</div>
+
+  <div class="cards">
+    <div class="card soon">
+      <span class="badge-soon">Binnenkort</span>
+      <h3>Teachertool</h3>
+      <p>Voortgang van leerlingen volgen en opgaven toewijzen.</p>
+    </div>
+    <div class="card soon">
+      <span class="badge-soon">Binnenkort</span>
+      <h3>Info &amp; uitleg</h3>
+      <p>Hoe werken de tools, en de didactiek erachter.</p>
+    </div>
+    <div class="card soon">
+      <span class="badge-soon">Binnenkort</span>
+      <h3>Nieuwsbrief</h3>
+      <p>Blijf op de hoogte van nieuwe opgaven en functies.</p>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2026 ForMath &amp; ForQuest</span>
+    <span>demenslens.nl</span>
+  </footer>
+
+</div>
+</body>
+</html>
