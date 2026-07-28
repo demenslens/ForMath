@@ -1,42 +1,27 @@
-# Render Blueprint — ForMath demo (twee diensten, auto-deploy bij push naar main)
+# Render Blueprint — ForMath (ÉÉN dienst serveert alles op formath.onrender.com)
 #
-# LET OP: het render.yaml-schema van Render wijzigt af en toe. Dit bestand is een
-# vertrekpunt; controleer de sleutels tegen de actuele Render-docs, of maak de twee
-# diensten met de hand aan in het dashboard (zie DEPLOY_RENDER.md — dat is
-# schema-onafhankelijk en de aanbevolen route voor de eerste keer).
+# Deze ene Python-webservice serveert:
+#   /               → keuzescherm (landing)
+#   /authortool/    → ForMath-authortool (AST genereren; schrijven geblokkeerd)
+#   /student/...    → ForMath-studenttool (opgave uitwerken) + opgaven
+#   /api/*          → de authortool-backend
 #
-# Dienst 1 = statische site (portaal + ForMath-studenttool + opgaven) — GRATIS.
-# Dienst 2 = Python-webservice (ForMath-authortool: AST genereren, niet opslaan).
+# Aanmaken kan met de hand in het dashboard (aanbevolen; zie DEPLOY_RENDER.md) of
+# via deze Blueprint. Controleer het schema tegen de actuele Render-docs.
 
 services:
-  # ── Statische site ───────────────────────────────────────────────────────────
   - type: web
-    name: formath-web
-    runtime: static
-    buildCommand: bash scripts/build_site.sh
-    staticPublishPath: dist
-    autoDeploy: true
-    headers:
-      - path: /formath/testopgaven/*
-        name: Cache-Control
-        value: "max-age=60"          # nieuwe opgaven snel zichtbaar
-      - path: /*
-        name: Cache-Control
-        value: "max-age=300"
-
-  # ── Python-webservice (authortool) ───────────────────────────────────────────
-  - type: web
-    name: formath-authortool
+    name: formath                         # → formath.onrender.com (mits vrij)
     runtime: python
-    buildCommand: "echo geen dependencies"   # pipeline is puur stdlib
+    buildCommand: "echo geen dependencies" # pipeline is puur stdlib
     startCommand: python authortool/formath_web/server.py
     autoDeploy: true
     envVars:
       - key: AUTHORTOOL_DEMO
-        value: "1"                    # schrijven/opslaan geblokkeerd
+        value: "1"                        # schrijven/opslaan geblokkeerd
       - key: FORMATH_OUTPUT_DIR
-        value: studenttool/testopgaven # opgaven die de authortool kan openen
+        value: studenttool/testopgaven    # opgaven die de authortool kan openen
       - key: PYTHONUNBUFFERED
         value: "1"
       - key: PYTHON_VERSION
-        value: "3.12.0"               # elke 3.x volstaat (stdlib-only)
+        value: "3.12.0"

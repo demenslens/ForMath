@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ForMath — kies een tool</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --bg:#f6f4ed; --bg-panel:#fbfaf5; --bg-sunken:#ede9dd;
+    --ink:#1c1f26; --ink-soft:#4d5260; --ink-dim:#87889a;
+    --rule:#dcd7c6; --accent:#ae7a15; --accent-ink:#6a4807; --accent-soft:#efe0b6;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#16181d; --bg-panel:#1e2128; --bg-sunken:#12141a;
+      --ink:#ecebe4; --ink-soft:#b3b4c0; --ink-dim:#7d7f8e;
+      --rule:#33363f; --accent:#d9a441; --accent-ink:#f0d29a; --accent-soft:#3a2f18;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px;}
+  .wrap{max-width:720px;width:100%;}
+  header{display:flex;align-items:center;gap:16px;margin-bottom:6px;}
+  .mark{width:52px;height:48px;color:var(--accent);flex:none;}
+  h1{font-family:Fraunces,serif;font-weight:600;font-size:30px;margin:0;}
+  .sub{color:var(--ink-soft);font-size:15px;}
+  .lead{color:var(--ink-soft);font-size:16px;margin:16px 0 32px;max-width:56ch;}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media (max-width:560px){.cards{grid-template-columns:1fr;}}
+  .card{display:block;text-decoration:none;color:inherit;background:var(--bg-panel);
+    border:1px solid var(--rule);border-radius:14px;padding:24px;
+    transition:border-color .15s,transform .15s,box-shadow .15s;}
+  .card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 10px 26px rgba(0,0,0,.09);}
+  .card h2{font-family:Fraunces,serif;font-size:21px;margin:0 0 6px;font-weight:600;}
+  .card p{margin:0;font-size:14px;color:var(--ink-soft);}
+  .tag{display:inline-block;margin-top:12px;font-size:11px;font-weight:600;text-transform:uppercase;
+    letter-spacing:.05em;padding:3px 9px;border-radius:20px;background:var(--accent-soft);color:var(--accent-ink);}
+  footer{margin-top:32px;color:var(--ink-dim);font-size:13px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="mark" aria-hidden="true">
+      <svg viewBox="0 0 44 40" fill="none" stroke="currentColor" width="100%" height="100%">
+        <path d="M 2 24 L 7 22 L 12 36 L 17 8 L 42 8" stroke-width="1.75" stroke-linejoin="miter" stroke-linecap="round"/>
+        <rect x="22" y="15.5" width="13" height="8" rx="1" stroke-width="1" stroke-dasharray="2 1.5"/>
+        <line x1="21" y1="26.5" x2="36" y2="26.5" stroke-width="1.25"/>
+        <rect x="22" y="29.5" width="13" height="8" rx="1" stroke-width="1" stroke-dasharray="2 1.5"/>
+      </svg>
+    </span>
+    <div>
+      <h1>ForMath</h1>
+      <div class="sub">Wiskunde leren, stap voor stap — VMBO / MBO</div>
+    </div>
+  </header>
+
+  <p class="lead">Kies een tool. De studenttool is om opgaven uit te werken; de
+    authortool laat zien hoe een opgave uit een expressie wordt opgebouwd.</p>
+
+  <div class="cards">
+    <a class="card" href="/student/werkblad/werkblad.html">
+      <h2>Studenttool</h2>
+      <p>Werk een opgave stap voor stap uit, met hints en feedback per bewerking.</p>
+      <span class="tag">Leerlingen</span>
+    </a>
+    <a class="card" href="/authortool/">
+      <h2>Authortool</h2>
+      <p>Typ een expressie → zie de AST/mathblocks. Demo: alleen-lezen (niet opslaan).</p>
+      <span class="tag">Auteurs</span>
+    </a>
+  </div>
+
+  <footer>ForMath · demenslens.nl</footer>
+</div>
+</body>
+</html>

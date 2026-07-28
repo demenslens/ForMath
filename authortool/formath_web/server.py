@@ -19,6 +19,8 @@ import xml.etree.ElementTree as ET
 # Voeg paden toe voor imports
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
+REPO_ROOT = os.path.dirname(PROJECT_DIR)               # …/formath (repo-root)
+STUDENT_DIR = os.path.join(REPO_ROOT, 'studenttool')   # ForMath-studenttool (gecombineerde serve)
 PIPELINE_PARENT = os.path.join(PROJECT_DIR, 'python_bestanden')
 
 # Mapping van soort_opgave-keuzewaarde naar pipeline-directory.
@@ -551,6 +553,32 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=BASE_DIR, **kwargs)
 
+    def translate_path(self, path):
+        """Routeer één dienst naar drie zones (voor formath.onrender.com):
+             /                → landing.html (keuzescherm)
+             /authortool/...  → formath_web/...  (de authortool-UI)
+             /student/...     → studenttool/...  (werkblad + testopgaven)
+        /api/* wordt al afgevangen in do_GET/do_POST.
+        """
+        import posixpath
+        from urllib.parse import unquote
+        clean = unquote(path.split('?', 1)[0].split('#', 1)[0])
+        if clean in ('/', ''):
+            return os.path.join(BASE_DIR, 'landing.html')
+        if clean == '/student' or clean.startswith('/student/'):
+            base, rel = STUDENT_DIR, clean[len('/student'):]
+        elif clean == '/authortool' or clean.startswith('/authortool/'):
+            base, rel = BASE_DIR, clean[len('/authortool'):]
+        else:
+            base, rel = BASE_DIR, clean
+        parts = [p for p in posixpath.normpath(rel).split('/') if p and p not in ('.', '..')]
+        fs = os.path.join(base, *parts)
+        if os.path.isdir(fs):
+            idx = os.path.join(fs, 'index.html')
+            if os.path.exists(idx):
+                return idx
+        return fs
+
     def end_headers(self):
         # De authortool heeft geen cache-buster; zonder dit houdt de browser
         # een oude app.js/app.css/index.html vast (klik doet dan niets omdat een
@@ -575,9 +603,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             # Demo-modus? De UI gebruikt dit om de schrijf-knoppen te dimmen.
             self._send_json({'demo': os.environ.get('AUTHORTOOL_DEMO', '') in ('1', 'true', 'yes')})
             return
-        # Standaard static serving
-        if self.path == '/' or self.path == '/index.html':
-            self.path = '/index.html'
+        # Standaard static serving; de routering (landing / authortool / student)
+        # zit in translate_path.
         super().do_GET()
 
     def do_POST(self):
