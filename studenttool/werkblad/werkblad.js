@@ -81,6 +81,7 @@
   // gebruikt deze state later.
   var isForkOpgave = false; // true als de opgave een ±√-fork bevat
   var forkInfo = null;      // { wortel, piek, sjabloon } of null
+  var lockEqAan = false;    // true = vast '=' achter elke werk-regel (reken-opgaven, niet fork)
   // Fork-modus. 'split' = de nieuwe koers: de leerling drukt op "splits ±" en de
   // regel splitst VERTICAAL in twee kolommen. 'auto' = de oude horizontale Optie-A
   // (automatisch +→−→S; blijft inactief maar bewaard).
@@ -649,8 +650,13 @@
         '</div>' +
         '<div class="opg-preview">' +
           '<span class="opg-preview-fallback">…</span>' +
-        '</div>';
-      div.onclick = function(){ selectOpgave(i); };
+        '</div>' +
+        // Transparant klik-laagje bovenop de box: het read-only MathLive
+        // math-field negeert pointer-events én laat de klik niet los (shadow-DOM),
+        // dus we dekken het fysiek af (z-index). Zo selecteert een klik OVERAL in
+        // de box de opgave — niet alleen op het nummer.
+        '<div class="opg-hit" aria-hidden="true"></div>';
+      div.addEventListener('click', function(){ selectOpgave(i); });
       list.appendChild(div);
       // Als preview al gecached is (mocht renderSidebar later opnieuw draaien)
       if(previewCache[i] && previewCache[i].ready) renderPreviewInto(i);
@@ -723,6 +729,19 @@
     moveOpgaveSelection(ev.key === 'ArrowDown' ? 1 : -1);
   });
 
+  // Enter op de ACTIEVE editor doet hetzelfde als de LF-knop. Capture-fase +
+  // stopPropagation, zodat MathLive de Enter niet zelf afhandelt (geen newline).
+  // document.activeElement is bij een gefocust math-field de host zelf (shadow-DOM
+  // focus wordt geretarget), dus de vergelijking met de actieve editor klopt.
+  document.addEventListener('keydown', function(ev){
+    if(ev.key !== 'Enter' || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var actEditor = document.querySelector('.rl.active .editor');
+    if(!actEditor || document.activeElement !== actEditor) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    doLF();
+  }, true);
+
   // ══════════════════════════════════════
   // RENDER OPGAVE
   // ══════════════════════════════════════
@@ -753,6 +772,13 @@
     // de splitsing/reductie zelf leeft ook in window.ABCFORK, fase 2+).
     forkInfo = (window.ABCFORK && window.ABCFORK.detect(data)) || { isFork: false };
     isForkOpgave = !!forkInfo.isFork;
+    // Vast '=' achter elke expressie-regel — bij ALLE opgaven, óók fork. Regels
+    // die zélf al een '=' bevatten (S-verzameling, vergelijking) krijgen er geen
+    // tweede bij; zie de /=/-guards verderop. De laatste regel (de uitkomst)
+    // krijgt geen '=' (zie het bevriezen in doLF).
+    lockEqAan = true;
+    var _rulesEl = document.getElementById('rules');
+    if(_rulesEl) _rulesEl.classList.toggle('lock-eq-modus', lockEqAan);
 
     // Evaluate the starting expression
     beginUitkomst = evaluateExpression(latex);
@@ -797,6 +823,9 @@
 
     // Regel 3: de OPGAVE gerenderd in blauw, READ-ONLY (alleen ter informatie —
     // hier kan niets in veranderd worden). De student werkt op de regel eronder.
+    // Ook deze eerste regel krijgt het vaste '=' (tenzij de expressie er al één
+    // bevat, bv. een vergelijking); het zit in de LaTeX van dit read-only veld.
+    var _opgaveDisplay = latex + ((lockEqAan && !/=/.test(latex)) ? '=' : '');
     var rOpg = mkLine();
     if(mathLiveReady){
       var opgMf = document.createElement('math-field');
@@ -806,9 +835,9 @@
       rOpg.appendChild(opgMf);
       setTimeout(function(){
         try {
-          if(opgMf.setValue) opgMf.setValue(latex, {suppressChangeNotifications: true});
-          else opgMf.value = latex;
-        } catch(e){ try { opgMf.value = latex; } catch(e2){} }
+          if(opgMf.setValue) opgMf.setValue(_opgaveDisplay, {suppressChangeNotifications: true});
+          else opgMf.value = _opgaveDisplay;
+        } catch(e){ try { opgMf.value = _opgaveDisplay; } catch(e2){} }
         // hideMFChrome (net als de bewerkbare regel) i.p.v. styleMfChrome: die
         // laatste zet padding:0 4px op de host → 4px naar rechts. Zo lijnen de
         // blauwe opgave-regel en de bewerkbare kopie eronder links uit.
@@ -816,7 +845,7 @@
       },100);
     } else {
       var opgSp = document.createElement('span');
-      opgSp.className = 'opgave-label'; opgSp.textContent = latex;
+      opgSp.className = 'opgave-label'; opgSp.textContent = _opgaveDisplay;
       rOpg.appendChild(opgSp);
     }
     rules.appendChild(rOpg);
@@ -833,7 +862,7 @@
       // Leesbaarheid bij gestapelde breuken/exponenten: houd geneste font op
       // minstens 0.8em (MathLive 0.110 minFontScale; 0 = standaard verkleinen).
       try { mf.minFontScale = 0.8; } catch(e){}
-      r4.appendChild(mf); addLFButton(r4); mfRef=mf;
+      r4.appendChild(mf); addLockEq(r4); addLFButton(r4); mfRef=mf;
       setTimeout(function(){
         try {
           // Zelfde reden als bij de LF-vervolgregel: setValue zonder
@@ -852,7 +881,7 @@
       var sp = document.createElement('span');
       sp.className='editor'; sp.contentEditable='true'; sp.spellcheck=false; sp.id='ed';
       sp.textContent=latex; sp.addEventListener('input',onEditorInput);
-      r4.appendChild(sp); addLFButton(r4);
+      r4.appendChild(sp); addLockEq(r4); addLFButton(r4);
       attachCursorTracking(sp);
     }
     rules.appendChild(r4);
@@ -885,6 +914,16 @@
       }
       _cnt.lastEventType = (ev && ev.type) ? ev.type : 'none';
     } catch(e){}
+    // Vast '=' op de actieve regel verbergen zodra de expressie zélf een '='
+    // bevat (bv. de S-verzameling of een vergelijking bij een fork-opgave) —
+    // anders zou er een dubbel '=' staan.
+    if(lockEqAan){
+      var _actEq = document.querySelector('.rl.active .lock-eq');
+      if(_actEq){
+        var _v = ''; try { _v = getEditorLatex() || ''; } catch(e){ _v = ''; }
+        _actEq.style.display = /=/.test(_v) ? 'none' : '';
+      }
+    }
     clearTimeout(parseTimer);
     // Clear error overlay on any input
     _cnt.clearErrorOverlay++;
@@ -4120,6 +4159,8 @@
     previousLatex = latexVal;
 
     // Freeze current line as read-only label.
+    // De goedgekeurde regel krijgt een licht-groene achtergrond (blijft staan).
+    currentLine.classList.add('regel-goed');
     // BELANGRIJK: ontkoppel eerst alle cursor-tracking (listeners +
     // 250ms-interval) van de oude editor. Anders blijven die na het
     // leeghalen van de DOM-node als 'zombie' doorlopen en stapelen ze
@@ -4130,6 +4171,11 @@
     currentLine.classList.remove('active');
     currentLine.id = '';
     currentLine.innerHTML = '';
+
+    // Vast '=' achter de bevroren expressie. NIET op de laatste regel (de
+    // uitkomst → opgaveVoltooid = true) en niet als de expressie zélf al een '='
+    // bevat (bv. de S-verzameling of een vergelijking bij een fork-opgave).
+    var _labelLatex = latexVal + ((lockEqAan && !opgaveVoltooid && !/=/.test(latexVal)) ? '=' : '');
 
     if(mathLiveReady){
       var labelMf = document.createElement('math-field');
@@ -4148,16 +4194,19 @@
           // (onEditorInput honderden keren zonder dat de student typt).
           // Dit is de DERDE plek met dit patroon; de andere twee
           // (nieuwe-regel + initiële laad) waren al gefixt.
-          if(labelMf.setValue) labelMf.setValue(latexVal, {suppressChangeNotifications: true});
-          else labelMf.value = latexVal;
+          if(labelMf.setValue) labelMf.setValue(_labelLatex, {suppressChangeNotifications: true});
+          else labelMf.value = _labelLatex;
         } catch(e){
-          try { labelMf.value = latexVal; } catch(e2){}
+          try { labelMf.value = _labelLatex; } catch(e2){}
         }
-        styleMfChrome(labelMf);
+        // hideMFChrome (net als de blauwe opgave-regel en de actieve editor)
+        // i.p.v. styleMfChrome: die laatste zet padding:0 4px → de bevroren regel
+        // stond 4px naar rechts, uit de rooilijn met de andere regels.
+        hideMFChrome(labelMf);
       },100);
     } else {
       var ls = document.createElement('span');
-      ls.className='label'; ls.textContent=latexVal;
+      ls.className='label'; ls.textContent=_labelLatex;
       currentLine.appendChild(ls);
     }
 
@@ -4216,7 +4265,7 @@
       // Leesbaarheid bij gestapelde breuken/exponenten: houd geneste font op
       // minstens 0.8em (MathLive 0.110 minFontScale; 0 = standaard verkleinen).
       try { mf.minFontScale = 0.8; } catch(e){}
-      nextLine.appendChild(mf); addLFButton(nextLine); mfRef=mf;
+      nextLine.appendChild(mf); addLockEq(nextLine); addLFButton(nextLine); mfRef=mf;
       setTimeout(function(){
         try {
           // Zet de waarde ZONDER een input-event te triggeren. Zonder
@@ -4241,12 +4290,16 @@
         // (element nog niet volledig geüpgraded). Die race mag de listener-
         // koppeling hierboven NIET overslaan — vandaar achteraan + try/catch.
         try { mf.focus(); } catch(e){}
+        // Cursor aan het BEGIN van de expressie zetten (i.p.v. aan het eind).
+        try { mf.position = 0; } catch(e){
+          try { mf.executeCommand('moveToMathfieldStart'); } catch(e2){}
+        }
       },200);
     } else {
       var sp = document.createElement('span');
       sp.className='editor'; sp.contentEditable='true'; sp.spellcheck=false; sp.id='ed';
       sp.textContent=latexVal; sp.addEventListener('input',onEditorInput);
-      nextLine.appendChild(sp); addLFButton(nextLine); sp.focus();
+      nextLine.appendChild(sp); addLockEq(nextLine); addLFButton(nextLine); sp.focus();
       attachCursorTracking(sp);
     }
 
@@ -4712,6 +4765,35 @@
     btn.addEventListener('mousedown',function(e){e.preventDefault();});
     btn.addEventListener('click',doLF);
     line.appendChild(btn);
+  }
+
+  // Vast '='-teken achter de editor van een werk-regel. Los element (geen deel
+  // van het bewerkbare veld) → niet te selecteren of te wissen. Aanroepen NÁ de
+  // editor en VÓÓR addLFButton, zodat de volgorde editor · = · LF is.
+  // Het '=' wordt via een read-only MathLive-veld getoond, zodat de glyph exact
+  // gelijk is aan het '=' op de voltooide (bevroren) regels.
+  function addLockEq(line){
+    if(!lockEqAan || !line) return;
+    if(line.querySelector('.lock-eq')) return;
+    if(mathLiveReady){
+      var eqMf = document.createElement('math-field');
+      eqMf.setAttribute('read-only','');
+      eqMf.setAttribute('virtual-keyboard-mode','off');
+      eqMf.setAttribute('tabindex','-1');
+      eqMf.className = 'lock-eq';
+      line.appendChild(eqMf);
+      setTimeout(function(){
+        try { if(eqMf.setValue) eqMf.setValue('=', {suppressChangeNotifications: true}); else eqMf.value = '='; }
+        catch(e){ try { eqMf.value = '='; } catch(e2){} }
+        hideMFChrome(eqMf);
+      }, 0);
+    } else {
+      var eq = document.createElement('span');
+      eq.className = 'lock-eq';
+      eq.setAttribute('aria-hidden','true');
+      eq.textContent = '=';
+      line.appendChild(eq);
+    }
   }
 
   // ══════════════════════════════════════

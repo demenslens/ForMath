@@ -1,14 +1,45 @@
 # Logboek — fouten & afhandeling (studenttool)
 
-Voortschrijdend logboek van bugs die tijdens het bouwen zijn opgedoken en hoe ze
-zijn behandeld. **Nieuwste bovenaan.** Recente items staan uitgeschreven
+Voortschrijdend logboek van **gebreken/bugs** die tijdens het bouwen zijn opgedoken
+en hoe ze zijn behandeld. **Nieuwste bovenaan.** Recente items staan uitgeschreven
 (symptoom → oorzaak → fix → commit); oudere, afgehandelde issues staan beknopt in
 de tabel onderaan, met de volledige detail-doc in [`archief/`](archief/). Elk item
 heeft een **behandeldatum**.
 
+Voor **uitbreidingen** (nieuwe functies, gedragswijzigingen) is er een apart
+logboek: [`Logboek_uitbreidingen.md`](Logboek_uitbreidingen.md). Kort: *gebrek* =
+iets was stuk of fout → hier; *uitbreiding* = iets nieuws of anders → daar.
+
 Verwante docs (géén issue-log): [Opzet_Hints_en_Feedback.md](Opzet_Hints_en_Feedback.md),
 [verankering_review_fable5.md](verankering_review_fable5.md),
 [ONTWERP_duo_integriteit_dynamisch.md](ONTWERP_duo_integriteit_dynamisch.md).
+
+---
+
+## 2026-07-30 — Opgave in de sidebar alleen via het nummer aanklikbaar
+
+**Symptoom.** In de opgavenlijst (linkerkolom) selecteerde alleen een klik op/rond
+het opgavenummer de opgave; een klik op de formule-regel (de preview) deed niets.
+De geselecteerde box kreeg bovendien geen zichtbare markering.
+
+**Oorzaak.** Twee dingen. (1) De preview rendert de opgave in een read-only MathLive
+`<math-field>`. Dat web-component (shadow-DOM) negeert `pointer-events: none` en laat
+de klik niet los — die bereikte de `.opg`-box daardoor niet, ook niet in de
+capture-fase. (2) De selectie-markering was dood: `selectOpgave` zet de klasse `on`,
+maar de CSS stylede alleen `.opg.active` (naam-mismatch), dus de gekozen box kleurde
+niet.
+
+**Fix.** (1) Per box een transparant klik-laagje `<div class="opg-hit">` met
+`z-index: 5` over de hele box (incl. het math-field); `.opg` werd `position: relative`.
+De muis raakt het math-field niet meer, de klik landt op het laagje en `selectOpgave`
+vuurt — de héle box is klikbaar. (2) `.opg.active` vervangen door `.opg.on` (matcht de
+JS) met achtergrond `--ok-soft` (licht groen) + zachtgroene rand; blijft tot een andere
+box wordt gekozen. Eerdere pogingen (`pointer-events: none` op de preview; klik in de
+capture-fase) faalden beide op het shadow-DOM-gedrag van MathLive — vandaar het
+fysieke afdek-laagje.
+
+**Bestanden.** `werkblad/werkblad.js` (`renderSidebar`), `werkblad/werkblad.css`
+(`.opg`, `.opg-hit`, `.opg.on`). **Commit.** nog niet gecommit.
 
 ---
 
