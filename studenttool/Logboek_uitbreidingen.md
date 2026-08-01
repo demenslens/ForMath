@@ -10,6 +10,54 @@ was stuk of fout → daar; *uitbreiding* = iets nieuws of anders → hier.
 
 ---
 
+## 2026-08-01 — Opgaven-kolom: "Opgave …" i.p.v. de `FM_`/`opgave_`-prefix
+
+**Wat.** In de opgaven-kolom (linkerkolom) tonen we per opgave `Opgave <nummer>`
+i.p.v. de ruwe id (`FM_20260801_001` → `Opgave 20260801_001`). Meertalig
+(Opgave / Exercise / Aufgabe / Exercice / 习题 / Esercizio) en het label
+verandert **live** bij een taalwissel.
+
+**Hoe.** Helper `opgaveLabel(id, index)` strippt de `FM_`/`opgave_`-prefix en zet er
+het gelokaliseerde `TT('exercise.label')` (bestaande i18n-key, alle 6 talen) voor.
+Gebruikt in `renderSidebar` en `updateOpgaveIdLabel`. Een `I18N.onChange`-callback
+(`refreshOpgaveLabels`) herzet de labels bij taalwissel — `applyI18n` raakt alleen
+statische `[data-i18n]`-elementen, deze zijn JS-gerenderd.
+
+**Bestanden.** `werkblad/werkblad.js` (`opgaveLabel`, `refreshOpgaveLabels`,
+`renderSidebar`, `updateOpgaveIdLabel`). Geen i18n.json-wijziging nodig.
+
+---
+
+## 2026-08-01 — Hint-onderbalk (Hint I/II/III) + lichtblauw optioneel kader
+
+**Wat.** De onderbalk is omgebouwd tot **drie gekleurde hint-knoppen** —
+**Hint I** (groen), **Hint II** (grijs), **Hint III** (blauw) — als **exclusieve
+toggle** (max één tegelijk, klik op de actieve zet 'm uit). Bij gebruik verschijnt
+links onderaan de omschrijving:
+
+- Hint I — *Deze bewerkingen zijn belangrijk om nu uit te voeren*
+- Hint II — *Deze bewerkingen kunnen nu of later uitgevoerd worden*
+- Hint III — *Vereenvoudiging is mogelijk*
+
+De **Diagram**- en **Keyboard**-knop en de mathblock-info in de onderbalk zijn
+verwijderd/verborgen. Nieuw: een **lichtblauw kader** (`OPTIONEEL`) om elke
+zichtbare vereenvoudigbare gestapelde breuk `\frac{t}{n}` (ggd > 1).
+
+**Hoe.**
+- Nieuwe `OPTIONEEL`-kleur in `verankering.js`; `toonOptioneleKaders()` in
+  werkblad.js tekent het blauwe kader **waarde-gebaseerd** op de schermposities
+  (offsets), met dezelfde `spanBounds`+diepte-berekening als de groene kaders
+  (zodat hoogte/positie kloppen). Onafhankelijk van de authortool-annotatie.
+- Drie knop-states (`hintKadersHoog/Laag/Optioneel`), exclusieve `kiesHint()`,
+  omschrijving via `updateHintDesc()`; `tekenHintKaders`/`redrawKaders` bijgewerkt.
+
+**Bestanden.** `werkblad/werkblad.js` (`toonOptioneleKaders`, `kiesHint`,
+`updateHintDesc`, `tekenHintKaders`, `redrawKaders`), `werkblad/verankering.js`
+(`COLORS.OPTIONEEL`), `werkblad/werkblad.css` (`.bar-btn.hint-*`, `#hint-desc`),
+`werkblad/werkblad.html` (onderbalk).
+
+---
+
 ## 2026-07-30 — Maaltekens · en × op de knoppenbalk
 
 **Wat.** Twee knoppen toegevoegd aan de quick-buttons-balk boven het werkblad:

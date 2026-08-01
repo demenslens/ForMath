@@ -591,13 +591,39 @@
 
   // Werk het ID-label in de sidebar bij naar de echte metadata.id zodra die
   // bekend is — handig wanneer de index-id afwijkt of leeg is.
+  // Toon-label voor een opgave in de lijst: strip de FM_/opgave_-prefix en zet er
+  // het gelokaliseerde "Opgave "/"Exercise "/… voor (exercise.label). Bijvoorbeeld
+  // "FM_20260801_001" → "Opgave 20260801_001".
+  function opgaveLabel(id, index){
+    var prefix = TT('exercise.label');
+    if(!id) return prefix + ' ' + (index != null ? (index + 1) : '');
+    return prefix + ' ' + String(id).replace(/^(FM_|opgave_)/i, '');
+  }
+
   function updateOpgaveIdLabel(i){
     var cached = previewCache[i];
     if(!cached || !cached.id) return;
     var item = document.querySelector('.opg[data-idx="' + i + '"] .opg-id');
     if(!item) return;
-    if(item.textContent !== cached.id) item.textContent = cached.id;
+    var label = opgaveLabel(cached.id, i);
+    if(item.textContent !== label) item.textContent = label;
   }
+
+  // Bij een taalwissel de (dynamische, JS-gerenderde) opgave-labels opnieuw
+  // zetten — applyI18n raakt alleen statische [data-i18n]-elementen.
+  function refreshOpgaveLabels(){
+    var host = document.getElementById('opg-list');
+    if(!host) return;
+    host.querySelectorAll('.opg').forEach(function(div){
+      var i = parseInt(div.getAttribute('data-idx'), 10);
+      var span = div.querySelector('.opg-id');
+      if(!span) return;
+      var cached = previewCache[i];
+      var id = (cached && cached.id) ? cached.id : (opgavenIndex[i] && opgavenIndex[i].id);
+      span.textContent = opgaveLabel(id, i);
+    });
+  }
+  if (window.I18N && window.I18N.onChange) window.I18N.onChange(refreshOpgaveLabels);
 
   // Render de preview voor één item, als het DOM-item en de cache klaar zijn.
   function renderPreviewInto(i){
@@ -643,7 +669,7 @@
       // ID-label = opgave-nummer uit metadata.id (bv. '20260521_001'); valt
       // terug op het volgnummer als geen id beschikbaar is. Wordt zo nodig
       // bijgewerkt door prefetchPreviews zodra metadata.id binnen is.
-      var idLabel = esc(opg.id || ('Opgave ' + (i+1)));
+      var idLabel = esc(opgaveLabel(opg.id, i));
       div.innerHTML =
         '<div class="opg-head">' +
           '<span class="opg-id">' + idLabel + '</span>' +
@@ -4573,6 +4599,69 @@
   window.__toonHintBeide = toonHintKadersBeide;
   window.__wisHint = function(){ if (window.VERANKERING) window.VERANKERING.clearBoxes(); };
 
+  // ── Optionele vereenvoudiging-kaders (lichtblauw) ──
+  // Elke zichtbare GESTAPELDE breuk \frac{t}{n} die vereenvoudigbaar is (ggd>1,
+  // geen geheel getal) mag de student vereenvoudigen — hoeft niet. Waarde-
+  // gebaseerd op de schermposities (offsets), dus onafhankelijk van de mathblock-
+  // anchoring. Sluit aan bij de authortool-annotatie (mb.vereenvoudiging /
+  // duo.optioneel), maar wordt hier direct uit de zichtbare breuk afgeleid.
+  // NB: alleen \frac (breuk) — een ':' (deling) is structureel iets anders.
+  function _ggdInt(a, b){ a = Math.abs(a); b = Math.abs(b); while (b){ var t = b; b = a % b; a = t; } return a; }
+  function toonOptioneleKaders(skipClear){
+    var V = window.VERANKERING;
+    if (!V || !V.COLORS || !V.COLORS.OPTIONEEL) return 0;
+    if (!skipClear) V.clearBoxes();
+    var mf = document.querySelector('.rl.active .editor')
+          || document.querySelector('.rl.active math-field')
+          || (typeof mfRef !== 'undefined' ? mfRef : null)
+          || document.querySelector('math-field');
+    if (!mf) return 0;
+    var offsets = V.collectOffsets(mf);
+    if (!offsets || !offsets.length) return 0;
+    var delta = V.computeDelta(mf, offsets);
+    var n = 0;
+    offsets.forEach(function(fo){
+      if (!(fo.bounds && fo.bounds.width > 0)) return;
+      // Precies één \frac{t}{n} (verankerd), zodat een samengestelde offset zoals
+      // "\left(2-\frac{3}{5}-\frac{33}{15}\right)" NIET als geheel wordt omkaderd.
+      var m = /^\s*\\frac\s*\{\s*(-?\d+)\s*\}\s*\{\s*(-?\d+)\s*\}\s*$/.exec(fo.latex || '');
+      if (!m) return;
+      var t = Math.abs(parseInt(m[1], 10)), d = Math.abs(parseInt(m[2], 10));
+      if (!d || d === 1) return;          // noemer 1 → geheel getal
+      if (t % d === 0) return;            // deelt op → geheel getal
+      var g = _ggdInt(t, d);
+      if (g <= 1) return;                 // niet vereenvoudigbaar
+      // Zelfde box-berekening als de groene hints: span de BLAD-offsets (cijfers)
+      // van teller+noemer binnen deze breuk met spanBounds + hun (min-)diepte-
+      // fudge, i.p.v. de volle \frac-offset. Zo klopt hoogte/positie exact met de
+      // andere hint-kaders. Bladeren = offsets zónder \frac/\sqrt/^ waarvan het
+      // middelpunt binnen de \frac-bounds valt.
+      var leafB = [], leafD = [];
+      offsets.forEach(function(p){
+        if (!(p.bounds && p.bounds.width > 0)) return;
+        if (/\\frac|\\sqrt|\^/.test(p.latex || '')) return;
+        var cx = p.bounds.x + p.bounds.width / 2, cy = p.bounds.y + p.bounds.height / 2;
+        if (cx < fo.bounds.x - 2 || cx > fo.bounds.x + fo.bounds.width + 2) return;
+        if (cy < fo.bounds.y - 2 || cy > fo.bounds.y + fo.bounds.height + 2) return;
+        leafB.push(p.bounds); leafD.push(p.depth);
+      });
+      var span = leafB.length ? V.spanBounds(leafB) : fo.bounds;
+      var depth = leafD.length ? Math.min.apply(null, leafD) : null;
+      var box = V.drawBox(mf, span, V.COLORS.OPTIONEEL, delta, depth, V.HINT_MARGE);
+      if (box){
+        box.style.pointerEvents = 'auto';
+        box.style.cursor = 'help';
+        box.setAttribute('data-optioneel', '1');
+        box.setAttribute('title',
+          'Optioneel: je mag deze breuk vereenvoudigen (ggd ' + g + '): ' +
+          t + '/' + d + ' → ' + (t / g) + '/' + (d / g) + '. Het hoeft niet.');
+        n++;
+      }
+    });
+    return n;
+  }
+  window.__toonOptioneel = toonOptioneleKaders;
+
   // PPTE — popup met de structurele hints (Wat / Hoe / Let op) van ÉÉN mathblock,
   // geopend door op z'n (groene of grijze) kader te klikken. De items zijn een
   // accordion: klik op de kop → de tekst ontvouwt. Onderaan een 'Sluit'-knop.
@@ -4993,7 +5082,7 @@
   // KEYBOARD
   // ══════════════════════════════════════
   var kbPanel=document.getElementById('kb-panel'), kbBtn=document.getElementById('kb-btn');
-  kbBtn.onclick=function(){ var o=kbPanel.classList.toggle('open'); kbBtn.classList.toggle('on',o); var e=getEditor(); if(e)e.focus(); };
+  if(kbBtn) kbBtn.onclick=function(){ var o=kbPanel.classList.toggle('open'); kbBtn.classList.toggle('on',o); var e=getEditor(); if(e)e.focus(); };
 
   document.querySelectorAll('.kb-key').forEach(function(key){
     key.addEventListener('mousedown',function(e){
@@ -5061,9 +5150,25 @@
   // HINTS
   // ══════════════════════════════════════
   var hintsOverlay = document.getElementById('hints-overlay');
-  var hintsBtn = document.getElementById('hints-btn');
-  var hintsPlusBtn = document.getElementById('hints-plus-btn');
+  var hintGroenBtn = document.getElementById('hint-groen-btn');   // hoog (groen)
+  var hintGrijsBtn = document.getElementById('hint-grijs-btn');   // laag (grijs)
+  var hintBlauwBtn = document.getElementById('hint-blauw-btn');   // optioneel (blauw)
+  var hintDescEl   = document.getElementById('hint-desc');
   var hintsClose = document.getElementById('hints-close');
+  var HINT_DESC = {
+    hoog:      'Deze bewerkingen zijn belangrijk om nu uit te voeren',
+    laag:      'Deze bewerkingen kunnen nu of later uitgevoerd worden',
+    optioneel: 'Vereenvoudiging is mogelijk'
+  };
+  // Toon links onderaan de omschrijving(en) van de actieve hint-knop(pen).
+  function updateHintDesc(){
+    if(!hintDescEl) return;
+    var p = [];
+    if(hintKadersHoog)      p.push(HINT_DESC.hoog);
+    if(hintKadersLaag)      p.push(HINT_DESC.laag);
+    if(hintKadersOptioneel) p.push(HINT_DESC.optioneel);
+    hintDescEl.textContent = p.join('  ·  ');
+  }
 
   // De hint-kaders gebruiken de veld-parse-verankering (scherm-getrouw, correct op
   // geëvolueerde regels). Zie verankering_review_fable5.md / de veld-parse-commit.
@@ -5073,21 +5178,26 @@
   // regel (+ de tekst-popup, behouden); 'Hints+' = de LAAG-mathblocks (grijs).
   // Onafhankelijke toggles: hoog en laag los aan/uit, ook tegelijk (skipClear
   // tekent ze naast elkaar zonder elkaar te wissen).
-  var hintKadersHoog = false, hintKadersLaag = false;
+  var hintKadersHoog = false, hintKadersLaag = false, hintKadersOptioneel = false;
   function tekenHintKaders(){
     if (window.VERANKERING) window.VERANKERING.clearBoxes();
-    if (hintKadersHoog) toonHintKaders('hoog', true);
-    if (hintKadersLaag) toonHintKaders('laag', true);
-    if (hintsBtn) hintsBtn.classList.toggle('active', hintKadersHoog);
-    if (hintsPlusBtn) hintsPlusBtn.classList.toggle('active', hintKadersLaag);
+    if (hintKadersHoog)      toonHintKaders('hoog', true);
+    if (hintKadersLaag)      toonHintKaders('laag', true);
+    if (hintKadersOptioneel) toonOptioneleKaders(true);   // optionele (blauwe) breuk-kaders
+    if (hintGroenBtn) hintGroenBtn.classList.toggle('active', hintKadersHoog);
+    if (hintGrijsBtn) hintGrijsBtn.classList.toggle('active', hintKadersLaag);
+    if (hintBlauwBtn) hintBlauwBtn.classList.toggle('active', hintKadersOptioneel);
+    updateHintDesc();
   }
   // Op regelwissel wissen (kaders horen bij de actuele regel). Naam behouden:
   // wordt aangeroepen bij het activeren van een regel (zie ~r728).
   function resetKadersToggle(){
-    hintKadersHoog = false; hintKadersLaag = false;
+    hintKadersHoog = false; hintKadersLaag = false; hintKadersOptioneel = false;
     if (window.VERANKERING) window.VERANKERING.clearBoxes();
-    if (hintsBtn) hintsBtn.classList.remove('active');
-    if (hintsPlusBtn) hintsPlusBtn.classList.remove('active');
+    if (hintGroenBtn) hintGroenBtn.classList.remove('active');
+    if (hintGrijsBtn) hintGrijsBtn.classList.remove('active');
+    if (hintBlauwBtn) hintBlauwBtn.classList.remove('active');
+    if (hintDescEl) hintDescEl.textContent = '';
   }
 
   // Herteken alle actieve kaders (hint + fout) op de HUIDIGE glyph-posities.
@@ -5096,11 +5206,12 @@
   // hun oude viewport-plek hangen → hier herbouwen we ze uit de bewaarde toestand.
   function redrawKaders(){
     if (!window.VERANKERING) return;
-    if (!hintKadersHoog && !hintKadersLaag && !_lastFoutRes) return;  // niets getoond
+    if (!hintKadersHoog && !hintKadersLaag && !hintKadersOptioneel && !_lastFoutRes) return;  // niets getoond
     var foutRes = _lastFoutRes;                 // bewaren (markFoutKaders reset dit)
     window.VERANKERING.clearBoxes();            // hint-kaders weg (fout blijft staan)
-    if (hintKadersHoog) toonHintKaders('hoog', true);
-    if (hintKadersLaag) toonHintKaders('laag', true);
+    if (hintKadersHoog)      toonHintKaders('hoog', true);
+    if (hintKadersLaag)      toonHintKaders('laag', true);
+    if (hintKadersOptioneel) toonOptioneleKaders(true);  // optionele (blauwe) breuk-kaders
     if (foutRes) markFoutKaders(foutRes);       // fout-kaders opnieuw op nieuwe posities
   }
   window.__hertekenKaders = redrawKaders;
@@ -5177,19 +5288,29 @@
     if (_mainEl) { try { new ResizeObserver(_scheduleRedrawKaders).observe(_mainEl); } catch(e){} }
   }
 
-  hintsBtn.onclick = function(){
+  // Drie hint-knoppen: groen (nu belangrijk / hoog), grijs (nu of later / laag),
+  // blauw (optionele vereenvoudiging). Onafhankelijke toggles; de omschrijving
+  // verschijnt links onderaan via updateHintDesc(). Klik op een groen/grijs kader
+  // opent nog steeds de per-mathblock-popup (Wat/Hoe/Let op).
+  // Exclusieve toggle: hooguit ÉÉN hint tegelijk zichtbaar (Hint I/II/III komen
+  // stuk voor stuk). Klik op de al-actieve knop zet 'm weer uit. De bijbehorende
+  // omschrijving verschijnt links onderaan (via updateHintDesc in tekenHintKaders).
+  function kiesHint(which){
     if(!currentOpgave){ st('er', TT('status.no_exercise')); return; }
-    hintKadersHoog = !hintKadersHoog;
+    var was = (which === 'hoog' && hintKadersHoog)
+           || (which === 'laag' && hintKadersLaag)
+           || (which === 'optioneel' && hintKadersOptioneel);
+    hintKadersHoog = hintKadersLaag = hintKadersOptioneel = false;
+    if (!was){
+      if (which === 'hoog') hintKadersHoog = true;
+      else if (which === 'laag') hintKadersLaag = true;
+      else hintKadersOptioneel = true;
+    }
     tekenHintKaders();
-    // De hint-inhoud komt nu per mathblock: klik op een (groen) kader → popup
-    // met Wat/Hoe/Let op. De oude tekst-lijst-popup wordt daarom niet meer
-    // automatisch geopend.
-  };
-  hintsPlusBtn.onclick = function(){
-    if(!currentOpgave){ st('er', TT('status.no_exercise')); return; }
-    hintKadersLaag = !hintKadersLaag;
-    tekenHintKaders();
-  };
+  }
+  if (hintGroenBtn) hintGroenBtn.onclick = function(){ kiesHint('hoog'); };       // Hint I
+  if (hintGrijsBtn) hintGrijsBtn.onclick = function(){ kiesHint('laag'); };       // Hint II
+  if (hintBlauwBtn) hintBlauwBtn.onclick = function(){ kiesHint('optioneel'); };  // Hint III
 
   hintsClose.onclick = function(){ hintsOverlay.classList.remove('open'); };
   hintsOverlay.onclick = function(e){ if(e.target === hintsOverlay) hintsOverlay.classList.remove('open'); };

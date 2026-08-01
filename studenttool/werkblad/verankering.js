@@ -28,7 +28,8 @@
     ONBEWERKT: { bg: 'rgba(140,140,140,0.20)', border: 'rgba(140,140,140,0.7)' },
     AFWIJKEND: { bg: 'rgba(207,57,57,0.30)',   border: 'rgba(207,57,57,0.9)'  },
     HOOG     : { bg: 'rgba(120,190,130,0.26)', border: 'rgba(70,150,90,0.9)'  },  // lichtgroen
-    LAAG     : { bg: 'rgba(150,150,150,0.20)', border: 'rgba(120,120,120,0.85)' }  // lichtgrijs (zichtbare rand)
+    LAAG     : { bg: 'rgba(150,150,150,0.20)', border: 'rgba(120,120,120,0.85)' }, // lichtgrijs (zichtbare rand)
+    OPTIONEEL: { bg: 'rgba(70,140,220,0.20)',  border: 'rgba(45,110,205,0.9)' }   // lichtblauw (optionele vereenvoudiging)
   };
 
   var HINT_MARGE = { links: 2, rechts: 4, boven: -2, onder: -2 };

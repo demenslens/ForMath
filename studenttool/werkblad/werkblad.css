@@ -851,6 +851,19 @@ math-field, .editor { font-size: 17px; }
 .bar-btn:hover { background: var(--bg-sunken); border-color: var(--rule-strong); color: var(--ink); }
 .bar-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
 
+/* Drie gekleurde hint-knoppen: kleuren gelijk aan de kaders (groen = nu belangrijk,
+   grijs = nu/later, blauw = optionele vereenvoudiging). ● = kleurstip vóór het label. */
+.bar-btn.hint-groen::before,
+.bar-btn.hint-grijs::before,
+.bar-btn.hint-blauw::before { content: '\25CF'; margin-right: 6px; font-size: 10px; }
+.bar-btn.hint-groen::before { color: rgb(70,150,90); }
+.bar-btn.hint-grijs::before { color: rgb(120,120,120); }
+.bar-btn.hint-blauw::before { color: rgb(45,110,205); }
+.bar-btn.hint-groen.active { background: rgba(120,190,130,0.30); border-color: rgb(70,150,90);  color: var(--ink); }
+.bar-btn.hint-grijs.active { background: rgba(150,150,150,0.28); border-color: rgb(120,120,120); color: var(--ink); }
+.bar-btn.hint-blauw.active { background: rgba(70,140,220,0.26); border-color: rgb(45,110,205);  color: var(--ink); }
+#hint-desc { font-family: var(--font-ui); font-size: 12.5px; color: var(--ink-soft); font-style: italic; }
+
 /* ── Overlays (hints, pinpoint, schema) ──────────────────────────────── */
 .hints-overlay, .pinpoint-overlay, .svg-overlay {
   position: fixed; inset: 0;
