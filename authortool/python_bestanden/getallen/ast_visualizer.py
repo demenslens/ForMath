@@ -973,20 +973,21 @@ def draw_nodes(svg, info, dx, dy, block_ids=None, simplify_source_ids=None,
                 "fill": c["text"],
             }).text = label
 
-    # SIMPLIFY_OP: GGD-waarde apart rechtsonder in de box (klein, gedempt)
-    if t == "SIMPLIFY_OP":
-        ggd_val = node.get("ggd")
-        if ggd_val is not None:
-            ET.SubElement(svg, "text", {
-                "x": str(round(x + w / 2 - 4, 1)),
-                "y": str(round(y + h - 4, 1)),
-                "text-anchor": "end",
-                "font-family": "JetBrains Mono, Consolas, monospace",
-                "font-size": "9",
-                "font-weight": "500",
-                "fill": stroke_color,
-                "opacity": "0.85",
-            }).text = f"GGD={ggd_val}"
+    # GGD-waarde apart rechtsonder in de box (klein, gedempt) — bij ELKE bewerking
+    # die een breuk oplevert (node['ggd'] is gezet in simplify_injector).
+    # GGD = 1 → niet vereenvoudigd (al laagste termen); GGD > 1 → wel vereenvoudigd.
+    ggd_val = node.get("ggd")
+    if ggd_val is not None:
+        ET.SubElement(svg, "text", {
+            "x": str(round(x + w / 2 - 4, 1)),
+            "y": str(round(y + h - 4, 1)),
+            "text-anchor": "end",
+            "font-family": "JetBrains Mono, Consolas, monospace",
+            "font-size": "9",
+            "font-weight": "500",
+            "fill": stroke_color,
+            "opacity": "0.85",
+        }).text = f"GGD={ggd_val}"
 
     # Type-label klein bovenaan (binnen de box)
     type_short = {
@@ -1408,8 +1409,15 @@ def _draw_pm_peak(svg, layout, block_ids, dx, dy, step_h, pm_peak):
 def visualize(expression, output_path, title=""):
     ast = parse_expression(expression)
     normalized = normalize_ast(ast)
-    annotated, _ = detect_manifolds(normalized)
-    converted, _ = convert_to_manifolds(annotated, _)
+    annotated, stats = detect_manifolds(normalized)
+    converted, _ = convert_to_manifolds(annotated, stats)
+    # GGD-annotatie (node['ggd']) zodat de SVG per breuk-bewerking de GGD toont —
+    # net als de server-pipeline (die inject_simplify_ops vóór de SVG draait).
+    try:
+        from simplify_injector import inject_simplify_ops
+    except ImportError:
+        from .simplify_injector import inject_simplify_ops
+    converted, _ = inject_simplify_ops(converted)
 
     tree = generate_ast_svg(converted, title=title or f"AST: {expression}", expression=expression)
     ET.indent(tree, space="  ")

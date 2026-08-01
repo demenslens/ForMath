@@ -1086,7 +1086,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             m['notitie']         = request_data.get('notitie', '') or ''
 
             write_dir = _current_write_dir()
-            json_path = os.path.join(write_dir, 'opgave_%s.json' % basis_id)
+            # basis_id bevat al de FM_-prefix (zie _generate_id); bestandsnaam = id.json
+            json_path = os.path.join(write_dir, '%s.json' % basis_id)
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(opgave, f, indent=2, ensure_ascii=False)
             pm_ov, pm_peak = self._pm_svg_extras(opgave)

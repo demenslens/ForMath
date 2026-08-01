@@ -63,41 +63,106 @@ def _vereenvoudig(raw: Tuple[int, int]) -> Tuple[int, int]:
     return (teller // g, noemer // g)
 
 
-def _wrap_with_simplify(node: Dict[str, Any]) -> Dict[str, Any]:
+def _ruwe_uitkomst_bewerking(node: Dict[str, Any]):
+    """(teller, noemer) van DEZE bewerking, gerekend met VEREENVOUDIGDE kinderen.
+
+    Anders dan evaluate_raw (dat tot onderaan ruw blijft) reduceren we eerst elk
+    kind via evaluate() en passen we alleen de bewerking van DEZE node ruw toe.
+    Zo explodeert de ruwe vorm niet bij geneste bewerkingen (bv. de macht van een
+    manifold), terwijl de ggd van precies deze stap wél klopt. Formules gelijk aan
+    evaluate_raw. Returns None bij niet-rationale / niet-ondersteunde bewerkingen.
     """
-    Pak een node in met SIMPLIFY_OP als zijn ruwe uitkomst vereenvoudigbaar is.
-    Returns de ingewikkelde node (of de originele als niet vereenvoudigbaar).
+    t = node.get('type')
+    neg = node.get('is_negative', False)
+
+    def _kind(n):
+        v = evaluate(n)
+        return (v.numerator, v.denominator) if v is not None else None
+
+    try:
+        if t == 'BINARY_OP':
+            L = _kind(node.get('left')); R = _kind(node.get('right'))
+            if L is None or R is None:
+                return None
+            ln, ld = L; rn, rd = R
+            op = node.get('operator')
+            if op == '×':
+                res = (ln * rn, ld * rd)
+            elif op == ':':
+                if rn == 0:
+                    return None
+                num, den = ln * rd, ld * rn
+                if den < 0:
+                    num, den = -num, -den
+                res = (num, den)
+            elif op == '+':
+                res = (ln * rd + rn * ld, ld * rd)
+            else:
+                return None
+        elif t == 'MANIFOLD_OP':
+            op = node.get('operator'); ops = node.get('operands', [])
+            total = _kind(ops[0]) if ops else None
+            if total is None:
+                return None
+            for o in ops[1:]:
+                v = _kind(o)
+                if v is None:
+                    return None
+                ln, ld = total; rn, rd = v
+                total = (ln * rn, ld * rd) if op == '×' else (ln * rd + rn * ld, ld * rd)
+            res = total
+        elif t == 'POWER':
+            B = _kind(node.get('base')); e = evaluate(node.get('exponent', {}))
+            if B is None or e is None or e.denominator != 1:
+                return None
+            bn, bd = B; ei = int(e)
+            if ei >= 0:
+                res = (bn ** ei, bd ** ei)
+            else:
+                if bn == 0:
+                    return None
+                res = (bd ** (-ei), bn ** (-ei))
+                if res[1] < 0:
+                    res = (-res[0], -res[1])
+        else:
+            return None                      # ROOT/overig: geen ggd
+        if neg:
+            res = (-res[0], res[1])
+        return res
+    except Exception:
+        return None
+
+
+def _annotate_ggd(node: Dict[str, Any]) -> Dict[str, Any]:
     """
-    raw = evaluate_raw(node)
-    if not _is_vereenvoudigbaar(raw):
+    Sla de GGD van teller/noemer van de RUWE uitkomst op de node op (node['ggd']).
+
+    Het systeem rekent met VEREENVOUDIGDE breuken (de block-output is de gereduceerde
+    Fraction). De GGD legt vast of daarbij vereenvoudigd is:
+      - GGD == 1 → de breuk was al in laagste termen (niet vereenvoudigd)
+      - GGD  > 1 → de ruwe breuk is met deze GGD vereenvoudigd
+
+    Alleen voor bewerkingen die een NETTE breuk opleveren; gehele getallen en
+    irrationale benaderingen (bv. met π) krijgen geen ggd. Geen wrapper, geen apart
+    block — puur een annotatie op de node zelf, zodat de AST het eenvoudigst blijft.
+    """
+    raw = _ruwe_uitkomst_bewerking(node)
+    if raw is None:
         return node
-
-    teller_ruw, noemer_ruw = raw
-    teller_verv, noemer_verv = _vereenvoudig(raw)
-    ggd = _ggd(abs(teller_ruw), abs(noemer_ruw))
-
-    return {
-        'type': 'SIMPLIFY_OP',
-        'source': node,
-        'ruw': {
-            'teller': teller_ruw,
-            'noemer': noemer_ruw,
-        },
-        'vereenvoudigd': {
-            'teller': teller_verv,
-            'noemer': noemer_verv,
-        },
-        'ggd': ggd,
-    }
+    teller, noemer = raw
+    if noemer in (0, 1):
+        return node                      # geen breuk (geheel getal)
+    if teller % noemer == 0:
+        return node                      # reduceert tot geheel getal → geen breuk
+    node['ggd'] = _ggd(abs(teller), abs(noemer))
+    return node
 
 
 def _inject_recursive(node: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Loop recursief door de AST en voeg SIMPLIFY_OP in na elke operatie-node
-    waarvan de ruwe uitkomst vereenvoudigbaar is.
-    
-    Let op: we injecteren NA de node (dus de parent krijgt een SIMPLIFY_OP
-    als kind in plaats van de originele node).
+    Loop recursief door de AST en ANNOTEER elke operatie-node waarvan de ruwe
+    uitkomst vereenvoudigbaar is met een optionele vereenvoudiging (geen apart
+    SIMPLIFY_OP-block meer). De boomstructuur blijft ongewijzigd.
     """
     t = node.get('type')
 
@@ -131,8 +196,9 @@ def _inject_recursive(node: Dict[str, Any]) -> Dict[str, Any]:
         node['source'] = _inject_recursive(node.get('source', {}))
         return node
 
-    # Nu: als DEZE node een vereenvoudigbare uitkomst heeft, pak hem in
-    return _wrap_with_simplify(node)
+    # Nu: als DEZE node een breuk oplevert, sla de GGD op (node['ggd']). Geen
+    # wrapper, geen apart block — het systeem rekent met de vereenvoudigde breuk.
+    return _annotate_ggd(node)
 
 
 def inject_simplify_ops(ast: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -154,15 +220,16 @@ def inject_simplify_ops(ast: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, 
 
 
 def _count_simplify_ops(node: Dict[str, Any]) -> Dict[str, int]:
-    """Tel het aantal SIMPLIFY_OP nodes in de AST."""
+    """Tel het aantal bewerkingen waar daadwerkelijk vereenvoudigd is (ggd > 1)."""
     count = [0]
 
     def _count(n):
-        t = n.get('type')
-        if t == 'SIMPLIFY_OP':
+        if not isinstance(n, dict):
+            return
+        if n.get('ggd', 1) > 1:
             count[0] += 1
-            _count(n.get('source', {}))
-        elif t == 'BINARY_OP':
+        t = n.get('type')
+        if t == 'BINARY_OP':
             _count(n.get('left', {}))
             _count(n.get('right', {}))
         elif t == 'MANIFOLD_OP':

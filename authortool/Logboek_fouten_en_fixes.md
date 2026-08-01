@@ -5,6 +5,10 @@ Nieuwe items schrijf ik uit (symptoom → oorzaak → fix → commit); afgehande
 oudere items staan beknopt in de tabel, met de detail in de genoemde commit of in
 [`archief/`](archief/). Elk item heeft een **behandeldatum**.
 
+Voor **uitbreidingen** (nieuwe functies, gedragswijzigingen) is er een apart
+logboek: [`Logboek_uitbreidingen.md`](Logboek_uitbreidingen.md). Kort: *gebrek* =
+iets was stuk of fout → hier; *uitbreiding* = iets nieuws of anders → daar.
+
 Verwante docs (géén issue-log): [ARCHITECTUUR.md](ARCHITECTUUR.md),
 [AST_MODEL.md](AST_MODEL.md), [STATUS.md](STATUS.md).
 

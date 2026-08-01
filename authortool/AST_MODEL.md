@@ -30,6 +30,14 @@ Elke node heeft een `type` en type-specifieke velden. Cruciaal onderscheid:
 Dat `exponent`/`index` géén kinderen zijn is precies het soort nuance dat je op
 één plek wilt vastleggen — niet zeven keer met de hand.
 
+> **Sinds 2026-08-01: `SIMPLIFY_OP` wordt niet meer geïnjecteerd.** Vereenvoudigen
+> is geen apart mathblock meer. Het systeem rekent met vereenvoudigde breuken; elke
+> breuk-opleverende bewerking krijgt een annotatie `node['ggd']` (gcd van de ruwe
+> teller/noemer). GGD = 1 → niet vereenvoudigd, GGD > 1 → wél. Zie
+> [`Logboek_uitbreidingen.md`](Logboek_uitbreidingen.md). Het `SIMPLIFY_OP`-type
+> blijft geldig in `children()` (achterwaartse compatibiliteit), maar komt in nieuw
+> gegenereerde opgaven niet meer voor.
+
 ## 2. De gezaghebbende bron: `children(node)`
 
 `children()` (in `python_bestanden/getallen/ast_visualizer.py`) is de **enige**

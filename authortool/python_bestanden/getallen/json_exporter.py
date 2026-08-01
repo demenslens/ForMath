@@ -469,7 +469,7 @@ def generate_formath_json(converted_ast, latex, mathml='',
     # Opslaan (in de write_dir, niet in de root output_dir). Bij schrijf=False
     # (bv. de ±-fork, die zelf 3 bestanden met eigen namen wegschrijft) slaan we
     # hier niets op en geven filepath=None terug.
-    filename = f"opgave_{opgave_id}.json"
+    filename = f"{opgave_id}.json"
     filepath = os.path.join(write_dir, filename)
     if schrijf:
         with open(filepath, 'w', encoding='utf-8') as f:
@@ -663,16 +663,6 @@ def _build_mathblocks(op_nodes, node_lookup):
     """Bouw de geordende mathblocks lijst."""
     mathblocks = []
 
-    # Bepaal welke nodes de 'source' zijn van een SIMPLIFY_OP.
-    # Deze nodes krijgen hun RUWE uitkomst als output (i.p.v. de
-    # automatisch vereenvoudigde Fraction).
-    _simplify_source_ids = set()
-    for n in op_nodes:
-        if n['node'].get('type') == 'SIMPLIFY_OP':
-            src = n['node'].get('source')
-            if src is not None:
-                _simplify_source_ids.add(id(src))
-
     # Parent lookup: voor elke operatie-node welk node is de parent
     _parent_lookup = {}
     for n in op_nodes:
@@ -733,20 +723,10 @@ def _build_mathblocks(op_nodes, node_lookup):
                 output_str = f"-({abs(geheel)}+{abs(mt)}/{mn})"
             else:
                 output_str = f"{geheel}+{abs(mt)}/{mn}"
-        elif n['py_id'] in _simplify_source_ids:
-            # Deze node is de source van een SIMPLIFY_OP: toon ruwe output
-            from ast_visualizer import evaluate_raw
-            raw = evaluate_raw(node)
-            if raw is not None:
-                rt, rn = raw
-                if rn == 1:
-                    output_str = str(rt)
-                else:
-                    output_str = f"{rt}/{rn}"
-            else:
-                output_val = evaluate(node)
-                output_str = format_result(output_val) if output_val is not None else '?'
         else:
+            # Systeem rekent met VEREENVOUDIGDE breuken: evaluate() geeft de
+            # gereduceerde Fraction. De GGD (of er vereenvoudigd is) komt apart
+            # in mb['ggd'] hieronder.
             output_val = evaluate(node)
             output_str = format_result(output_val) if output_val is not None else '?'
 
@@ -758,15 +738,11 @@ def _build_mathblocks(op_nodes, node_lookup):
             ('output', output_str),
         ])
 
-        # SIMPLIFY_OP krijgt een 'vereenvoudiging' veld met details
-        if t_node == 'SIMPLIFY_OP':
-            ruw = node.get('ruw', {})
-            verv = node.get('vereenvoudigd', {})
-            mb['vereenvoudiging'] = OrderedDict([
-                ('van', f"{ruw.get('teller')}/{ruw.get('noemer')}"),
-                ('naar', f"{verv.get('teller')}/{verv.get('noemer')}"),
-                ('ggd', node.get('ggd', 1)),
-            ])
+        # GGD van de (ruwe) breuk-uitkomst. GGD == 1 → niet vereenvoudigd (was al
+        # laagste termen); GGD > 1 → de breuk is met deze GGD vereenvoudigd. Alleen
+        # aanwezig bij bewerkingen die een breuk opleveren (zie simplify_injector).
+        if 'ggd' in node:
+            mb['ggd'] = node['ggd']
 
         # MIXED_NUMBER_OP krijgt een 'gemengd_getal' veld met details
         if t_node == 'MIXED_NUMBER_OP':
@@ -1149,20 +1125,9 @@ def _build_duo(op_nodes, node_lookup, converted_ast=None):
 
     bid_to_pyid = {n['block_id']: n['py_id'] for n in op_nodes}
 
-    # Bouw set van py_id's die source zijn van een SIMPLIFY_OP.
-    # Bij het renderen tonen we voor die nodes de RUWE uitkomst (60/72)
-    # i.p.v. de automatisch vereenvoudigde Fraction (5/6) — zo wordt de
-    # vereenvoudig-stap zichtbaar als aparte transformatie.
-    # NB: MIXED_NUMBER_OP-sources worden NIET meegenomen; daar is de source
-    # ofwel al een SIMPLIFY_OP (die zijn eigen vereenvoudigde vorm toont)
-    # ofwel een leaf/operatie waarvan de gewone evaluate-output correct is.
+    # Het systeem rekent met VEREENVOUDIGDE breuken, dus de DUO-expressies tonen
+    # de gereduceerde vorm (evaluate). Geen ruwe-breuk-weergave meer.
     simplify_source_ids = set()
-    for n in op_nodes:
-        nd = n['node']
-        if nd.get('type') == 'SIMPLIFY_OP':
-            src = nd.get('source')
-            if src is not None:
-                simplify_source_ids.add(id(src))
 
     max_step = max(by_step.keys()) if by_step else 0
     duo = []
@@ -1667,10 +1632,11 @@ def _register_leaf(path, py_id, waarde, pyid_to_info, node_map):
 # ─── ID generatie ───────────────────────────────────────────────────────────
 
 def _generate_id():
-    """Genereer ID: YYYYMMDD_NNN (volgnummer per dag).
+    """Genereer ID: FM_YYYYMMDD_NNN (volgnummer per dag).
 
-    Scant de hele opgaven-boom (alle sub-folders) zodat IDs uniek blijven
-    ook wanneer opgaven verspreid over folders staan.
+    De id is tevens de bestandsnaam-basis (FM_YYYYMMDD_NNN.json), analoog aan
+    ForQuest (FQ_...). Scant de hele opgaven-boom (alle sub-folders) zodat IDs
+    uniek blijven ook wanneer opgaven verspreid over folders staan.
     """
     today = date.today()
     date_str = today.strftime('%Y%m%d')
@@ -1681,7 +1647,7 @@ def _generate_id():
         root = _current_output_dir()
         for opg in list_all_opgaven(root):
             fname = os.path.basename(opg['path'])
-            if fname.startswith(f'opgave_{date_str}_') and fname.endswith('.json'):
+            if fname.startswith(f'FM_{date_str}_') and fname.endswith('.json'):
                 try:
                     seq = int(fname.split('_')[2].split('.')[0])
                     existing.append(seq)
@@ -1692,7 +1658,7 @@ def _generate_id():
         output_dir = _current_output_dir()
         if os.path.exists(output_dir):
             for f in os.listdir(output_dir):
-                if f.startswith(f'opgave_{date_str}_') and f.endswith('.json'):
+                if f.startswith(f'FM_{date_str}_') and f.endswith('.json'):
                     try:
                         seq = int(f.split('_')[2].split('.')[0])
                         existing.append(seq)
@@ -1700,4 +1666,4 @@ def _generate_id():
                         pass
 
     next_seq = max(existing) + 1 if existing else 1
-    return f"{date_str}_{next_seq:03d}"
+    return f"FM_{date_str}_{next_seq:03d}"
