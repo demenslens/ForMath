@@ -184,6 +184,7 @@
         }
       ],
       "output": "8/5",
+      "ggd": 1,
       "hints": {
         "structureel": {
           "wat": {
@@ -236,6 +237,7 @@
         }
       ],
       "output": "13/5",
+      "ggd": 1,
       "gelijknamig_maken": {
         "nodig": false,
         "reden": "Slechts één breuk; gelijknamig maken niet nodig."
@@ -293,7 +295,7 @@
       "efficientie": {
         "aanbevolen": true,
         "reden": "einduitkomst: altijd vereenvoudigen",
-        "score": 1
+        "score": 1.0
       },
       "hints": {
         "structureel": {

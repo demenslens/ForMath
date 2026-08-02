@@ -8,29 +8,25 @@
       "mathml": "",
       "ast": {
         "tree": [
-          "Simplify",
+          "Divide",
           [
-            "Divide",
+            "Add",
             [
-              "Add",
-              [
-                "Rational",
-                1,
-                3
-              ],
-              [
-                "Rational",
-                1,
-                5
-              ]
+              "Rational",
+              1,
+              3
             ],
-            50
-          ]
+            [
+              "Rational",
+              1,
+              5
+            ]
+          ],
+          50
         ],
         "node_map": [
           {
             "path": [
-              0,
               0,
               0
             ],
@@ -41,7 +37,6 @@
           {
             "path": [
               0,
-              0,
               1
             ],
             "mathblock_id": "A1",
@@ -50,7 +45,6 @@
           },
           {
             "path": [
-              0,
               0
             ],
             "mathblock_id": "A1",
@@ -58,7 +52,6 @@
           },
           {
             "path": [
-              0,
               1
             ],
             "mathblock_id": "A2",
@@ -66,21 +59,14 @@
             "waarde": "50"
           },
           {
-            "path": [
-              0
-            ],
-            "mathblock_id": "A2",
-            "type": "operation"
-          },
-          {
             "path": [],
-            "mathblock_id": "A3",
+            "mathblock_id": "A2",
             "type": "operation"
           }
         ]
       }
     },
-    "aantal_mathblocks": 3,
+    "aantal_mathblocks": 2,
     "bewerkingen": {
       "optelling": 1,
       "vermenigvuldiging": 0,
@@ -90,10 +76,10 @@
       "optel_manifold": 0,
       "vermenigvuldig_manifold": 0,
       "matroesjka_manifold": 0,
-      "vereenvoudigen": 1,
+      "vereenvoudigen": 0,
       "gemengd_getal": 0
     },
-    "aantal_steps": 3,
+    "aantal_steps": 2,
     "niveau": "Hoog",
     "randvoorwaarden": {
       "vereenvoudig_uitkomst": false,
@@ -131,6 +117,7 @@
         }
       ],
       "output": "8/15",
+      "ggd": 1,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 15,
@@ -199,7 +186,8 @@
           "waarde": "50"
         }
       ],
-      "output": "8/750",
+      "output": "4/375",
+      "ggd": 2,
       "hints": {
         "structureel": {
           "wat": {
@@ -213,69 +201,6 @@
               "key": "binary.div.letop.fraction"
             }
           ]
-        },
-        "feedback": {
-          "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
-      }
-    },
-    {
-      "id": "A3",
-      "step": 3,
-      "operatie": {
-        "symbool": "÷GGD",
-        "beschrijving": "vereenvoudigen",
-        "ggd": 2
-      },
-      "input": [
-        {
-          "type": "mathblock",
-          "id": "A2"
-        }
-      ],
-      "output": "4/375",
-      "vereenvoudiging": {
-        "van": "8/750",
-        "naar": "4/375",
-        "ggd": 2
-      },
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "simplify.wat"
-          },
-          "hoe": {
-            "key": "simplify.hoe",
-            "params": {
-              "ggd": 2
-            }
-          },
-          "let_op": [
-            {
-              "key": "simplify.letop"
-            }
-          ],
-          "voorbeeld": {
-            "key": "simplify.voorbeeld",
-            "params": {
-              "rt": 8,
-              "rn": 750,
-              "ggd": 2,
-              "vt": 4,
-              "vn": 375
-            }
-          }
         },
         "feedback": {
           "bij_correct": {
@@ -326,43 +251,26 @@
       "mathblocks": [
         "A2"
       ]
-    },
-    {
-      "step": 3,
-      "mathblocks": [
-        "A3"
-      ]
     }
   ],
   "duo_verzameling": [
     {
       "step": 1,
-      "input_expressie": "((1/3+1/5):50)",
+      "input_expressie": "(1/3+1/5):50",
       "hoog": [
         {
           "mathblock": "A1",
-          "output_expressie": "(8/15:50)"
+          "output_expressie": "8/15:50"
         }
       ],
       "laag": []
     },
     {
       "step": 2,
-      "input_expressie": "(8/15:50)",
+      "input_expressie": "8/15:50",
       "hoog": [
         {
           "mathblock": "A2",
-          "output_expressie": "8/750"
-        }
-      ],
-      "laag": []
-    },
-    {
-      "step": 3,
-      "input_expressie": "8/750",
-      "hoog": [
-        {
-          "mathblock": "A3",
           "output_expressie": "4/375"
         }
       ],

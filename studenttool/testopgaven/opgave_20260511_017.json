@@ -147,7 +147,8 @@
       "operatie": {
         "symbool": "√",
         "beschrijving": "worteltrekken",
-        "index": 2
+        "index": 2,
+        "aantal_wortels": 1
       },
       "input": [
         {

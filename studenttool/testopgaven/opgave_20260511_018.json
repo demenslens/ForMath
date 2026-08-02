@@ -10,38 +10,30 @@
         "tree": [
           "MixedNumber",
           [
-            "Simplify",
+            "Add",
             [
-              "Add",
+              "Divide",
               [
-                "Simplify",
-                [
-                  "Divide",
-                  [
-                    "Rational",
-                    3,
-                    4
-                  ],
-                  [
-                    "Rational",
-                    18,
-                    20
-                  ]
-                ]
+                "Rational",
+                3,
+                4
               ],
               [
                 "Rational",
-                2,
-                3
+                18,
+                20
               ]
+            ],
+            [
+              "Rational",
+              2,
+              3
             ]
           ]
         ],
         "node_map": [
           {
             "path": [
-              0,
-              0,
               0,
               0,
               0
@@ -54,8 +46,6 @@
             "path": [
               0,
               0,
-              0,
-              0,
               1
             ],
             "mathblock_id": "A1",
@@ -65,8 +55,6 @@
           {
             "path": [
               0,
-              0,
-              0,
               0
             ],
             "mathblock_id": "A1",
@@ -75,46 +63,28 @@
           {
             "path": [
               0,
-              0,
+              1
+            ],
+            "mathblock_id": "A2",
+            "type": "input",
+            "waarde": "2/3"
+          },
+          {
+            "path": [
               0
             ],
             "mathblock_id": "A2",
             "type": "operation"
           },
           {
-            "path": [
-              0,
-              0,
-              1
-            ],
-            "mathblock_id": "A3",
-            "type": "input",
-            "waarde": "2/3"
-          },
-          {
-            "path": [
-              0,
-              0
-            ],
-            "mathblock_id": "A3",
-            "type": "operation"
-          },
-          {
-            "path": [
-              0
-            ],
-            "mathblock_id": "A4",
-            "type": "operation"
-          },
-          {
             "path": [],
-            "mathblock_id": "A5",
+            "mathblock_id": "A3",
             "type": "operation"
           }
         ]
       }
     },
-    "aantal_mathblocks": 5,
+    "aantal_mathblocks": 3,
     "bewerkingen": {
       "optelling": 1,
       "vermenigvuldiging": 0,
@@ -124,10 +94,10 @@
       "optel_manifold": 0,
       "vermenigvuldig_manifold": 0,
       "matroesjka_manifold": 0,
-      "vereenvoudigen": 2,
+      "vereenvoudigen": 0,
       "gemengd_getal": 1
     },
-    "aantal_steps": 5,
+    "aantal_steps": 3,
     "niveau": "Hoog",
     "randvoorwaarden": {
       "vereenvoudig_uitkomst": false,
@@ -164,7 +134,8 @@
           "waarde": "18/20"
         }
       ],
-      "output": "60/72",
+      "output": "5/6",
+      "ggd": 6,
       "hints": {
         "structureel": {
           "wat": {
@@ -199,83 +170,21 @@
       "id": "A2",
       "step": 2,
       "operatie": {
-        "symbool": "÷GGD",
-        "beschrijving": "vereenvoudigen",
-        "ggd": 12
-      },
-      "input": [
-        {
-          "type": "mathblock",
-          "id": "A1"
-        }
-      ],
-      "output": "5/6",
-      "vereenvoudiging": {
-        "van": "60/72",
-        "naar": "5/6",
-        "ggd": 12
-      },
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "simplify.wat"
-          },
-          "hoe": {
-            "key": "simplify.hoe",
-            "params": {
-              "ggd": 12
-            }
-          },
-          "let_op": [
-            {
-              "key": "simplify.letop"
-            }
-          ],
-          "voorbeeld": {
-            "key": "simplify.voorbeeld",
-            "params": {
-              "rt": 60,
-              "rn": 72,
-              "ggd": 12,
-              "vt": 5,
-              "vn": 6
-            }
-          }
-        },
-        "feedback": {
-          "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
-      }
-    },
-    {
-      "id": "A3",
-      "step": 3,
-      "operatie": {
         "symbool": "+",
         "beschrijving": "optelling"
       },
       "input": [
         {
           "type": "mathblock",
-          "id": "A2"
+          "id": "A1"
         },
         {
           "type": "extern",
           "waarde": "2/3"
         }
       ],
-      "output": "27/18",
+      "output": "3/2",
+      "ggd": 9,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 6,
@@ -328,71 +237,8 @@
       }
     },
     {
-      "id": "A4",
-      "step": 4,
-      "operatie": {
-        "symbool": "÷GGD",
-        "beschrijving": "vereenvoudigen",
-        "ggd": 9
-      },
-      "input": [
-        {
-          "type": "mathblock",
-          "id": "A3"
-        }
-      ],
-      "output": "3/2",
-      "vereenvoudiging": {
-        "van": "27/18",
-        "naar": "3/2",
-        "ggd": 9
-      },
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "simplify.wat"
-          },
-          "hoe": {
-            "key": "simplify.hoe",
-            "params": {
-              "ggd": 9
-            }
-          },
-          "let_op": [
-            {
-              "key": "simplify.letop"
-            }
-          ],
-          "voorbeeld": {
-            "key": "simplify.voorbeeld",
-            "params": {
-              "rt": 27,
-              "rn": 18,
-              "ggd": 9,
-              "vt": 3,
-              "vn": 2
-            }
-          }
-        },
-        "feedback": {
-          "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
-      }
-    },
-    {
-      "id": "A5",
-      "step": 5,
+      "id": "A3",
+      "step": 3,
       "operatie": {
         "symbool": "GG",
         "beschrijving": "gemengd getal",
@@ -403,7 +249,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "A4"
+          "id": "A2"
         }
       ],
       "output": "1+1/2",
@@ -417,7 +263,7 @@
       "efficientie": {
         "aanbevolen": true,
         "reden": "einduitkomst: altijd vereenvoudigen",
-        "score": 1
+        "score": 1.0
       },
       "hints": {
         "structureel": {
@@ -484,7 +330,7 @@
     {
       "waarde": "2/3",
       "mathblock_ids": [
-        "A3"
+        "A2"
       ]
     }
   ],
@@ -506,18 +352,6 @@
       "mathblocks": [
         "A3"
       ]
-    },
-    {
-      "step": 4,
-      "mathblocks": [
-        "A4"
-      ]
-    },
-    {
-      "step": 5,
-      "mathblocks": [
-        "A5"
-      ]
     }
   ],
   "duo_verzameling": [
@@ -527,50 +361,28 @@
       "hoog": [
         {
           "mathblock": "A1",
-          "output_expressie": "(60/72+2/3)"
-        }
-      ],
-      "laag": []
-    },
-    {
-      "step": 2,
-      "input_expressie": "(60/72+2/3)",
-      "hoog": [
-        {
-          "mathblock": "A2",
           "output_expressie": "(5/6+2/3)"
         }
       ],
       "laag": []
     },
     {
-      "step": 3,
+      "step": 2,
       "input_expressie": "(5/6+2/3)",
       "hoog": [
         {
-          "mathblock": "A3",
-          "output_expressie": "27/18"
-        }
-      ],
-      "laag": []
-    },
-    {
-      "step": 4,
-      "input_expressie": "27/18",
-      "hoog": [
-        {
-          "mathblock": "A4",
+          "mathblock": "A2",
           "output_expressie": "3/2"
         }
       ],
       "laag": []
     },
     {
-      "step": 5,
+      "step": 3,
       "input_expressie": "3/2",
       "hoog": [
         {
-          "mathblock": "A5",
+          "mathblock": "A3",
           "output_expressie": "1+1/2"
         }
       ],

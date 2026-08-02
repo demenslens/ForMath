@@ -8,56 +8,50 @@
       "mathml": "",
       "ast": {
         "tree": [
-          "Simplify",
+          "Add",
+          2,
           [
             "Add",
-            2,
-            [
-              "Simplify",
-              [
-                "Add",
-                1,
-                [
-                  "Negate",
-                  [
-                    "Add",
-                    [
-                      "Rational",
-                      1,
-                      2
-                    ],
-                    [
-                      "Rational",
-                      -2,
-                      3
-                    ],
-                    2
-                  ]
-                ],
-                [
-                  "Rational",
-                  -1,
-                  2
-                ]
-              ]
-            ],
+            1,
             [
               "Negate",
               [
                 "Add",
                 [
-                  "Sqrt",
-                  [
-                    "Rational",
-                    1,
-                    4
-                  ]
+                  "Rational",
+                  1,
+                  2
                 ],
                 [
                   "Rational",
-                  -1,
+                  -2,
                   3
+                ],
+                2
+              ]
+            ],
+            [
+              "Rational",
+              -1,
+              2
+            ]
+          ],
+          [
+            "Negate",
+            [
+              "Add",
+              [
+                "Sqrt",
+                [
+                  "Rational",
+                  1,
+                  4
                 ]
+              ],
+              [
+                "Rational",
+                -1,
+                3
               ]
             ]
           ]
@@ -65,18 +59,15 @@
         "node_map": [
           {
             "path": [
-              0,
               0
             ],
-            "mathblock_id": "A4",
+            "mathblock_id": "A3",
             "type": "input",
             "waarde": "2"
           },
           {
             "path": [
-              0,
               1,
-              0,
               0
             ],
             "mathblock_id": "A2",
@@ -85,9 +76,7 @@
           },
           {
             "path": [
-              0,
               1,
-              0,
               1,
               0,
               0
@@ -98,9 +87,7 @@
           },
           {
             "path": [
-              0,
               1,
-              0,
               1,
               0,
               1
@@ -111,9 +98,7 @@
           },
           {
             "path": [
-              0,
               1,
-              0,
               1,
               0,
               2
@@ -124,9 +109,7 @@
           },
           {
             "path": [
-              0,
               1,
-              0,
               1,
               0
             ],
@@ -135,9 +118,7 @@
           },
           {
             "path": [
-              0,
               1,
-              0,
               2
             ],
             "mathblock_id": "A2",
@@ -146,79 +127,58 @@
           },
           {
             "path": [
-              0,
-              1,
-              0
+              1
             ],
             "mathblock_id": "A2",
             "type": "operation"
           },
           {
             "path": [
-              0,
-              1
-            ],
-            "mathblock_id": "A3",
-            "type": "operation"
-          },
-          {
-            "path": [
-              0,
               2,
               0,
               0,
               0
             ],
-            "mathblock_id": "B2",
+            "mathblock_id": "B1",
             "type": "input",
             "waarde": "1/4"
           },
           {
             "path": [
-              0,
               2,
               0,
+              0
+            ],
+            "mathblock_id": "B1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2,
+              0,
+              1
+            ],
+            "mathblock_id": "B2",
+            "type": "input",
+            "waarde": "-1/3"
+          },
+          {
+            "path": [
+              2,
               0
             ],
             "mathblock_id": "B2",
             "type": "operation"
           },
           {
-            "path": [
-              0,
-              2,
-              0,
-              1
-            ],
-            "mathblock_id": "B3",
-            "type": "input",
-            "waarde": "-1/3"
-          },
-          {
-            "path": [
-              0,
-              2,
-              0
-            ],
-            "mathblock_id": "B3",
-            "type": "operation"
-          },
-          {
-            "path": [
-              0
-            ],
-            "mathblock_id": "A4",
-            "type": "operation"
-          },
-          {
             "path": [],
-            "mathblock_id": "A5",
+            "mathblock_id": "A3",
             "type": "operation"
           }
         ]
       }
     },
-    "aantal_mathblocks": 7,
+    "aantal_mathblocks": 5,
     "bewerkingen": {
       "optelling": 1,
       "vermenigvuldiging": 0,
@@ -228,10 +188,10 @@
       "optel_manifold": 3,
       "vermenigvuldig_manifold": 0,
       "matroesjka_manifold": 0,
-      "vereenvoudigen": 2,
+      "vereenvoudigen": 0,
       "gemengd_getal": 0
     },
-    "aantal_steps": 5,
+    "aantal_steps": 3,
     "niveau": "Hoog",
     "randvoorwaarden": {
       "vereenvoudig_uitkomst": false,
@@ -274,6 +234,7 @@
         }
       ],
       "output": "-11/6",
+      "ggd": 1,
       "is_negative": true,
       "gelijknamig_maken": {
         "nodig": true,
@@ -344,6 +305,52 @@
       }
     },
     {
+      "id": "B1",
+      "step": 1,
+      "operatie": {
+        "symbool": "√",
+        "beschrijving": "worteltrekken",
+        "index": 2,
+        "aantal_wortels": 1
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "1/4"
+        }
+      ],
+      "output": "1/2",
+      "hints": {
+        "structureel": {
+          "wat": {
+            "key": "root.sqrt.wat"
+          },
+          "hoe": {
+            "key": "root.sqrt.hoe"
+          },
+          "let_op": [
+            {
+              "key": "root.letop.fraction"
+            }
+          ]
+        },
+        "feedback": {
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
       "id": "A2",
       "step": 2,
       "operatie": {
@@ -366,7 +373,8 @@
           "waarde": "-1/2"
         }
       ],
-      "output": "-16/12",
+      "output": "-4/3",
+      "ggd": 4,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 6,
@@ -422,114 +430,6 @@
           "voorbeeld": "",
           "verwijzing_lesstof": ""
         }
-      }
-    },
-    {
-      "id": "B2",
-      "step": 2,
-      "operatie": {
-        "symbool": "√",
-        "beschrijving": "worteltrekken",
-        "index": 2
-      },
-      "input": [
-        {
-          "type": "extern",
-          "waarde": "1/4"
-        }
-      ],
-      "output": "1/2",
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "root.sqrt.wat"
-          },
-          "hoe": {
-            "key": "root.sqrt.hoe"
-          },
-          "let_op": [
-            {
-              "key": "root.letop.fraction"
-            }
-          ]
-        },
-        "feedback": {
-          "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
-      }
-    },
-    {
-      "id": "A3",
-      "step": 3,
-      "operatie": {
-        "symbool": "÷GGD",
-        "beschrijving": "vereenvoudigen",
-        "ggd": 4
-      },
-      "input": [
-        {
-          "type": "mathblock",
-          "id": "A2"
-        }
-      ],
-      "output": "-4/3",
-      "vereenvoudiging": {
-        "van": "-16/12",
-        "naar": "-4/3",
-        "ggd": 4
-      },
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "simplify.wat"
-          },
-          "hoe": {
-            "key": "simplify.hoe",
-            "params": {
-              "ggd": 4
-            }
-          },
-          "let_op": [
-            {
-              "key": "simplify.letop"
-            }
-          ],
-          "voorbeeld": {
-            "key": "simplify.voorbeeld",
-            "params": {
-              "rt": -16,
-              "rn": 12,
-              "ggd": 4,
-              "vt": -4,
-              "vn": 3
-            }
-          }
-        },
-        "feedback": {
-          "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
       },
       "gemengd_getal": {
         "mogelijk": true,
@@ -541,8 +441,8 @@
       }
     },
     {
-      "id": "B3",
-      "step": 3,
+      "id": "B2",
+      "step": 2,
       "operatie": {
         "symbool": "-(+)",
         "beschrijving": "optelling"
@@ -550,7 +450,7 @@
       "input": [
         {
           "type": "mathblock",
-          "id": "B2"
+          "id": "B1"
         },
         {
           "type": "extern",
@@ -558,6 +458,7 @@
         }
       ],
       "output": "-1/6",
+      "ggd": 1,
       "is_negative": true,
       "gelijknamig_maken": {
         "nodig": true,
@@ -614,8 +515,8 @@
       }
     },
     {
-      "id": "A4",
-      "step": 4,
+      "id": "A3",
+      "step": 3,
       "operatie": {
         "symbool": "M+(3)",
         "beschrijving": "optel-manifold",
@@ -628,15 +529,16 @@
         },
         {
           "type": "mathblock",
-          "id": "A3"
+          "id": "A2"
         },
         {
           "type": "mathblock",
-          "id": "B3",
+          "id": "B2",
           "is_negative": true
         }
       ],
-      "output": "9/18",
+      "output": "1/2",
+      "ggd": 9,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 6,
@@ -680,69 +582,6 @@
         },
         "feedback": {
           "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
-      }
-    },
-    {
-      "id": "A5",
-      "step": 5,
-      "operatie": {
-        "symbool": "÷GGD",
-        "beschrijving": "vereenvoudigen",
-        "ggd": 9
-      },
-      "input": [
-        {
-          "type": "mathblock",
-          "id": "A4"
-        }
-      ],
-      "output": "1/2",
-      "vereenvoudiging": {
-        "van": "9/18",
-        "naar": "1/2",
-        "ggd": 9
-      },
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "simplify.wat"
-          },
-          "hoe": {
-            "key": "simplify.hoe",
-            "params": {
-              "ggd": 9
-            }
-          },
-          "let_op": [
-            {
-              "key": "simplify.letop"
-            }
-          ],
-          "voorbeeld": {
-            "key": "simplify.voorbeeld",
-            "params": {
-              "rt": 9,
-              "rn": 18,
-              "ggd": 9,
-              "vt": 1,
-              "vn": 2
-            }
-          }
-        },
-        "feedback": {
-          "bij_correct": {
             "key": "feedback.correct.root"
           },
           "bij_fout_algemeen": {
@@ -762,7 +601,7 @@
     {
       "waarde": "2",
       "mathblock_ids": [
-        "A4"
+        "A3"
       ]
     },
     {
@@ -798,13 +637,13 @@
     {
       "waarde": "1/4",
       "mathblock_ids": [
-        "B2"
+        "B1"
       ]
     },
     {
       "waarde": "-1/3",
       "mathblock_ids": [
-        "B3"
+        "B2"
       ]
     }
   ],
@@ -812,7 +651,8 @@
     {
       "step": 1,
       "mathblocks": [
-        "A1"
+        "A1",
+        "B1"
       ]
     },
     {
@@ -825,87 +665,47 @@
     {
       "step": 3,
       "mathblocks": [
-        "A3",
-        "B3"
-      ]
-    },
-    {
-      "step": 4,
-      "mathblocks": [
-        "A4"
-      ]
-    },
-    {
-      "step": 5,
-      "mathblocks": [
-        "A5"
+        "A3"
       ]
     }
   ],
   "duo_verzameling": [
     {
       "step": 1,
-      "input_expressie": "(2+(1-(1/2-2/3+2)-1/2)-(√(1/4)-1/3))",
+      "input_expressie": "2+(1-(1/2-2/3+2)-1/2)-(√(1/4)-1/3)",
       "hoog": [
         {
           "mathblock": "A1",
-          "output_expressie": "(2+(1+-11/6-1/2)-(√(1/4)-1/3))"
+          "output_expressie": "2+(1+-11/6-1/2)-(√(1/4)-1/3)"
+        },
+        {
+          "mathblock": "B1",
+          "output_expressie": "2+(1-(1/2-2/3+2)-1/2)-(1/2-1/3)"
         }
       ],
-      "laag": [
-        {
-          "mathblock": "B2",
-          "output_expressie": "(2+(1-(1/2-2/3+2)-1/2)-(1/2-1/3))"
-        }
-      ]
+      "laag": []
     },
     {
       "step": 2,
-      "input_expressie": "(2+(1+-11/6-1/2)-(√(1/4)-1/3))",
+      "input_expressie": "2+(1+-11/6-1/2)-(1/2-1/3)",
       "hoog": [
         {
           "mathblock": "A2",
-          "output_expressie": "(2+-16/12-(√(1/4)-1/3))"
+          "output_expressie": "2+-4/3-(1/2-1/3)"
         },
         {
           "mathblock": "B2",
-          "output_expressie": "(2+(1+-11/6-1/2)-(1/2-1/3))"
+          "output_expressie": "2+(1+-11/6-1/2)+-1/6"
         }
       ],
       "laag": []
     },
     {
       "step": 3,
-      "input_expressie": "(2+-16/12-(1/2-1/3))",
+      "input_expressie": "2+-4/3+-1/6",
       "hoog": [
         {
           "mathblock": "A3",
-          "output_expressie": "(2+-4/3-(1/2-1/3))"
-        },
-        {
-          "mathblock": "B3",
-          "output_expressie": "(2+-16/12+-1/6)"
-        }
-      ],
-      "laag": []
-    },
-    {
-      "step": 4,
-      "input_expressie": "(2+-4/3+-1/6)",
-      "hoog": [
-        {
-          "mathblock": "A4",
-          "output_expressie": "9/18"
-        }
-      ],
-      "laag": []
-    },
-    {
-      "step": 5,
-      "input_expressie": "9/18",
-      "hoog": [
-        {
-          "mathblock": "A5",
           "output_expressie": "1/2"
         }
       ],

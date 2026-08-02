@@ -96,6 +96,7 @@
         }
       ],
       "output": "5/6",
+      "ggd": 1,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 6,

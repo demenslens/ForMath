@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="974" height="758" viewBox="0 0 974 758">
   <rect width="100%" height="100%" fill="#FFFFFF" />
-  <text x="40" y="50" font-family="JetBrains Mono, Consolas, monospace" font-size="15" font-weight="500" fill="#1a1a1a">AST: 2×(3+4×5)+-(6:2)+7</text>
+  <text x="40" y="50" font-family="JetBrains Mono, Consolas, monospace" font-size="15" font-weight="500" fill="#1a1a1a">opgave_20260528_001</text>
   <line x1="120" y1="680" x2="934" y2="680" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />
   <text x="114" y="684" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="10" font-weight="500" fill="#333">step 0</text>
   <line x1="120" y1="540" x2="934" y2="540" stroke="#CCCCCC" stroke-width="1" stroke-dasharray="6,4" />

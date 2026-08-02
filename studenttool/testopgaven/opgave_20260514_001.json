@@ -121,6 +121,7 @@
         }
       ],
       "output": "27/20",
+      "ggd": 1,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 20,
@@ -198,6 +199,7 @@
         }
       ],
       "output": "27/2000",
+      "ggd": 1,
       "hints": {
         "structureel": {
           "wat": {

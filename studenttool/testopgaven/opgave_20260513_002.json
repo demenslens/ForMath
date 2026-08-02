@@ -108,6 +108,7 @@
         }
       ],
       "output": "206/195",
+      "ggd": 1,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 195,
@@ -186,7 +187,7 @@
       "efficientie": {
         "aanbevolen": true,
         "reden": "einduitkomst: altijd vereenvoudigen",
-        "score": 1
+        "score": 1.0
       },
       "hints": {
         "structureel": {

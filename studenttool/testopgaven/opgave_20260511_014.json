@@ -8,25 +8,21 @@
       "mathml": "",
       "ast": {
         "tree": [
-          "Simplify",
+          "Add",
           [
-            "Add",
-            [
-              "Rational",
-              1,
-              6
-            ],
-            [
-              "Rational",
-              2,
-              15
-            ]
+            "Rational",
+            1,
+            6
+          ],
+          [
+            "Rational",
+            2,
+            15
           ]
         ],
         "node_map": [
           {
             "path": [
-              0,
               0
             ],
             "mathblock_id": "A1",
@@ -35,7 +31,6 @@
           },
           {
             "path": [
-              0,
               1
             ],
             "mathblock_id": "A1",
@@ -43,21 +38,14 @@
             "waarde": "2/15"
           },
           {
-            "path": [
-              0
-            ],
-            "mathblock_id": "A1",
-            "type": "operation"
-          },
-          {
             "path": [],
-            "mathblock_id": "A2",
+            "mathblock_id": "A1",
             "type": "operation"
           }
         ]
       }
     },
-    "aantal_mathblocks": 2,
+    "aantal_mathblocks": 1,
     "bewerkingen": {
       "optelling": 1,
       "vermenigvuldiging": 0,
@@ -67,10 +55,10 @@
       "optel_manifold": 0,
       "vermenigvuldig_manifold": 0,
       "matroesjka_manifold": 0,
-      "vereenvoudigen": 1,
+      "vereenvoudigen": 0,
       "gemengd_getal": 0
     },
-    "aantal_steps": 2,
+    "aantal_steps": 1,
     "niveau": "Hoog",
     "randvoorwaarden": {
       "vereenvoudig_uitkomst": false,
@@ -107,7 +95,8 @@
           "waarde": "2/15"
         }
       ],
-      "output": "27/90",
+      "output": "3/10",
+      "ggd": 9,
       "gelijknamig_maken": {
         "nodig": true,
         "kgv": 30,
@@ -142,69 +131,6 @@
               "key": "binary.add.letop.fraction"
             }
           ]
-        },
-        "feedback": {
-          "bij_correct": {
-            "key": "feedback.correct.intermediate"
-          },
-          "bij_fout_algemeen": {
-            "key": "feedback.wrong.general"
-          },
-          "veelvoorkomende_fouten": []
-        },
-        "didactisch": {
-          "didactische_uitleg": "",
-          "voorbeeld": "",
-          "verwijzing_lesstof": ""
-        }
-      }
-    },
-    {
-      "id": "A2",
-      "step": 2,
-      "operatie": {
-        "symbool": "÷GGD",
-        "beschrijving": "vereenvoudigen",
-        "ggd": 9
-      },
-      "input": [
-        {
-          "type": "mathblock",
-          "id": "A1"
-        }
-      ],
-      "output": "3/10",
-      "vereenvoudiging": {
-        "van": "27/90",
-        "naar": "3/10",
-        "ggd": 9
-      },
-      "hints": {
-        "structureel": {
-          "wat": {
-            "key": "simplify.wat"
-          },
-          "hoe": {
-            "key": "simplify.hoe",
-            "params": {
-              "ggd": 9
-            }
-          },
-          "let_op": [
-            {
-              "key": "simplify.letop"
-            }
-          ],
-          "voorbeeld": {
-            "key": "simplify.voorbeeld",
-            "params": {
-              "rt": 27,
-              "rn": 90,
-              "ggd": 9,
-              "vt": 3,
-              "vn": 10
-            }
-          }
         },
         "feedback": {
           "bij_correct": {
@@ -243,32 +169,15 @@
       "mathblocks": [
         "A1"
       ]
-    },
-    {
-      "step": 2,
-      "mathblocks": [
-        "A2"
-      ]
     }
   ],
   "duo_verzameling": [
     {
       "step": 1,
-      "input_expressie": "(1/6+2/15)",
+      "input_expressie": "1/6+2/15",
       "hoog": [
         {
           "mathblock": "A1",
-          "output_expressie": "27/90"
-        }
-      ],
-      "laag": []
-    },
-    {
-      "step": 2,
-      "input_expressie": "27/90",
-      "hoog": [
-        {
-          "mathblock": "A2",
           "output_expressie": "3/10"
         }
       ],
