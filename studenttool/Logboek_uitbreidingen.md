@@ -10,6 +10,25 @@ was stuk of fout → daar; *uitbreiding* = iets nieuws of anders → hier.
 
 ---
 
+## 2026-08-02 — Groen kader om openstaande getal-bewerkingen + taalwissel-labels
+
+**Wat.** (1) **Hint I** tekent nu óók een groen kader om een **openstaande getal-
+bewerking** (`5+4`, `12:3`, `5×4`) op een herschreven tussenvorm zoals `(5+4)/30` —
+los van de mathblock-anchoring, die daar niet op past. (2) De opgave-labels in de
+kolom updaten **live bij een taalwissel** (voorheen pas na herladen).
+
+**Hoe.** `toonBewerkingKaders`: een operator-offset direct tussen twee (meercijferige)
+cijfer-offsets → groen kader (zelfde `spanBounds`+diepte-berekening als de mathblock-
+hints); gehaakt aan Hint I in `tekenHintKaders`/`redrawKaders`. Een `+` tussen
+bréúken heeft een `\frac`-composite als buur → geen match, dus geen dubbeling.
+`refreshOpgaveLabels` via `I18N.onChange` herzet de labels bij taalwissel.
+
+**Bestanden.** `werkblad/werkblad.js` (`toonBewerkingKaders`, `refreshOpgaveLabels`,
+`tekenHintKaders`, `redrawKaders`). Overzicht van het hele hint-mechanisme:
+[`HINT_MECHANISME.md`](HINT_MECHANISME.md) (nieuw).
+
+---
+
 ## 2026-08-01 — Opgaven-kolom: "Opgave …" i.p.v. de `FM_`/`opgave_`-prefix
 
 **Wat.** In de opgaven-kolom (linkerkolom) tonen we per opgave `Opgave <nummer>`

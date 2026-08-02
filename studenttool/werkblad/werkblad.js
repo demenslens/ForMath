@@ -4662,6 +4662,65 @@
   }
   window.__toonOptioneel = toonOptioneleKaders;
 
+  // ── Groene kaders om OPENSTAANDE getal-bewerkingen (Hint I) ──
+  // Bv. de optelling 5+4 in de teller van (5+4)/30, of 12:3, 5×4. Waarde-/positie-
+  // gebaseerd op de offsets, LOS van de mathblock-anchoring: als de student naar een
+  // structureel andere (maar waarde-behoudende) tussenvorm herschrijft, kan de
+  // gewone groene mathblock-hint daar niet verankeren. Een bewerking = een operator-
+  // offset die DIRECT (op index) tussen twee (meercijferige) getal-offsets staat.
+  // Staat de operator tussen breuken (\frac..+\frac..), dan is de buur een composite
+  // → geen match, dus alleen de mathblock-hint toont daar (geen dubbeling).
+  function _isDigitOffset(o){
+    return !!(o && o.bounds && o.bounds.width > 0 && /^\d$/.test((o.latex || '').trim()));
+  }
+  function _isOperatorOffset(o){
+    if (!(o && o.bounds && o.bounds.width > 0)) return false;
+    var s = (o.latex || '').trim();
+    return s === '+' || s === '-' || s === ':' || s === '*' ||
+           s === '\\cdot' || s === '·' || s === '\\times' || s === '×' ||
+           s === '\\div' || s === '÷';
+  }
+  function toonBewerkingKaders(skipClear){
+    var V = window.VERANKERING;
+    if (!V || !V.COLORS || !V.COLORS.HOOG) return 0;
+    if (!skipClear) V.clearBoxes();
+    var mf = document.querySelector('.rl.active .editor')
+          || document.querySelector('.rl.active math-field')
+          || (typeof mfRef !== 'undefined' ? mfRef : null)
+          || document.querySelector('math-field');
+    if (!mf) return 0;
+    var offs = V.collectOffsets(mf);
+    if (!offs || offs.length < 3) return 0;
+    var delta = V.computeDelta(mf, offs);
+    var n = 0;
+    for (var i = 1; i < offs.length - 1; i++){
+      if (!_isOperatorOffset(offs[i])) continue;
+      if (!_isDigitOffset(offs[i - 1]) || !_isDigitOffset(offs[i + 1])) continue;
+      // Strek naar links/rechts over aaneengesloten cijfers (meercijferige getallen).
+      var L = i - 1; while (L > 0 && _isDigitOffset(offs[L - 1])) L--;
+      var R = i + 1; while (R < offs.length - 1 && _isDigitOffset(offs[R + 1])) R++;
+      var bounds = [], depths = [];
+      for (var k = L; k <= R; k++){
+        if (offs[k].bounds && offs[k].bounds.width > 0){ bounds.push(offs[k].bounds); depths.push(offs[k].depth); }
+      }
+      var span = V.spanBounds(bounds);
+      if (span){
+        var depth = depths.length ? Math.min.apply(null, depths) : null;
+        var box = V.drawBox(mf, span, V.COLORS.HOOG, delta, depth, V.HINT_MARGE);
+        if (box){
+          box.style.pointerEvents = 'auto';
+          box.style.cursor = 'help';
+          box.setAttribute('data-bewerking', '1');
+          box.setAttribute('title', 'Voer deze bewerking nu uit.');
+          n++;
+        }
+      }
+      i = R;   // door naar ná deze bewerking
+    }
+    return n;
+  }
+  window.__toonBewerking = toonBewerkingKaders;
+
   // PPTE — popup met de structurele hints (Wat / Hoe / Let op) van ÉÉN mathblock,
   // geopend door op z'n (groene of grijze) kader te klikken. De items zijn een
   // accordion: klik op de kop → de tekst ontvouwt. Onderaan een 'Sluit'-knop.
@@ -5182,6 +5241,7 @@
   function tekenHintKaders(){
     if (window.VERANKERING) window.VERANKERING.clearBoxes();
     if (hintKadersHoog)      toonHintKaders('hoog', true);
+    if (hintKadersHoog)      toonBewerkingKaders(true);   // openstaande getal-bewerkingen (groen)
     if (hintKadersLaag)      toonHintKaders('laag', true);
     if (hintKadersOptioneel) toonOptioneleKaders(true);   // optionele (blauwe) breuk-kaders
     if (hintGroenBtn) hintGroenBtn.classList.toggle('active', hintKadersHoog);
@@ -5210,6 +5270,7 @@
     var foutRes = _lastFoutRes;                 // bewaren (markFoutKaders reset dit)
     window.VERANKERING.clearBoxes();            // hint-kaders weg (fout blijft staan)
     if (hintKadersHoog)      toonHintKaders('hoog', true);
+    if (hintKadersHoog)      toonBewerkingKaders(true);  // openstaande getal-bewerkingen (groen)
     if (hintKadersLaag)      toonHintKaders('laag', true);
     if (hintKadersOptioneel) toonOptioneleKaders(true);  // optionele (blauwe) breuk-kaders
     if (foutRes) markFoutKaders(foutRes);       // fout-kaders opnieuw op nieuwe posities
