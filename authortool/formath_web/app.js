@@ -2317,11 +2317,18 @@ async function selectOpgave(id, options = {}) {
             catch (e) {}
             return false;
         }
-        setMathFieldValue(latex);
-        // En nog eens nadat MathLive's custom element zeker upgraded is
-        requestAnimationFrame(() => setMathFieldValue(latex));
-
-        applyEditLock();
+        // Ontgrendel het veld vlak vóór setValue en her-vergrendel erna. MathLive
+        // negeert setValue op een READ-ONLY veld: zonder dit bleef bij het laden van
+        // een VOLGENDE opgave de vorige expressie staan (het veld was nog read-only
+        // van de vorige applyEditLock), waardoor de export telkens dezelfde opgave
+        // wegschreef. Zowel synchroon als na de element-upgrade (rAF).
+        const _zetExpressie = () => {
+            try { mathField.removeAttribute('readonly'); mathField.readOnly = false; } catch (e) {}
+            setMathFieldValue(latex);
+            applyEditLock();   // her-vergrendelt op basis van editMode/selectie
+        };
+        _zetExpressie();
+        requestAnimationFrame(_zetExpressie);
 
         // Rechter inspector uit JSON vullen (read-only totdat edit aan)
         const rv = data.opgave?.metadata?.randvoorwaarden || {};

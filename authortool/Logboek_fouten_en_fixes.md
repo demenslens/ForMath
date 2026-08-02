@@ -24,6 +24,23 @@ Verwante docs (géén issue-log): [ARCHITECTUUR.md](ARCHITECTUUR.md),
 
 -->
 
+## 2026-08-02 — Bestaande opgave laden liet vorige expressie in het math-field staan
+
+**Symptoom.** Bij het achtereenvolgens laden van opgaven bleef bij de VOLGENDE
+opgave de vorige LaTeX/expressie in het invoerveld staan; de export schreef telkens
+dezelfde opgave weg.
+
+**Oorzaak.** In `selectOpgave` wordt het math-field na het vullen op read-only gezet
+(`applyEditLock`). Bij de tweede opgave stond het veld al read-only van de vorige
+keer, en MathLive negeert `setValue` op een read-only veld → de nieuwe expressie
+kwam er niet in.
+
+**Fix.** Het veld vlak vóór `setValue` ontgrendelen (`removeAttribute('readonly')`
++ `readOnly=false`) en er direct na weer vergrendelen — zowel synchroon als na de
+element-upgrade (rAF). `formath_web/app.js` (`selectOpgave`).
+
+---
+
 ## Eerder behandelde issues
 
 | Datum | Onderwerp | Kern | Ref |
