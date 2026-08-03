@@ -902,6 +902,7 @@
         mf.addEventListener('input',onEditorInput);
         attachCursorTracking(mf);
         try { mf.focus(); } catch(e){}   // zelfde MathLive-ESM focus-race afvangen
+        if (typeof scheduleHintCounts === 'function') scheduleHintCounts();
       },200);
     } else {
       var sp = document.createElement('span');
@@ -950,6 +951,7 @@
         _actEq.style.display = /=/.test(_v) ? 'none' : '';
       }
     }
+    if (typeof scheduleHintCounts === 'function') scheduleHintCounts();  // hint-telling bijwerken (gedebounced)
     clearTimeout(parseTimer);
     // Clear error overlay on any input
     _cnt.clearErrorOverlay++;
@@ -4283,6 +4285,9 @@
     nextLine.className = 'rl active'; nextLine.id = 'active-line';
     activeLineIndex = nextIndex;
     nextLine.innerHTML = '';
+    // Hints horen bij de actuele regel: zet ze uit + wis kaders en de tekst-op-regel
+    // bij de regelovergang (de nieuwe regel telt zelf opnieuw via scheduleHintCounts).
+    if (typeof resetKadersToggle === 'function') resetKadersToggle();
 
     if(mathLiveReady){
       var mf = document.createElement('math-field');
@@ -4320,6 +4325,7 @@
         try { mf.position = 0; } catch(e){
           try { mf.executeCommand('moveToMathfieldStart'); } catch(e2){}
         }
+        if (typeof scheduleHintCounts === 'function') scheduleHintCounts();
       },200);
     } else {
       var sp = document.createElement('span');
@@ -4410,15 +4416,24 @@
     }
   }
 
-  function toonHintKaders(prioriteit, skipClear){
-    if (!window.VERANKERING) { dbg('[hint] VERANKERING-module niet geladen'); return {reden:'VERANKERING niet geladen'}; }
+  // Klik op een hint-kader: geen popup meer, maar de kaders wissen + de hint
+  // uitzetten, zodat de student meteen verder kan met de bewerking uitvoeren.
+  function _hintKlikDismiss(ev){
+    if (ev) ev.stopPropagation();
+    resetKadersToggle();
+    var ed = getEditor(); if (ed){ try { ed.focus(); } catch(e){} }
+  }
+
+  function toonHintKaders(prioriteit, skipClear, countOnly){
+    if (!window.VERANKERING) { if (!countOnly) dbg('[hint] VERANKERING-module niet geladen'); return countOnly ? 0 : {reden:'VERANKERING niet geladen'}; }
     var V = window.VERANKERING;
     // skipClear: bij de gecombineerde weergave (hoog + laag) wissen we één keer
-    // vooraf en tekenen we beide takken zonder elkaar weg te vegen.
-    if (!skipClear) V.clearBoxes();
-    if (!currentOpgave) { st('er', TT('status.no_exercise')); return {reden:'geen opgave geladen'}; }
+    // vooraf en tekenen we beide takken zonder elkaar weg te vegen. countOnly: alleen
+    // tellen (voor het aantal op de knop) — niets tekenen, geen statusberichten.
+    if (!skipClear && !countOnly) V.clearBoxes();
+    if (!currentOpgave) { if (!countOnly) st('er', TT('status.no_exercise')); return countOnly ? 0 : {reden:'geen opgave geladen'}; }
     var ast = currentOpgave.metadata && currentOpgave.metadata.expressie && currentOpgave.metadata.expressie.ast;
-    if (!ast || !ast.node_map) { st('er', TT('status.no_ast')); return {reden:'geen AST/node_map'}; }
+    if (!ast || !ast.node_map) { if (!countOnly) st('er', TT('status.no_ast')); return countOnly ? 0 : {reden:'geen AST/node_map'}; }
 
     // Pak GEGARANDEERD de actieve invoer-mathfield, niet een zijbalk-preview.
     // Het werkblad heeft veel math-fields in de DOM (één per opgave-preview);
@@ -4427,7 +4442,7 @@
           || document.querySelector('.rl.active math-field')
           || mfRef
           || document.querySelector('math-field');
-    if (!mf) { st('er', TT('status.no_input')); return {reden:'geen invoerveld actief'}; }
+    if (!mf) { if (!countOnly) st('er', TT('status.no_input')); return countOnly ? 0 : {reden:'geen invoerveld actief'}; }
 
     // Verankering op de GEËVOLUEERDE boom (genLatexTokens). Na elke correcte
     // LF klapt de tree-evolutie opgeloste mathblocks in tot numerieke bladeren
@@ -4462,8 +4477,8 @@
     }
     var _uniqMb = function(arr){ var s={}; arr.forEach(function(x){ if(x!=null){ s[x]=(s[x]||0)+1; } }); return s; };
     if (!teTonen.length) {
-      st('ok', TT('hint.no_blocks', {branch: _takNaam(tak)}));
-      return {reden:'teTonen leeg', tak:tak, teTonen:teTonen};
+      if (!countOnly) st('ok', TT('hint.no_blocks', {branch: _takNaam(tak)}));
+      return countOnly ? 0 : {reden:'teTonen leeg', tak:tak, teTonen:teTonen};
     }
 
     // VELD-PARSE-TOKENBRON (achter window.__veldParse; verankering_review §1):
@@ -4550,27 +4565,31 @@
       }
       perBlock.push({ bid: bid, offsets: bounds.length, span: !!span });
       if (span){
-        var d = depths.length ? Math.min.apply(null, depths) : 0;
-        var box = V.drawBox(mf, span, kleur, delta, d, V.HINT_MARGE);
-        if (box){
-          // PPTE: kader klikbaar → popup met de structureel-hints van dit
-          // mathblock. drawBox zet standaard pointerEvents:none (voor de fout-
-          // kaders); voor hint-kaders zetten we 'm aan. bid = forEach-parameter,
-          // dus de closure vangt per kader het juiste mathblock.
-          box.style.pointerEvents = 'auto';
-          box.style.cursor = 'pointer';
-          box.setAttribute('data-mb', bid);
-          box.addEventListener('click', function(ev){ ev.stopPropagation(); toonMathblockHints(bid); });
-        }
-        if (window.__boxDebug && box) {
-          var kr = box.getBoundingClientRect();
-          console.log('[kader] ' + bid + '  x=' + Math.round(kr.x) + ' y=' + Math.round(kr.y) +
-            ' w=' + Math.round(kr.width) + ' h=' + Math.round(kr.height) +
-            ' bot=' + Math.round(kr.bottom) + '   (diepte=' + d + ')');
+        if (!countOnly){
+          var d = depths.length ? Math.min.apply(null, depths) : 0;
+          var box = V.drawBox(mf, span, kleur, delta, d, V.HINT_MARGE);
+          if (box){
+            // PPTE: kader klikbaar → popup met de structureel-hints van dit
+            // mathblock. drawBox zet standaard pointerEvents:none (voor de fout-
+            // kaders); voor hint-kaders zetten we 'm aan. bid = forEach-parameter,
+            // dus de closure vangt per kader het juiste mathblock.
+            box.style.pointerEvents = 'auto';
+            box.style.cursor = 'pointer';
+            box.setAttribute('data-mb', bid);
+            // Popup uitgeschakeld: klik wist de kaders zodat de student verder kan.
+            box.addEventListener('click', _hintKlikDismiss);
+          }
+          if (window.__boxDebug && box) {
+            var kr = box.getBoundingClientRect();
+            console.log('[kader] ' + bid + '  x=' + Math.round(kr.x) + ' y=' + Math.round(kr.y) +
+              ' w=' + Math.round(kr.width) + ' h=' + Math.round(kr.height) +
+              ' bot=' + Math.round(kr.bottom) + '   (diepte=' + d + ')');
+          }
         }
         getekend++;
       }
     });
+    if (countOnly) return getekend;
     st('ok', TT('hint.boxed', {count: getekend, branch: _takNaam(tak)}));
     // Diagnose als RETURNWAARDE → direct zichtbaar in de console, immuun voor
     // console-filters en de atomMap-ruis (i.p.v. losse dbg-regels die verdrinken).
@@ -4607,10 +4626,10 @@
   // duo.optioneel), maar wordt hier direct uit de zichtbare breuk afgeleid.
   // NB: alleen \frac (breuk) — een ':' (deling) is structureel iets anders.
   function _ggdInt(a, b){ a = Math.abs(a); b = Math.abs(b); while (b){ var t = b; b = a % b; a = t; } return a; }
-  function toonOptioneleKaders(skipClear){
+  function toonOptioneleKaders(skipClear, countOnly){
     var V = window.VERANKERING;
     if (!V || !V.COLORS || !V.COLORS.OPTIONEEL) return 0;
-    if (!skipClear) V.clearBoxes();
+    if (!skipClear && !countOnly) V.clearBoxes();
     var mf = document.querySelector('.rl.active .editor')
           || document.querySelector('.rl.active math-field')
           || (typeof mfRef !== 'undefined' ? mfRef : null)
@@ -4646,6 +4665,8 @@
         leafB.push(p.bounds); leafD.push(p.depth);
       });
       var span = leafB.length ? V.spanBounds(leafB) : fo.bounds;
+      if (!span) return;
+      if (countOnly){ n++; return; }
       var depth = leafD.length ? Math.min.apply(null, leafD) : null;
       var box = V.drawBox(mf, span, V.COLORS.OPTIONEEL, delta, depth, V.HINT_MARGE);
       if (box){
@@ -4655,6 +4676,7 @@
         box.setAttribute('title',
           'Optioneel: je mag deze breuk vereenvoudigen (ggd ' + g + '): ' +
           t + '/' + d + ' → ' + (t / g) + '/' + (d / g) + '. Het hoeft niet.');
+        box.addEventListener('click', _hintKlikDismiss);
         n++;
       }
     });
@@ -4680,10 +4702,10 @@
            s === '\\cdot' || s === '·' || s === '\\times' || s === '×' ||
            s === '\\div' || s === '÷';
   }
-  function toonBewerkingKaders(skipClear){
+  function toonBewerkingKaders(skipClear, countOnly){
     var V = window.VERANKERING;
     if (!V || !V.COLORS || !V.COLORS.HOOG) return 0;
-    if (!skipClear) V.clearBoxes();
+    if (!skipClear && !countOnly) V.clearBoxes();
     var mf = document.querySelector('.rl.active .editor')
           || document.querySelector('.rl.active math-field')
           || (typeof mfRef !== 'undefined' ? mfRef : null)
@@ -4705,14 +4727,18 @@
       }
       var span = V.spanBounds(bounds);
       if (span){
-        var depth = depths.length ? Math.min.apply(null, depths) : null;
-        var box = V.drawBox(mf, span, V.COLORS.HOOG, delta, depth, V.HINT_MARGE);
-        if (box){
-          box.style.pointerEvents = 'auto';
-          box.style.cursor = 'help';
-          box.setAttribute('data-bewerking', '1');
-          box.setAttribute('title', 'Voer deze bewerking nu uit.');
-          n++;
+        if (countOnly){ n++; }
+        else {
+          var depth = depths.length ? Math.min.apply(null, depths) : null;
+          var box = V.drawBox(mf, span, V.COLORS.HOOG, delta, depth, V.HINT_MARGE);
+          if (box){
+            box.style.pointerEvents = 'auto';
+            box.style.cursor = 'help';
+            box.setAttribute('data-bewerking', '1');
+            box.setAttribute('title', 'Voer deze bewerking nu uit.');
+            box.addEventListener('click', _hintKlikDismiss);
+            n++;
+          }
         }
       }
       i = R;   // door naar ná deze bewerking
@@ -5220,14 +5246,52 @@
     optioneel: 'Vereenvoudiging is mogelijk'
   };
   // Toon links onderaan de omschrijving(en) van de actieve hint-knop(pen).
+  // Hint-omschrijving op de VOLGENDE werkblad-regel (i.p.v. in de statusbalk).
+  function zetHintRegelTekst(text){
+    var rules = document.getElementById('rules');
+    if(!rules) return;
+    rules.querySelectorAll('.hint-regel-tekst').forEach(function(e){ e.remove(); });
+    if(!text) return;
+    var line = rules.children[activeLineIndex + 1];
+    if(!line) return;
+    var el = document.createElement('span');
+    el.className = 'hint-regel-tekst';
+    el.textContent = text;
+    line.appendChild(el);
+  }
   function updateHintDesc(){
-    if(!hintDescEl) return;
     var p = [];
     if(hintKadersHoog)      p.push(HINT_DESC.hoog);
     if(hintKadersLaag)      p.push(HINT_DESC.laag);
     if(hintKadersOptioneel) p.push(HINT_DESC.optioneel);
-    hintDescEl.textContent = p.join('  ·  ');
+    zetHintRegelTekst(p.join('  ·  '));
+    if(hintDescEl) hintDescEl.textContent = '';   // niet meer in de statusbalk
   }
+
+  // Aantal hints per type (op de actieve regel) → telling op de knoppen. Telt via
+  // de countOnly-modus (niets tekenen). Bij 0: knop krijgt de klasse 'leeg' (naam
+  // lichtgrijs).
+  var hintCountHoog = 0, hintCountLaag = 0, hintCountOptioneel = 0;
+  function _zetKnopTelling(btn, count){
+    if(!btn) return;
+    var c = btn.querySelector('.hint-count');
+    if(c) c.textContent = '(' + count + ')';
+    btn.classList.toggle('leeg', count === 0);
+  }
+  function updateHintCounts(){
+    try {
+      // Groen: DUO-hoog is leidend; alleen als die 0 is telt de bewerking-fallback.
+      var _mbHoog = toonHintKaders('hoog', true, true) | 0;
+      hintCountHoog      = (_mbHoog > 0) ? _mbHoog : (toonBewerkingKaders(true, true) | 0);
+      hintCountLaag      = toonHintKaders('laag', true, true) | 0;
+      hintCountOptioneel = toonOptioneleKaders(true, true) | 0;
+    } catch(e){ hintCountHoog = hintCountLaag = hintCountOptioneel = 0; }
+    _zetKnopTelling(hintGroenBtn, hintCountHoog);
+    _zetKnopTelling(hintGrijsBtn, hintCountLaag);
+    _zetKnopTelling(hintBlauwBtn, hintCountOptioneel);
+  }
+  var _hintCountTimer = null;
+  function scheduleHintCounts(){ clearTimeout(_hintCountTimer); _hintCountTimer = setTimeout(updateHintCounts, 150); }
 
   // De hint-kaders gebruiken de veld-parse-verankering (scherm-getrouw, correct op
   // geëvolueerde regels). Zie verankering_review_fable5.md / de veld-parse-commit.
@@ -5240,8 +5304,15 @@
   var hintKadersHoog = false, hintKadersLaag = false, hintKadersOptioneel = false;
   function tekenHintKaders(){
     if (window.VERANKERING) window.VERANKERING.clearBoxes();
-    if (hintKadersHoog)      toonHintKaders('hoog', true);
-    if (hintKadersHoog)      toonBewerkingKaders(true);   // openstaande getal-bewerkingen (groen)
+    if (hintKadersHoog){
+      var _r = toonHintKaders('hoog', true);           // DUO-gedreven (leidend)
+      var _mb = (_r && typeof _r === 'object') ? (_r.getekend | 0) : 0;
+      // FALLBACK: alleen als de DUO-hint niets kon verankeren (bv. op een
+      // herschreven tussenvorm als (5+4)/30) → de openstaande getal-bewerking
+      // omkaderen. Anders is de DUO leidend en tekent de bewerking-hint NIET
+      // (voorkomt precedentie-fouten als 3+4 en dubbeling met de mathblock-hint).
+      if (_mb === 0) toonBewerkingKaders(true);
+    }
     if (hintKadersLaag)      toonHintKaders('laag', true);
     if (hintKadersOptioneel) toonOptioneleKaders(true);   // optionele (blauwe) breuk-kaders
     if (hintGroenBtn) hintGroenBtn.classList.toggle('active', hintKadersHoog);
@@ -5258,6 +5329,7 @@
     if (hintGrijsBtn) hintGrijsBtn.classList.remove('active');
     if (hintBlauwBtn) hintBlauwBtn.classList.remove('active');
     if (hintDescEl) hintDescEl.textContent = '';
+    if (typeof zetHintRegelTekst === 'function') zetHintRegelTekst('');
   }
 
   // Herteken alle actieve kaders (hint + fout) op de HUIDIGE glyph-posities.
@@ -5269,8 +5341,11 @@
     if (!hintKadersHoog && !hintKadersLaag && !hintKadersOptioneel && !_lastFoutRes) return;  // niets getoond
     var foutRes = _lastFoutRes;                 // bewaren (markFoutKaders reset dit)
     window.VERANKERING.clearBoxes();            // hint-kaders weg (fout blijft staan)
-    if (hintKadersHoog)      toonHintKaders('hoog', true);
-    if (hintKadersHoog)      toonBewerkingKaders(true);  // openstaande getal-bewerkingen (groen)
+    if (hintKadersHoog){
+      var _r = toonHintKaders('hoog', true);
+      var _mb = (_r && typeof _r === 'object') ? (_r.getekend | 0) : 0;
+      if (_mb === 0) toonBewerkingKaders(true);   // fallback: alleen als DUO-hint niets verankerde
+    }
     if (hintKadersLaag)      toonHintKaders('laag', true);
     if (hintKadersOptioneel) toonOptioneleKaders(true);  // optionele (blauwe) breuk-kaders
     if (foutRes) markFoutKaders(foutRes);       // fout-kaders opnieuw op nieuwe posities
@@ -5361,6 +5436,9 @@
     var was = (which === 'hoog' && hintKadersHoog)
            || (which === 'laag' && hintKadersLaag)
            || (which === 'optioneel' && hintKadersOptioneel);
+    // Lege knop (0 hints): niets te tonen → geen reactie (behalve uitzetten).
+    var cnt = (which === 'hoog') ? hintCountHoog : (which === 'laag') ? hintCountLaag : hintCountOptioneel;
+    if (!was && cnt === 0) return;
     hintKadersHoog = hintKadersLaag = hintKadersOptioneel = false;
     if (!was){
       if (which === 'hoog') hintKadersHoog = true;
