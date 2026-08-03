@@ -33,28 +33,33 @@ machinerie, het datamodel en de popups. Verwijzingen zijn `bestand:regel` in
 
 ## 2. Twee filosofieën
 
-De hints komen uit **twee onafhankelijke bronnen** die samen getekend worden:
+De hints komen uit twee bronnen. **De DUO-verzameling is leidend**: de mathblock-
+hints (hoog/laag, bron A) zijn de primaire bron — die raadplegen we altijd eerst en
+op de juiste manier. De waarde-/positie-gebaseerde detectie (bron B) is een
+**fallback** voor groen, plus een aparte laag voor blauw.
 
-### A. Mathblock-verankerd (structuur-gedreven)
+### A. Mathblock-verankerd (structuur-gedreven) — LEIDEND
 Voor **groen (hoog)** en **grijs (laag)**. Gebaseerd op de mathblock-/DUO-structuur
 van de opgave, verankerd aan de tekens op het scherm. Werkt zolang de **structuur**
 van de regel overeenkomt met de AST (bv. `1/6+2/15` of `5/30+4/30` = "twee breuken
 optellen" ⇒ matcht de optel-mathblock).
 
-- `toonHintKaders(prioriteit, skipClear)` (`werkblad.js:~4387`) — de kern.
+- `toonHintKaders(prioriteit, skipClear)` (`werkblad.js:~4413`) — de kern.
 - `readyMathblocks()` (`werkblad.js:~1960`) — leidt uit de **levende** boom af welke
   mathblocks "klaar" zijn.
 
 ### B. Waarde-/positie-gebaseerd (los van de anchoring)
-Voor het **groene bewerking-kader** en het **blauwe vereenvoudig-kader**. Deze
-detecteren een zichtbaar patroon rechtstreeks op de offsets van het veld, **zonder**
-mathblock-anchoring. Nodig omdat de student naar een waarde-behoudende maar
-structureel **andere** tussenvorm kan herschrijven (bv. `(5+4)/30`), waar de
-mathblock-verankering niet meer op past.
+Voor het **groene bewerking-kader** (fallback) en het **blauwe vereenvoudig-kader**.
+Deze detecteren een zichtbaar patroon rechtstreeks op de offsets van het veld,
+**zonder** mathblock-anchoring.
 
 - `toonBewerkingKaders(skipClear)` — groen om een **openstaande getal-bewerking**
   (`5+4`, `12:3`, `5×4`, …): een operator-offset direct tussen twee cijfer-offsets.
-  Gehaakt aan **Hint I** (naast de mathblock-hint).
+  **FALLBACK**: vuurt alléén als de DUO-gedreven hoog-hint **0** kaders kon
+  verankeren — bv. op een waarde-behoudende maar structureel **andere** tussenvorm
+  als `(5+4)/30`. Zolang de DUO-hint wél verankert is die leidend en tekent de
+  bewerking-hint NIET (voorkomt precedentie-fouten als `3+4` in `3+4×5`, en
+  dubbeling met de mathblock-hint). Zie `tekenHintKaders`/`redrawKaders`.
 - `toonOptioneleKaders(skipClear)` — blauw om een zichtbare **vereenvoudigbare
   breuk** `\frac{t}{n}` (ggd > 1). **Hint III**.
 
@@ -119,9 +124,11 @@ klaar maar van een latere step (kan al omdat zijn inputs er zijn) is `laag` (gri
 
 ## 5. Klik op een kader → popup
 
-- **Mathblock-kader (groen/grijs)** → `toonMathblockHints(bid)` (`werkblad.js:~4792`):
-  toont `mathblocks[].hints.structureel.{wat, hoe, let_op}` als accordeon
-  (labels via `TT('hint.label_what|how|caution')`).
+- **Elk hint-kader (groen/grijs/blauw)** → `_hintKlikDismiss`: de **popup is
+  uitgeschakeld**. Een klik op een hint-kader **wist alle kaders**, zet de hint uit
+  en zet de focus terug op het invoerveld, zodat de student meteen verder kan met de
+  bewerking. (De tekstuele mathblock-hints leven nog in `toonMathblockHints`, maar
+  worden niet meer via een klik geopend.)
 - **Rood fout-kader** → `toonMathblockFeedback(bid)` (`werkblad.js:~4806`): toont
   `hints.feedback.bij_fout_algemeen` + eventuele `veelvoorkomende_fouten`.
 - De tekst zelf komt via `_hintText(v)` (`werkblad.js:~5556`): een hint-veld is
@@ -166,7 +173,7 @@ die bladeren — zo lijnen alle kaders uit.
 | `toonHintKaders(prioriteit)` | werkblad.js | mathblock-verankerde groen/grijs-kaders |
 | `readyMathblocks` | werkblad.js | klaar-mathblocks uit de levende boom |
 | `maakVeldParseTokens` | werkblad.js | veld-parse tokenbron (scherm-getrouw) |
-| `toonBewerkingKaders` | werkblad.js | groen om openstaande getal-bewerking |
+| `toonBewerkingKaders` | werkblad.js | groen om openstaande getal-bewerking — **fallback**, alleen als DUO-hoog 0 kadert |
 | `toonOptioneleKaders` | werkblad.js | blauw om vereenvoudigbare breuk |
 | `toonMathblockHints` / `toonMathblockFeedback` | werkblad.js | popup Wat/Hoe/Let op resp. feedback |
 | `_hintText` | werkblad.js | hint-veld → (meertalige) tekst |
