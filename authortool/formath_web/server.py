@@ -1852,7 +1852,9 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         self.wfile.write(response.encode('utf-8'))
 
     def log_message(self, format, *args):
-        if '/api/' in (args[0] if args else ''):
+        # args[0] is meestal de request-regel (str), maar bij send_error is het een
+        # HTTPStatus — vandaar str(). Voorheen crashte dit op elke 404 (bot-probes).
+        if args and '/api/' in str(args[0]):
             super().log_message(format, *args)
 
 

@@ -21,6 +21,7 @@ gebruiker een PBKDF2-hash met salt. Zie tools/maak_gebruiker.py om die te maken.
 """
 
 import os
+import sys
 import json
 import hmac
 import time
@@ -51,8 +52,37 @@ def _here():
 
 
 def _users_path():
-    return os.environ.get('FORMATH_USERS_FILE',
-                          os.path.join(_here(), 'gebruikers.local.json'))
+    return os.environ.get('FORMATH_USERS_FILE') or os.path.join(_here(), 'gebruikers.local.json')
+
+
+def _users_candidates():
+    """Mogelijke locaties van de gebruikers-JSON, in volgorde. Robuust tegen
+    verschillen in waar Render de Secret File precies mount."""
+    cands = []
+    env = os.environ.get('FORMATH_USERS_FILE')
+    if env:
+        cands.append(env)
+    cands += [
+        '/etc/secrets/gebruikers.json',                        # Render Secret File
+        os.path.join(_here(), '..', '..', 'gebruikers.json'),  # repo-root
+        os.path.join(_here(), 'gebruikers.json'),
+        os.path.join(_here(), 'gebruikers.local.json'),        # lokaal
+    ]
+    seen, out = set(), []
+    for c in cands:
+        key = os.path.abspath(c)
+        if key not in seen:
+            seen.add(key)
+            out.append(c)
+    return out
+
+
+def resolve_users_path():
+    """Eerste bestaande kandidaat, of None."""
+    for path in _users_candidates():
+        if os.path.exists(path):
+            return path
+    return None
 
 
 def _log_path():
@@ -75,19 +105,25 @@ def secret_is_dev():
 def load_users():
     """Lees de gebruikers-JSON. Vorm: {"gebruikers": {"naam": {..}}} of {"naam": {..}}.
 
-    Geeft een dict gebruikersnaam → entry (met salt/hash) terug; {} bij fouten.
+    Geeft een dict gebruikersnaam → entry terug (alleen entries met een 'hash', zodat
+    een eventuele "_uitleg"-regel wordt genegeerd); {} bij fouten.
     """
+    path = resolve_users_path()
+    if not path:
+        return {}
     try:
-        with open(_users_path(), encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             data = json.load(f)
-    except FileNotFoundError:
-        return {}
     except Exception as e:
-        print('[AUTH] kon gebruikers-JSON niet lezen: %s' % e)
+        print('[AUTH] kon %s niet lezen: %s' % (path, e), file=sys.stderr, flush=True)
         return {}
-    if isinstance(data, dict) and 'gebruikers' in data and isinstance(data['gebruikers'], dict):
-        return data['gebruikers']
-    return data if isinstance(data, dict) else {}
+    if isinstance(data, dict) and isinstance(data.get('gebruikers'), dict):
+        users = data['gebruikers']
+    elif isinstance(data, dict):
+        users = data
+    else:
+        return {}
+    return {k: v for k, v in users.items() if isinstance(v, dict) and 'hash' in v}
 
 
 # ── wachtwoord-hashing (PBKDF2-HMAC-SHA256) ─────────────────────────────────
@@ -258,17 +294,24 @@ def record_login(gebruiker):
 
 # ── startup-rapport ─────────────────────────────────────────────────────────
 
+def _rap(msg):
+    # Naar stderr (Render buffert stdout weg; stderr is direct zichtbaar in de logs).
+    print(msg, file=sys.stderr, flush=True)
+
+
 def startup_report():
     if not enabled():
-        print('[AUTH] uit (FORMATH_AUTH niet gezet) — geen login vereist.')
+        _rap('[AUTH] uit (FORMATH_AUTH niet gezet) — geen login vereist.')
         return
-    n = len(load_users())
-    print('[AUTH] AAN — login vereist. Gebruikers geladen: %d' % n)
-    print('[AUTH]   gebruikers-JSON : %s' % _users_path())
-    print('[AUTH]   login-logboek   : %s' % _log_path())
+    users = load_users()
+    n = len(users)
+    _rap('[AUTH] AAN — login vereist.')
+    _rap('[AUTH]   gebruikers-JSON : %s' % (resolve_users_path() or 'NIET GEVONDEN!'))
+    _rap('[AUTH]   accounts geladen: %d %s' % (n, sorted(users.keys())))
+    _rap('[AUTH]   login-logboek   : %s' % _log_path())
     if cookie_domain():
-        print('[AUTH]   cookie-domein   : %s (SSO over subdomeinen)' % cookie_domain())
+        _rap('[AUTH]   cookie-domein   : %s (SSO over subdomeinen)' % cookie_domain())
     if n == 0:
-        print('[AUTH]   ⚠️  GEEN gebruikers gevonden — niemand kan inloggen.')
+        _rap('[AUTH]   ⚠️  GEEN accounts gevonden — niemand kan inloggen. Controleer de Secret File.')
     if secret_is_dev():
-        print('[AUTH]   ⚠️  SESSION_SECRET niet gezet — dev-fallback (NIET voor productie).')
+        _rap('[AUTH]   ⚠️  SESSION_SECRET niet gezet — dev-fallback (NIET voor productie).')
