@@ -1,0 +1,20 @@
+{
+  "_uitleg": "Voorbeeldstructuur. Maak echte entries met tools/maak_gebruiker.py en plak ze onder 'gebruikers'. Bewaar de echte JSON NIET in git: lokaal als gebruikers.local.json, op Render als Secret File.",
+  "gebruikers": {
+    "henk": {
+      "algo": "pbkdf2_sha256",
+      "iter": 200000,
+      "salt": "VERVANG_met_hex_uit_maak_gebruiker",
+      "hash": "VERVANG_met_hex_uit_maak_gebruiker",
+      "naam": "Henk",
+      "admin": true
+    },
+    "gastdocent": {
+      "algo": "pbkdf2_sha256",
+      "iter": 200000,
+      "salt": "VERVANG_met_hex_uit_maak_gebruiker",
+      "hash": "VERVANG_met_hex_uit_maak_gebruiker",
+      "naam": "Gastdocent"
+    }
+  }
+}

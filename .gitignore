@@ -6,3 +6,8 @@ __pycache__/
 *.pyc
 .venv/
 .claude/
+
+# Auth: echte credentials en login-tellingen nooit committen
+**/gebruikers.local.json
+**/login_log.json
+**/login_log.json.tmp

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inloggen — ForMath</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#f6f4ed; --bg-panel:#fbfaf5; --bg-sunken:#ede9dd;
+      --ink:#1c1f26; --ink-soft:#4d5260; --ink-dim:#87889a;
+      --rule:#dcd7c6; --rule-strong:#b8b09a;
+      --accent:#ae7a15; --accent-ink:#6a4807; --accent-soft:#efe0b6;
+      --ok:#2f6d3f; --err:#983018;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font-family:'IBM Plex Sans',system-ui,sans-serif;
+      display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .kaart{
+      width:100%; max-width:380px; background:var(--bg-panel);
+      border:1px solid var(--rule); border-radius:14px;
+      box-shadow:0 8px 30px rgba(28,31,38,.08);
+      padding:32px 30px 28px;
+    }
+    .merk{
+      font-family:'Fraunces',Georgia,serif; font-weight:600; font-size:1.7rem;
+      color:var(--accent-ink); margin:0 0 2px; letter-spacing:-.01em;
+    }
+    .sub{color:var(--ink-dim); font-size:.9rem; margin:0 0 22px}
+    label{display:block; font-size:.82rem; color:var(--ink-soft); margin:0 0 5px; font-weight:500}
+    input{
+      width:100%; padding:11px 12px; font-size:1rem; color:var(--ink);
+      background:var(--bg); border:1px solid var(--rule-strong); border-radius:9px;
+      font-family:inherit; margin-bottom:16px; transition:border-color .15s;
+    }
+    input:focus{outline:none; border-color:var(--accent)}
+    button{
+      width:100%; padding:12px; font-size:1rem; font-weight:600; cursor:pointer;
+      color:#fff; background:var(--accent); border:none; border-radius:9px;
+      font-family:inherit; transition:background .15s;
+    }
+    button:hover{background:var(--accent-ink)}
+    button:disabled{opacity:.55; cursor:default}
+    .fout{
+      color:var(--err); font-size:.86rem; min-height:1.2em; margin:14px 2px 0;
+      text-align:center;
+    }
+  </style>
+</head>
+<body>
+  <form class="kaart" id="loginform" autocomplete="on">
+    <h1 class="merk">ForMath</h1>
+    <p class="sub">Log in om de demo te gebruiken.</p>
+
+    <label for="gebruiker">Gebruikersnaam</label>
+    <input id="gebruiker" name="username" type="text" autocomplete="username"
+           autocapitalize="none" autocorrect="off" spellcheck="false" required autofocus>
+
+    <label for="wachtwoord">Wachtwoord</label>
+    <input id="wachtwoord" name="password" type="password"
+           autocomplete="current-password" required>
+
+    <button type="submit" id="knop">Inloggen</button>
+    <div class="fout" id="fout" role="alert"></div>
+  </form>
+
+  <script>
+    var form = document.getElementById('loginform');
+    var knop = document.getElementById('knop');
+    var fout = document.getElementById('fout');
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      fout.textContent = '';
+      knop.disabled = true;
+      var gebruiker = document.getElementById('gebruiker').value.trim();
+      var wachtwoord = document.getElementById('wachtwoord').value;
+      fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gebruiker: gebruiker, wachtwoord: wachtwoord })
+      })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.success) {
+          window.location.href = data.redirect || '/';
+        } else {
+          fout.textContent = (data && data.error) || 'Inloggen mislukt.';
+          knop.disabled = false;
+          document.getElementById('wachtwoord').value = '';
+          document.getElementById('wachtwoord').focus();
+        }
+      })
+      .catch(function () {
+        fout.textContent = 'Netwerkfout. Probeer opnieuw.';
+        knop.disabled = false;
+      });
+    });
+  </script>
+</body>
+</html>

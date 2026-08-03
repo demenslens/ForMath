@@ -61,6 +61,8 @@ from simplify_injector import inject_simplify_ops
 from mixed_number_injector import inject_mixed_number
 from ast_visualizer import generate_ast_svg
 
+import auth   # authenticatie & login-tracking (staat standaard UIT; FORMATH_AUTH=1)
+
 print("[OK] ForMath AST pipeline geladen (default: getallen)")
 print(f"     Pipeline directory: {PIPELINE_DIR}")
 
@@ -563,7 +565,12 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         import posixpath
         from urllib.parse import unquote
         clean = unquote(path.split('?', 1)[0].split('#', 1)[0])
-        if clean in ('/', ''):
+        if clean in ('/', '', '/index.html'):
+            # Achter de login (productie) is het 3-tool-portaal de landing, met
+            # links naar ForMath én ForQuest. Lokaal (auth uit) blijft het het
+            # ForMath-keuzescherm, zodat auteuren onveranderd is.
+            if auth.enabled():
+                return os.path.join(REPO_ROOT, 'website', 'index.html')
             return os.path.join(BASE_DIR, 'landing.html')
         if clean == '/student' or clean.startswith('/student/'):
             base, rel = STUDENT_DIR, clean[len('/student'):]
@@ -589,6 +596,24 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         super().end_headers()
 
     def do_GET(self):
+        # AUTH-gate: als login vereist is (FORMATH_AUTH=1), moet elk verzoek een
+        # geldige sessie hebben — behalve de login-pagina zelf. Standaard UIT, dus
+        # lokaal auteuren verandert niet.
+        if auth.enabled():
+            p = self.path.split('?', 1)[0]
+            if p == '/login':
+                self._serve_login_page(); return
+            if p == '/logout':
+                self._handle_logout(); return
+            user = auth.current_user(self)
+            if not user:
+                if p.startswith('/api/'):
+                    self._send_json({'success': False, 'error': 'Niet ingelogd', 'login': True})
+                else:
+                    self._redirect('/login')
+                return
+            if p == '/api/admin/logins':
+                self._handle_admin_logins(user); return
         # API endpoints via GET
         if self.path == '/api/list_opgaven':
             self._handle_list_opgaven()
@@ -608,6 +633,14 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
+        # AUTH-gate: login vereist voor élk POST-endpoint, behalve /api/login zelf.
+        if auth.enabled():
+            p = self.path.split('?', 1)[0]
+            if p == '/api/login':
+                self._handle_login(); return
+            if not auth.current_user(self):
+                self._send_json({'success': False, 'error': 'Niet ingelogd', 'login': True})
+                return
         # DEMO-MODUS (omgevingsvariabele AUTHORTOOL_DEMO=1): blokkeer elk endpoint
         # dat opgaven WEGSCHRIJFT of WIJZIGT. Bezoekers kunnen dus alles bekijken
         # en expressies laten parsen (/api/process schrijft niets weg), maar niet
@@ -652,6 +685,68 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             self._handle_move_opgave()
         else:
             self.send_error(404, "Endpoint niet gevonden")
+
+    # ── Authenticatie: login-pagina, in-/uitloggen, admin-overzicht ─────────
+    def _serve_login_page(self):
+        try:
+            with open(os.path.join(BASE_DIR, 'login.html'), 'rb') as f:
+                body = f.read()
+        except Exception:
+            self.send_error(500, 'login.html ontbreekt')
+            return
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _redirect(self, location):
+        self.send_response(302)
+        self.send_header('Location', location)
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
+    def _send_json_cookie(self, data: dict, cookie: str = None):
+        response = json.dumps(data, ensure_ascii=False).encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json; charset=utf-8')
+        self.send_header('Content-Length', str(len(response)))
+        if cookie:
+            self.send_header('Set-Cookie', cookie)
+        self.end_headers()
+        self.wfile.write(response)
+
+    def _handle_login(self):
+        try:
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(content_length)
+            data = json.loads(body.decode('utf-8')) if body else {}
+        except Exception:
+            data = {}
+        gebruiker = (data.get('gebruiker') or '').strip()
+        wachtwoord = data.get('wachtwoord') or ''
+        if auth.authenticate(gebruiker, wachtwoord):
+            auth.record_login(gebruiker)
+            token = auth.make_session(gebruiker)
+            cookie = auth.set_cookie_header(token, secure=auth.request_is_https(self))
+            self._send_json_cookie({'success': True, 'redirect': '/'}, cookie)
+        else:
+            self._send_json({'success': False,
+                             'error': 'Onjuiste gebruikersnaam of wachtwoord.'})
+
+    def _handle_logout(self):
+        cookie = auth.clear_cookie_header(secure=auth.request_is_https(self))
+        self.send_response(302)
+        self.send_header('Location', '/login')
+        self.send_header('Set-Cookie', cookie)
+        self.send_header('Content-Length', '0')
+        self.end_headers()
+
+    def _handle_admin_logins(self, user):
+        if not auth.is_admin(user):
+            self._send_json({'success': False, 'error': 'Geen toegang (geen admin).'})
+            return
+        self._send_json({'success': True, 'logins': auth.read_log()})
 
     def _handle_process(self):
         """Verwerk LaTeX expressie via de forMath AST pipeline"""
@@ -1777,6 +1872,8 @@ if __name__ == '__main__':
     except ImportError as e:
         print(f"[FOUT] Module ontbreekt: {e}")
         print(f"[FOUT] Server start NIET met volledige pipeline!")
+
+    auth.startup_report()
 
     socketserver.TCPServer.allow_reuse_address = True
     with socketserver.TCPServer(("", PORT), ForMathHandler) as httpd:
