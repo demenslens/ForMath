@@ -449,12 +449,26 @@ dat elk verwacht kader werkelijk getekend wordt zonder door de tekens te snijden
   ~1,8 px ruimer rondom. Meten kan het harnas, mooi vinden niet.
 - **Rand om de hele bewerking bij situatie 6** — blijft die staan naast het gevulde
   tellerkader, of alleen het gevulde? Nog te beslissen.
-- **De benoeming van unaire bewerkingen.** `formatMathblockExpr` bouwt de melding
-  uit het operator-*symbool* en valt voor bewerkingen met één argument door naar de
-  binaire tak, waar de operator wegvalt: `√4` levert `(4) = 2, niet 3` — zonder
-  wortelteken. Geldt ook voor `-(^2)`. Zie `TESTRONDE_foutflow.md` rubriek B.
-- **Hardcoded Nederlands** in de matcher-melding: `… = 3/10, niet 1/7` — het woord
-  "niet" is niet vertaald.
+- **De benoeming van unaire bewerkingen** — nu gemeten en bevestigd.
+  `formatMathblockExpr` bouwt de melding uit het operator-*symbool* en valt voor
+  bewerkingen met één argument door naar de binaire tak, waar de operator wegvalt.
+  Het contrast in één opgave (20260523_001):
+
+  | | derde trede |
+  |---|---|
+  | wortel (unair) | `(4) = 2, niet 3/1` — wortelteken weg |
+  | deling (binair) | `(34 : 17) = 2, niet 3/1` — bewerking zichtbaar |
+
+- **Foutwaarden als onvereenvoudigde breuk.** Nieuw gevonden bij dezelfde meting:
+  wie `9` schrijft krijgt `niet 9/1` te zien, en `−(6 : 2) = -3, niet -3/2` waar de
+  leerling `6:4` typte. Een geheel getal hoort als geheel getal terug te komen.
+- **De eerste trede zegt niets.** De harmonica opent altijd met "Calculation error";
+  de bewerkingsnaam staat op de tweede trede ("Calculate the product of the two
+  factors.") en de concrete waarde op de derde. Rubriek B2 — wélke bewerking fout
+  ging zónder te klikken — wordt dus niet gehaald. De ladder cyclet bovendien: na de
+  laatste trede klapt hij weer dicht tot alleen de kop.
+- **Hardcoded Nederlands** in de matcher-melding: `… = 2, niet 3/1` — het woord
+  "niet" blijft Nederlands, ook in de Engelse interface.
 - **Type 2 (niet herleidbaar)** draait nog op de oude overlay-popup; het ontwerp
   wil daar een inline-melding met een "Terug"-knop.
 - **De ±√-fork** kent geen pinpointing: `doColumnLF` checkt alleen de kolomwaarde.

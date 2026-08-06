@@ -91,7 +91,7 @@ const IN_DE_BROWSER = async (arg) => {
 
   // ── LF drukken en kijken wat er getekend wordt ──
   const lf = document.querySelector('.rl.active .lf-btn');
-  let kaders = [], status = '', foutRegel = '', lfFout = null, offsetsNaLF = null, delta = null, fontSchaal = null;
+  let kaders = [], status = '', foutRegel = '', foutLadder = '', lfFout = null, offsetsNaLF = null, delta = null, fontSchaal = null;
   if (lf) {
     try {
       lf.click();
@@ -115,10 +115,27 @@ const IN_DE_BROWSER = async (arg) => {
       status = stxt ? stxt.textContent : '';
       const fr = document.querySelector('.fout-regel');
       foutRegel = fr ? fr.textContent.replace(/\s+/g, ' ').trim() : '';
+      // De harmonica toont in rust alleen de eerste trede; de concrete melding
+      // ("(4 × 5) = 20, niet 9") zit achter de ▾. Voor rubriek B — is de BEWERKING
+      // herkenbaar? — moet die tekst mee, dus klikken we de ladder open.
+      //
+      // LET OP: voorbij de laatste trede klapt hij weer dicht tot alleen de kop.
+      // Doorklikken en dán de eindstand aflezen levert dus meestal weer die kop op.
+      // Daarom houden we de LANGSTE tekst vast die we onderweg zien.
+      if (fr) {
+        const knop = fr.querySelector('.fout-meer');
+        foutLadder = foutRegel;
+        for (let i = 0; knop && i < 8; i++) {
+          knop.click();
+          await wacht(200);
+          const nu = fr.textContent.replace(/\s+/g, ' ').trim();
+          if (nu.length > foutLadder.length) foutLadder = nu;
+        }
+      }
     } catch (e) { lfFout = String(e && e.message || e); }
   }
 
-  return { latexTerug: mf.getValue('latex'), offsets, offsetsNaLF, fracLijnen, kaders, status, foutRegel, lfFout, delta, fontSchaal };
+  return { latexTerug: mf.getValue('latex'), offsets, offsetsNaLF, fracLijnen, kaders, status, foutRegel, foutLadder, lfFout, delta, fontSchaal };
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -189,6 +206,19 @@ function laadOpgave(id) {
 function kiesMathblock(opg) {
   return (opg && opg.mathblocks || []).find(m => m.gelijknamig_maken && m.gelijknamig_maken.nodig) || null;
 }
+// Welke foutcode heeft de tool ZELF gemeld? Twee plekken, want de twee lagen
+// schrijven op verschillende plaatsen: de breuklaag en de matcher zetten hun code
+// als badge vóór de eerste trede van de harmonica-foutregel; de niet-herleidbare
+// fout (AL-01) en de restcategorie (AL-02) hebben geen regel en zetten hun code in
+// de statusbalk. Beide alleen zichtbaar zolang window.__toonFoutCode aan staat —
+// dat is het diagnose-haakje waar dit harnas op leunt.
+function codeUitUI(r) {
+  const uitRegel = /^(BR-\d\d|MB-\d\d|AL-\d\d)/.exec((r.foutRegel || '').trim());
+  if (uitRegel) return uitRegel[1];
+  const uitStatus = /(?:^|\s)(BR-\d\d|MB-\d\d|AL-\d\d)\s*·/.exec(r.status || '');
+  return uitStatus ? uitStatus[1] : null;
+}
+
 function beoordeel(opgaveId, offsets) {
   const mb = kiesMathblock(laadOpgave(opgaveId));
   if (!mb) return { code: null, det: null, mb: null };
@@ -270,31 +300,48 @@ function verwachteKaders(det, offsets) {
 
     const oordeel = beoordeel(sc.opgave, r.offsets);
     const naLF = r.offsetsNaLF ? beoordeel(sc.opgave, r.offsetsNaLF) : null;
-    const klopt = (sc.verwacht || null) === (oordeel.code || null);
+    // GEMETEN WORDT WAT DE TOOL ZELF MELDT, niet wat de pure logica afleidt. Juist
+    // dat verschil verborg de bug van vandaag: de detectie klopte, maar er kwam
+    // niets op het scherm. Zo dekt dit harnas ook de matcher-kant (MB-01) en de
+    // niet-herleidbare fout (AL-01), die geen breukdiagnose hebben.
+    const gemeld = codeUitUI(r);
+    const klopt = (sc.verwacht || null) === gemeld;
     klopt ? goed++ : mis++;
 
     console.log((klopt ? G('✓') : R('✗')) + ' ' + sc.naam.padEnd(32) +
                 (r.latexTerug || '').slice(0, 24).padEnd(26) +
-                (oordeel.code || 'geen oordeel') +
-                (klopt ? '' : R('   verwacht ' + (sc.verwacht || 'geen oordeel'))));
+                (gemeld || 'geen melding') +
+                (klopt ? '' : R('   verwacht ' + (sc.verwacht || 'geen melding'))));
     if (paginaFouten.length) console.log('   ' + R('pagina-fout: ') + paginaFouten[0]);
+    // De pure logica en het scherm horen hetzelfde te zeggen. Lopen ze uiteen, dan
+    // is de detectie in orde maar de weg naar de leerling niet — of andersom.
+    if (oordeel.code && oordeel.code !== gemeld) {
+      console.log('   ' + R('breukdetectie zegt ' + oordeel.code + ', het scherm meldt ' +
+                            (gemeld || 'niets')));
+    }
 
     meting.push({
       naam: sc.naam, opgave: sc.opgave, dekt: sc.dekt,
-      latex: r.latexTerug, verwacht: sc.verwacht || null, gedetecteerd: oordeel.code || null,
+      latex: r.latexTerug, verwacht: sc.verwacht || null,
+      gemeld: gemeld, breukdetectie: oordeel.code || null,
       offsets: r.offsets, offsetsNaLF: r.offsetsNaLF, fracLijnen: r.fracLijnen, kaders: r.kaders,
-      status: r.status, foutRegel: r.foutRegel, lfFout: r.lfFout, paginaFouten,
+      status: r.status, foutRegel: r.foutRegel, foutLadder: r.foutLadder, lfFout: r.lfFout, paginaFouten,
       delta: r.delta, fontSchaal: r.fontSchaal,
       // De kaders worden getekend op de offsets van NA de foutregel; daar hoort de
       // meetlat dus ook op te staan.
       verwachteKaders: naLF && naLF.det ? verwachteKaders(naLF.det, r.offsetsNaLF) : []
     });
-    fixtures.push({
-      naam: sc.naam, opgave: sc.opgave.replace(/^opgave_/, ''), latex: r.latexTerug,
-      verwacht: sc.verwacht || null,
-      herkomst: 'AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). ' + sc.dekt,
-      offsets: r.offsets
-    });
+    // fixtures.json is de invoer van de OFFLINE breuktoets. Alleen scenario's waar
+    // die iets over kan zeggen horen erin: matcher-scenario's (MB-01/AL-01) hebben
+    // per definitie geen breukdiagnose en zouden daar als afwijking binnenkomen.
+    if (!sc.verwacht || /^BR-/.test(sc.verwacht)) {
+      fixtures.push({
+        naam: sc.naam, opgave: sc.opgave.replace(/^opgave_/, ''), latex: r.latexTerug,
+        verwacht: sc.verwacht || null,
+        herkomst: 'AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). ' + sc.dekt,
+        offsets: r.offsets
+      });
+    }
   }
 
   await browser.close();
@@ -464,7 +511,7 @@ function rapporteerGeometrie(meting) {
   let kaderMis = 0;
   meting.forEach(m => {
     if (!m.verwachteKaders.length && !m.kaders.length) return;
-    console.log('   ' + m.naam + '  ' + D(m.gedetecteerd || 'geen oordeel') +
+    console.log('   ' + m.naam + '  ' + D(m.gemeld || m.breukdetectie || "geen melding") +
                 '  → ' + m.kaders.length + ' getekend, ' + m.verwachteKaders.length + ' verwacht');
     if (m.lfFout) console.log('     ' + R('LF gooide: ' + m.lfFout));
     if (m.delta) console.log('     ' + D('drawBox-nudge: delta x' + m.delta.x + ' y' + m.delta.y +

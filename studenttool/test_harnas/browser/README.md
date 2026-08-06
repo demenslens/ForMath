@@ -62,12 +62,30 @@ waren fouten die met het blote oog niet te zien waren.
 ### 0. Doet elke regel wat hij moet doen
 
 Per scenario uit `scenarios.json`: de opgave laden, de regel in het veld zetten,
-de offsets aftappen, LF drukken. De foutcode die `breukdetectie.js` daaruit
-afleidt, moet gelijk zijn aan `verwacht`. Dezelfde vergelijking als het
-offline-harnas, maar dan met verse offsets in plaats van opgenomen.
+de offsets aftappen, LF drukken. Wat vergeleken wordt met `verwacht` is de code
+die **de tool zelf op het scherm meldt** — uit de badge van de foutregel, of uit
+de statusbalk. Niet wat de pure logica afleidt: juist dat verschil verborg de
+bug waarmee dit harnas begon, want de detectie klopte en er kwam alleen niets op
+het scherm. Lopen de twee uiteen, dan meldt de runner dat apart.
+
+Daardoor dekt dit harnas alle drie de lagen, niet alleen de breuken:
+
+| code | laag |
+|---|---|
+| `BR-01`…`BR-06` | de breuklaag (gelijknamig maken, samenvoegen) |
+| `MB-01` | de matcher — een mathblock is fout uitgerekend |
+| `AL-01` | niet herleidbaar: externe invoer gewijzigd |
+
+De volledige boodschap wordt ook opgenomen: de harmonica wordt helemaal
+opengeklikt, zodat de derde trede (`(4 × 5) = 20, niet 9/1`) in `meting.json`
+staat. Let op dat die ladder **cyclet** — na de laatste trede klapt hij weer dicht,
+dus doorklikken en de eindstand aflezen levert weer de kop op.
 
 Elke pagina-fout (`ReferenceError` en dergelijke) wordt opgevangen en gemeld —
 zo kwamen `detecteerGelijknamigFout`, `FOUT_RAND` en `FOUT_RAND_MARGE` boven water.
+
+`fixtures.json` krijgt alleen de scenario's waar de offline breuktoets iets over
+kan zeggen; matcher-scenario's blijven browser-only.
 
 ### 1. Ligt de breukstreep waar `breukDelen` hem veronderstelt?
 
