@@ -541,6 +541,11 @@
     return {
       bounds: leafBounds.concat(structBounds), rect: rect,
       viaStructuur: structBounds.length > 0, soort: soort,
+      // De \frac-bounds apart, zodat de caller de breuk desgewenst nog kan
+      // OPSPLITSEN in teller en noemer (breukDelen werkt op deze bounds). Nodig
+      // om een fout die alleen in de teller zit ook alléén daar in te kaderen,
+      // in plaats van om de hele breuk.
+      fracRect: fracBounds.length ? spanBounds(fracBounds) : null,
     };
   }
 

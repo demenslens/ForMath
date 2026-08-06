@@ -215,5 +215,29 @@
     "latex": "\\left(-30\\right)^2",
     "verwacht": "MB-01",
     "dekt": "aftrekking fout uitgerekend binnen een macht"
+  },
+  {
+    "naam": "016 alleen de teller fout",
+    "opgave": "opgave_20260511_016",
+    "latex": "\\frac{29}{32}",
+    "verwacht": "MB-01",
+    "kaderOm": "teller",
+    "dekt": "verwacht 19/32, leerling schrijft 29/32 — de noemer klopt, dus het kader hoort alleen om de 29"
+  },
+  {
+    "naam": "016 alleen de noemer fout",
+    "opgave": "opgave_20260511_016",
+    "latex": "\\frac{19}{30}",
+    "verwacht": "MB-01",
+    "kaderOm": "noemer",
+    "dekt": "spiegelbeeld: de teller klopt, de noemer niet"
+  },
+  {
+    "naam": "016 teller en noemer fout",
+    "opgave": "opgave_20260511_016",
+    "latex": "\\frac{29}{30}",
+    "verwacht": "MB-01",
+    "kaderOm": "breuk",
+    "dekt": "beide fout — dan valt er niets te versmallen en blijft het kader om de hele breuk"
   }
 ]

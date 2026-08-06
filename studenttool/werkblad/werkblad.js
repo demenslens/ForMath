@@ -4936,6 +4936,33 @@
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
     _lastFoutRes = null;   // toestand vergeten: er staan geen fout-kaders meer
   }
+  // Zit de fout in een breuk uitsluitend in de TELLER of uitsluitend in de NOEMER?
+  // Dan hoort het kader daar strak omheen en niet om de hele breuk. Voorbeeld uit
+  // opgave 016: verwacht 19/32, de leerling schrijft 29/32 — de noemer klopt, dus
+  // alleen de 29 is fout.
+  //
+  // Vergelijken gebeurt tussen de op het scherm ZICHTBARE breuk en de verwachte
+  // uitkomst als waarde. Wijkt de noemer af van de verwachte, dan is de leerling
+  // een andere vorm aan het schrijven (58/64 voor 29/32) en valt er niets te
+  // versmallen — dan zwijgt deze functie en blijft het kader om het geheel staan.
+  // Op ABSOLUTE teller, net als in de breuklaag: bij een aftrekking staat het
+  // minteken op het scherm buiten de breuk.
+  function foutDeelVanBreuk(verwachtTekst, fracBounds, offsets){
+    if (!fracBounds || !verwachtTekst) return null;
+    var doel = _BD().parseBreukTekst(verwachtTekst);
+    if (!doel) return null;
+    var zicht = _zichtbareBreuken(offsets).filter(function(z){
+      var b = z.off.bounds;
+      return Math.abs(b.x - fracBounds.x) < 2 && Math.abs(b.y - fracBounds.y) < 2;
+    })[0];
+    if (!zicht) return null;
+    var tellerFout = Math.abs(zicht.t) !== Math.abs(doel.t);
+    var noemerFout = zicht.n !== doel.n;
+    if (tellerFout && !noemerFout) return 'teller';
+    if (noemerFout && !tellerFout) return 'noemer';
+    return null;                       // allebei fout, of allebei goed → hele breuk
+  }
+
   // Geeft het aantal getekende fout-kaders terug (0 = niets te ankeren).
   function markFoutKaders(matcherRes){
     clearFoutKaders();
@@ -4973,9 +5000,21 @@
       //  - blad:      los getal — bladbounds + HINT_MARGE + diepte-fudge.
       var mbB = V.mathblockBounds(offsets, perOff, r.mathblock);
       var span = mbB.rect;
+      // VERSMALLEN als de fout aantoonbaar in één deel van de breuk zit. Zelfde
+      // regime als het deelkader van de breuklaag (BR-04/BR-05), zodat beide lagen
+      // dezelfde beeldtaal spreken: gevuld kader strak om het foute deel.
+      var deel = (mbB.soort === 'breuk')
+        ? foutDeelVanBreuk(r.verwacht, mbB.fracRect, offsets) : null;
+      if (deel){
+        var groep = _breukDelen(offsets, { bounds: mbB.fracRect })[deel];
+        if (groep && groep.b.length) span = V.spanBounds(groep.b);
+        else deel = null;
+      }
       if (span){
         var marge, dArg;
-        if (mbB.soort === 'breuk')          { marge = FOUT_MARGE; dArg = null; }
+        if (deel)                           { marge = FOUT_TELLER_MARGE;
+                                              dArg = (groep.d.length ? Math.min.apply(null, groep.d) : 0); }
+        else if (mbB.soort === 'breuk')      { marge = FOUT_MARGE; dArg = null; }
         else if (mbB.soort === 'structuur') { marge = V.HINT_MARGE; dArg = null; }
         else                                { marge = V.HINT_MARGE; dArg = (depths.length ? Math.min.apply(null, depths) : 0); }
         var box = V.drawBox(mf, span, FOUT_KLEUR, delta, dArg, marge);

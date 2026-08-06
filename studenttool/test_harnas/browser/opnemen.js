@@ -219,6 +219,28 @@ function codeUitUI(r) {
   return uitStatus ? uitStatus[1] : null;
 }
 
+// Waar hoort het kader te staan bij een matcher-fout (MB-01) op een breuk? Het
+// scenario zegt het met `kaderOm`: 'teller', 'noemer' of 'breuk'. De rect wordt uit
+// de gemeten offsets afgeleid, niet uit de tekencode — anders toetst het harnas de
+// code tegen zichzelf.
+function deelKaderVerwachting(kaderOm, offsets) {
+  const zicht = BD.zichtbareBreuken(offsets);
+  if (zicht.length !== 1) return [];
+  const fo = zicht[0].off;
+  if (kaderOm === 'breuk') return [{ wat: 'gevuld om de hele breuk', rect: fo.bounds }];
+  const groep = BD.breukDelen(offsets, fo)[kaderOm];
+  if (!groep || !groep.b.length) return [];
+  const bs = groep.b;
+  return [{
+    wat: 'gevuld om de ' + kaderOm,
+    rect: {
+      x: Math.min(...bs.map(b => b.x)), y: Math.min(...bs.map(b => b.y)),
+      width: Math.max(...bs.map(b => b.x + b.width)) - Math.min(...bs.map(b => b.x)),
+      height: Math.max(...bs.map(b => b.y + b.height)) - Math.min(...bs.map(b => b.y))
+    }
+  }];
+}
+
 function beoordeel(opgaveId, offsets) {
   const mb = kiesMathblock(laadOpgave(opgaveId));
   if (!mb) return { code: null, det: null, mb: null };
@@ -329,7 +351,9 @@ function verwachteKaders(det, offsets) {
       delta: r.delta, fontSchaal: r.fontSchaal,
       // De kaders worden getekend op de offsets van NA de foutregel; daar hoort de
       // meetlat dus ook op te staan.
-      verwachteKaders: naLF && naLF.det ? verwachteKaders(naLF.det, r.offsetsNaLF) : []
+      verwachteKaders: naLF && naLF.det ? verwachteKaders(naLF.det, r.offsetsNaLF)
+                     : sc.kaderOm      ? deelKaderVerwachting(sc.kaderOm, r.offsetsNaLF || r.offsets)
+                     : []
     });
     // fixtures.json is de invoer van de OFFLINE breuktoets. Alleen scenario's waar
     // die iets over kan zeggen horen erin: matcher-scenario's (MB-01/AL-01) hebben
@@ -511,12 +535,19 @@ function rapporteerGeometrie(meting) {
   let kaderMis = 0;
   meting.forEach(m => {
     if (!m.verwachteKaders.length && !m.kaders.length) return;
-    console.log('   ' + m.naam + '  ' + D(m.gemeld || m.breukdetectie || "geen melding") +
-                '  → ' + m.kaders.length + ' getekend, ' + m.verwachteKaders.length + ' verwacht');
+    // Zonder verwachting valt er niets te vergelijken: matcher-scenario's krijgen
+    // er alleen een als het scenario `kaderOm` noemt. Het aantal-verschil telt dus
+    // alleen mee als er wél een verwachting ligt — anders zou elk MB-01-scenario
+    // zonder kaderOm als afwijking binnenkomen.
+    const heeftVerwachting = m.verwachteKaders.length > 0;
+    console.log('   ' + m.naam + '  ' + D(m.gemeld || m.breukdetectie || 'geen melding') +
+                '  → ' + m.kaders.length + ' getekend' +
+                (heeftVerwachting ? ', ' + m.verwachteKaders.length + ' verwacht'
+                                  : D(' (geen verwachting opgegeven)')));
     if (m.lfFout) console.log('     ' + R('LF gooide: ' + m.lfFout));
     if (m.delta) console.log('     ' + D('drawBox-nudge: delta x' + m.delta.x + ' y' + m.delta.y +
                                          ', fontschaal ' + rond(m.fontSchaal || 0)));
-    if (m.kaders.length !== m.verwachteKaders.length) kaderMis++;
+    if (heeftVerwachting && m.kaders.length !== m.verwachteKaders.length) kaderMis++;
     m.verwachteKaders.forEach(v => {
       if (!v.rect) return;
       // Koppel aan het dichtstbijzijnde getekende kader (middelpunt-afstand).
