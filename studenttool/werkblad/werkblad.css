@@ -880,6 +880,67 @@ math-field, .editor { font-size: 17px; }
   margin-left: 6px;
 }
 
+/* Foutboodschap op de regel ónder de foute regel — harmonica. Trede 1 (de kop)
+   is altijd zichtbaar; het knopje rechts vouwt telkens één trede verder open.
+   De rij groeit mee: .rl heeft min-height, geen vaste hoogte. */
+.fout-regel {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1;
+  margin-left: 6px;
+  padding: 1px 0;
+}
+.fout-items {
+  flex: 1;
+  min-width: 0;
+}
+.fout-item {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+/* De kop draagt de foutkleur; de treden eronder blijven rustig, zodat het
+   uitklappen leest als toelichting en niet als een reeks nieuwe fouten. */
+.fout-item.fout-titel {
+  color: var(--err, #983018);
+  font-weight: 600;
+}
+/* Foutnummer uit de catalogus — tijdelijk diagnose-hulpmiddel, uit te zetten met
+   window.__toonFoutCode = false. Bewust ingetogen: het is geen leerlingtekst. */
+.fout-code {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  background: var(--bg-sunken);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  vertical-align: 1px;
+}
+.fout-meer {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  line-height: 1;
+  padding: 0;
+  font-size: 11px;
+  color: var(--err, #983018);
+  background: transparent;
+  border: 1px solid var(--rule-strong);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.fout-meer:hover {
+  background: var(--bg-sunken);
+  border-color: var(--err, #983018);
+}
+
 /* ── Overlays (hints, pinpoint, schema) ──────────────────────────────── */
 .hints-overlay, .pinpoint-overlay, .svg-overlay {
   position: fixed; inset: 0;
