@@ -484,16 +484,22 @@ function rapporteerGeometrie(meting) {
         links: rond(v.rect.x - beste.x), rechts: rond((beste.x + beste.width) - (v.rect.x + v.rect.width)),
         boven: rond(v.rect.y - beste.y), onder: rond((beste.y + beste.height) - (v.rect.y + v.rect.height))
       };
-      // Een NEGATIEVE marge is objectief fout: het kader snijdt dan door de tekens
-      // die het hoort te omvatten. Asymmetrie is dat níét — de al goedgekeurde
-      // FOUT_MARGE is zelf asymmetrisch (l2,83 r2,05 b0,61 o3,05 op het scherm),
-      // omdat cijfers optisch hoger in hun bounds staan dan het rekenkundige
-      // midden. Die verhouding beoordeelt het oog, niet dit script.
-      const krapst = Math.min(marge.links, marge.rechts, marge.boven, marge.onder);
-      if (krapst < 0) kaderMis++;
-      console.log('     ' + (krapst < 0 ? R('✗') : G('✓')) + ' ' + v.wat.padEnd(34) +
+      // Wat dit script WEL kan beoordelen: staat het kader om het goede stuk? Wat
+      // het NIET kan: of de verhouding mooi is. De marges hier zijn bewust
+      // asymmetrisch, en mogen zelfs licht negatief zijn — de bounds die MathLive
+      // per teken teruggeeft dragen regelhoogte-speling boven en onder de inkt, dus
+      // een box die daar een stukje in bijt sluit juist strakker om de cijfers. De
+      // grens ligt bij een kwart van de doelmaat: daaronder gaat het niet meer om
+      // speling maar staat het kader werkelijk verkeerd.
+      const grens = { x: -0.25 * v.rect.width, y: -0.25 * v.rect.height };
+      const teKrap = marge.links < grens.x || marge.rechts < grens.x ||
+                     marge.boven < grens.y || marge.onder < grens.y;
+      if (teKrap) kaderMis++;
+      const krapst = rond(Math.min(marge.links, marge.rechts, marge.boven, marge.onder));
+      console.log('     ' + (teKrap ? R('✗') : G('✓')) + ' ' + v.wat.padEnd(34) +
                   'l' + marge.links + ' r' + marge.rechts + ' b' + marge.boven + ' o' + marge.onder +
-                  (krapst < 0 ? R('   SNIJDT AAN (' + krapst + 'px)') : ''));
+                  (teKrap ? R('   STAAT VERKEERD (' + krapst + 'px)')
+                          : (krapst < 0 ? D('   bijt ' + (-krapst) + 'px in de speling') : '')));
     });
     if (m.status) console.log('     ' + D('statusbalk: ') + m.status);
     if (m.foutRegel) console.log('     ' + D('foutregel : ') + m.foutRegel.slice(0, 140));

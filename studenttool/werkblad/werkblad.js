@@ -4908,9 +4908,18 @@
   var FOUT_RAND_MARGE = { links: 6, rechts: 8, boven: 4, onder: 8 };
   // Gevuld deelkader om precies één teller of noemer. Hier krijgt drawBox wél een
   // diepte mee, dus de per-diepte fudge (DEPTH_SIZE_CORR) komt er bovenop: op
-  // diepte 1 is dat dw 2, dh 6 — ruim 3px verticaal. Daarom is `boven` negatief:
-  // zonder die correctie duwt de fudge de box te hoog en te ruim.
-  var FOUT_TELLER_MARGE = { links: 2, rechts: 4, boven: -2, onder: 2 };
+  // diepte 1 is dat dw 2, dh 6 — ruim 3px verticaal. Daarom zijn boven en onder
+  // negatief: zonder die aftrek duwt de fudge de box te hoog en te ruim.
+  //
+  // Verticaal met 2px per kant verkleind na visuele beoordeling (6 aug). Omgerekend
+  // is dat 2 ÷ 0,61 ≈ 3,28 nominale eenheden per kant: boven −2 → −5,3 en onder
+  // 2 → −1,3. Op het scherm wordt dat b−1,4 o1,0 in plaats van b0,6 o3,0.
+  //
+  // Dat de bovenmarge nu NEGATIEF is t.o.v. de gemeten bounds, is geen fout: de
+  // bounds die MathLive per teken teruggeeft dragen regelhoogte-speling boven en
+  // onder de eigenlijke inkt. De box mag daar een stukje in bijten en sluit dan
+  // juist strakker om de cijfers.
+  var FOUT_TELLER_MARGE = { links: 2, rechts: 4, boven: -5.3, onder: -1.3 };
   function clearFoutKaders(){
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
     _lastFoutRes = null;   // toestand vergeten: er staan geen fout-kaders meer
