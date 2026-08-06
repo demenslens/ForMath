@@ -393,28 +393,53 @@ vm-context (zelfde patroon als `load_matcher.js`) tegen opgenomen offsets.
 > Beide bleken pas bij meten in de browser. Met fixtures is elke hypothese nu in
 > seconden te weerleggen.
 
-**Opnemen** doe je in de browser met `__dumpOffsets('naam')` — de JSON gaat naar
-console én klembord, en hoort in `test_harnas/breuk/fixtures.json` met het
-verwachte foutnummer erbij. **Draaien**: `node test_harnas/breuk/run.js -v`.
+**Opnemen gaat sinds 6 augustus (middag) automatisch.**
+[`test_harnas/browser/`](test_harnas/browser/) start de tool in de geïnstalleerde
+Chrome (Playwright met `channel: 'chrome'`, dus géén browser-download), speelt de
+scenario's uit `scenarios.json` af en schrijft `fixtures.json` opnieuw. Eén
+commando, 21 regels, herhaalbaar na elke wijziging. Met de hand kan nog steeds, via
+`__dumpOffsets('naam')` in de console.
 
-Wat er nu in staat is één echte opname (`2/6 + 1/3` → `BR-04`), afkomstig van
-`__breukDiag()`. Die bevat alleen de composite `\frac`-offsets, wat volstaat voor
-de situaties 1 t/m 5. Voor situatie 6 en voor de teller/noemer-splitsing zijn
-volledige `__dumpOffsets()`-opnames nodig, mét de cijfer-offsets.
+```
+npm test              # spookscan + offline breuktoets, geen browser nodig
+npm run opnemen       # de volle browsermeting (~40 s)
+```
 
-**Nog niet in de browser bevestigd:** de shorthand-fix (`\frac26`), de
-teller/noemer-scheiding, de celtolerantie, en het gedrag van de kaders na de
-refactor naar de generieke tekenroute.
+### Wat die eerste geautomatiseerde ronde blootlegde
+
+**Vier namen die nergens bestonden.** `_actiefVeld`, `detecteerGelijknamigFout`,
+`FOUT_RAND` en `FOUT_RAND_MARGE` werden alle vier gebruikt en nooit gedefinieerd.
+Gevolg: `doLF` brak af met een `ReferenceError` zodra de breuklaag een fout vond —
+**er is nooit één BR-kader getekend geweest**, en de boodschap bleef weg. Met het
+blote oog niet te zien: de detectie zelf klopte, alleen de weg naar het scherm was
+stuk. `test_harnas/browser/spookscan.js` (acorn + echte scope-analyse) vangt deze
+klasse fouten voortaan af en draait mee in `npm test`.
+
+**De celtolerantie was te grof.** De halve-tekenhoogte-drempel nam 23 burenparen
+ten onrechte samen, steeds hetzelfde patroon: de `+` tússen twee breuken (diepte 0)
+naast een tellercijfer (diepte 1), op 0,43 × de tekenhoogte en dus nét binnen de
+drempel. Er ging niets mis, maar alleen omdat de composite-offset van de breuk er
+toevallig tussen staat — geluk, geen ontwerp. `zelfdeCel` eist er nu dezelfde
+diepte bij: 23 → 0, terwijl alle negen terecht gelezen bewerkingen bleven staan.
+
+**De marges zijn afgeleid in plaats van gekozen.** De meting levert de
+`drawBox`-nudge (`delta x −1, y 0`) en de fontschaal (0,61), waarmee elke gemeten
+marge exact terug te rekenen is naar zijn constante. `FOUT_RAND_MARGE` en
+`FOUT_TELLER_MARGE` zijn zo gezet dat ze op het scherm dezelfde verhouding halen
+als `FOUT_MARGE` — de enige marge die al door het oog was goedgekeurd.
+
+**In de browser bevestigd:** de shorthand `\frac26`, de teller/noemer-scheiding
+(90 tekens, alle aan de goede kant van de échte breukstreep uit de shadow-DOM), de
+breukstreep-aanname (krapste geval houdt 3,6 px over, ook bij `minFontScale`), en
+dat elk verwacht kader werkelijk getekend wordt zonder door de tekens te snijden.
 
 ---
 
 ## 9. Openstaand
 
-- **Teller/noemer-scheiding in de browser.** De splitsing gebeurt op het verticale
-  midden van de `\frac`-bounds, in de aanname dat MathLive die symmetrisch rond de
-  breukstreep legt. Nog niet gemeten. Situatie 5 is er de scherpste toets voor.
-- **De celtolerantie** (halve tekenhoogte) is nog niet in de browser beoordeeld,
-  vooral niet bij geneste breuken waar MathLive verkleint (`minFontScale = 0.8`).
+- **De verhouding van de kader-marges** is afgeleid, niet door het oog beoordeeld.
+  Op het scherm: gevuld deelkader l2,83 r2,01 b0,61 o3,03 px; het omhullende kader
+  ~1,8 px ruimer rondom. Meten kan het harnas, mooi vinden niet.
 - **Rand om de hele bewerking bij situatie 6** — blijft die staan naast het gevulde
   tellerkader, of alleen het gevulde? Nog te beslissen.
 - **De benoeming van unaire bewerkingen.** `formatMathblockExpr` bouwt de melding
@@ -432,35 +457,59 @@ refactor naar de generieke tekenroute.
 
 ## 10. Functie-index
 
+In `werkblad.js` (de DOM- en tekenkant):
+
 | Functie | Regel | Rol |
 |---|---|---|
-| `toonHintKaders` | 4455 | groene/grijze mathblock-hints (laag A) |
-| `toonOptioneleKaders` | 4657 | blauw vereenvoudig-kader (Hint III) |
-| `_zelfdeCel` | 4750 | celgrens op hoogte — geen index-buurschap |
-| `vindGetalBewerkingen` | 4757 | **gedeelde bron**: waar zit de bewerking? |
-| `toonBewerkingKaders` | 4793 | groen kader om openstaande bewerking (Hint I-fallback) |
-| `markFoutKaders` | 4951 | rode kaders via de matcher (laag A) |
-| `_zichtbareBreuken` | 5061 | simpele breuken uit de offsets |
-| `_breukDelen` | 5077 | teller/noemer splitsen op hoogte |
-| `_leesGetalReeks` | 5097 | offsets → reeks getallen met tekens |
-| `_situatieUitVlaggen` | 5137 | de beslissingstabel als vijf regels |
-| `_beoordeelBreuken` | 5149 | situaties 1 t/m 5 |
-| `_samengevoegdeBreuken` | 5209 | breuk met bewerking in de teller |
-| `_beoordeelSamengevoegd` | 5227 | situatie 6 |
-| `detecteerGelijknamigFout` | 5297 | detectie (meet, tekent niets) |
-| `tekenGelijknamigFout` | 5333 | kaders per situatie |
-| `_gelijknamigLadder` | 5404 | boodschap per situatie |
-| `_bouwFoutLadder` | 5457 | boodschap bij een matcher-fout |
-| `toonFoutRegel` | 5510 | de harmonica op de regel eronder |
+| `toonHintKaders` | 4449 | groene/grijze mathblock-hints (laag A) |
+| `toonOptioneleKaders` | 4652 | blauw vereenvoudig-kader (Hint III) |
+| `vindGetalBewerkingen` | 4739 | **gedeelde bron**: waar zit de bewerking? |
+| `toonBewerkingKaders` | 4740 | groen kader om openstaande bewerking (Hint I-fallback) |
+| `markFoutKaders` | 4919 | rode kaders via de matcher (laag A) |
+| `detecteerGelijknamigFout` | 5172 | detectie (meet, tekent niets) |
+| `tekenGelijknamigFout` | 5195 | kaders per situatie |
+| `_gelijknamigLadder` | 5263 | boodschap per situatie |
+| `_bouwFoutLadder` | 5310 | boodschap bij een matcher-fout |
+| `toonFoutRegel` | 5377 | de harmonica op de regel eronder |
+| `_activeMf` | 5843 | **één bron** voor "welk invoerveld is actief" |
 
-## 11. Console-diagnose
+In `breukdetectie.js` (de pure logica):
+
+| Functie | Regel | Rol |
+|---|---|---|
+| `zelfdeCel` | 196 | celgrens op hoogte **én diepte** — geen index-buurschap |
+| `zichtbareBreuken` | 248 | simpele breuken uit de offsets |
+| `breukDelen` | 265 | teller/noemer splitsen op hoogte |
+| `leesGetalReeks` | 282 | offsets → reeks getallen met tekens |
+| `situatieUitVlaggen` | 315 | de beslissingstabel als vijf regels |
+| `beoordeelBreuken` | 341 | situaties 1 t/m 5 |
+| `samengevoegdeBreuken` | 385 | breuk met bewerking in de teller |
+| `beoordeelSamengevoegd` | 403 | situatie 6 |
+
+`werkblad.js` benadert die laatste acht via dunne `_`-wrappers rond `_BD()`; de
+functie-index van de wrappers is niet apart opgenomen omdat ze niets doen.
+
+## 11. Diagnose
+
+Buiten de browser:
+
+```
+npm test              # spookscan (namen zonder declaratie) + de 21 breuk-fixtures
+npm run opnemen       # volledige browsermeting: opnames + geometrie + kaders
+npm run opnemen -- 015 --zichtbaar     # één opgave, zichtbaar venster
+```
+
+In de console:
 
 ```js
 window.FORMATH_DEBUG = true;   // [doLF] / [breukfout] / [foutregel]-regels
 window.__boxDebug    = true;   // gemeten coördinaten per kader
 __testBreukTabel();            // zelftest van de beslissingstabel
+__foutCatalogus();             // de foutcatalogus, met de vertaalde boodschappen
 __duoNow();                    // afgeleide DUO vs. statische DUO
 __anchorDiag();                // tokenstroom + zichtbare offsets
+__breukDiag();                 // waaróm de breuklaag wel/niet oordeelt
+__dumpOffsets('naam');         // één regel opnemen als fixture (JSON → klembord)
 __meetFoutBox();               // fout-box-verankering (tekent niets)
 __toonHint() / __toonBewerking() / __toonOptioneel();
 __wisFout() / __wisFoutRegel();

@@ -8,6 +8,16 @@ browser doorgelopen. Deze ronde levert de feiten waarop we de fix-volgorde baser
 **Duur:** ~20–30 min. **Wat ik van je nodig heb:** per scenario de waarnemingen bij
 "noteer" — kort mag, een `ja/nee` + eventueel een screenshot bij afwijkingen.
 
+> **Sinds 6 augustus (middag) is een deel hiervan geautomatiseerd.** `npm run opnemen`
+> draait de breuklaag (BR-01 t/m BR-06) in een echte Chrome en meet de kaders na:
+> staat elk verwacht kader er, en snijdt het niet door de tekens? Zie
+> [`test_harnas/browser/README.md`](test_harnas/browser/README.md). Die ronde bracht
+> vier namen aan het licht die nergens gedefinieerd waren, waardoor `doLF` afbrak
+> zodra de breuklaag een fout vond — **er was nog nooit één BR-kader op het scherm
+> verschenen.** Wat een machine niet kan beoordelen blijft hieronder staan: of het
+> kader er *goed uitziet*, of de melding te vólgen is, en de hele matcher-kant
+> (MB-01) met de zwakke plek in rubriek B.
+
 ---
 
 ## 0. Opzet (eenmalig)
