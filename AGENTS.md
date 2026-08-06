@@ -11,7 +11,7 @@ formath/
     └── testopgaven/     opgaven (opgave_*.json) + index.json
 ```
 
-Elk onderdeel heeft een eigen `CLAUDE.md` met specifieke details. Dit bestand
+Elk onderdeel heeft een eigen `AGENTS.md` met specifieke details. Dit bestand
 bevat wat voor BEIDE geldt. (Een toekomstig zusterproject `forquest/` staat
 buiten deze map en erft deze instructies NIET.)
 
@@ -78,7 +78,7 @@ Beide tools horen dezelfde look-and-feel te hebben.
 - Meet, gok niet: isoleer een root-cause (curl/wc-c/console/tests) vóór je
   wijzigt.
 - Bij visueel/CSS-werk beoordeelt de gebruiker het resultaat in de browser
-  (Claude Code ziet de echte MathLive-rendering niet). Lever, vraag feedback,
+  (Codex ziet de echte MathLive-rendering niet). Lever, vraag feedback,
   stel bij.
 - Werk iteratief; de gebruiker werkt graag met meerkeuze-bevestigingen.
 - **Leg elke werksessie vast.** Is er iets wezenlijks uitgezocht of veranderd,
