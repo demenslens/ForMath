@@ -9,11 +9,34 @@ de tool opstarten, regels intypen, de offsets aftappen en de kaders opmeten.
 | `spookscan.js` | zoekt namen die gebruikt worden maar nergens bestaan |
 | `server.js` | piepkleine statische server (wordt door `opnemen.js` gebruikt) |
 
+Alles hieronder draait **vanuit `studenttool/`**:
+
 ```
-npm test              # spookscan + de offline breuktoets — snel, geen browser
-npm run opnemen       # de volle browsermeting (~40 s)
-npm run opnemen -- 015 --zichtbaar     # één opgave, met zichtbaar venster
+cd ~/Desktop/formath/studenttool
 ```
+
+Snel, zonder browser — spookscan plus de offline breuktoets:
+
+```
+npm test
+```
+
+De volle browsermeting (~40 s):
+
+```
+npm run opnemen
+```
+
+Eén opgave, met zichtbaar venster:
+
+```
+npm run opnemen -- 015 --zichtbaar
+```
+
+> Plak geen commentaar áchter een commando. In een interactieve zsh is `#` geen
+> commentaarteken (`interactive_comments` staat standaard uit), dus de rest van de
+> regel belandt als argument bij `npm`. Vandaar dat de uitleg hier bóven de
+> commando's staat.
 
 Playwright stuurt de **geïnstalleerde** Google Chrome aan (`channel: 'chrome'`),
 dus er wordt geen browser gedownload; `playwright-core` is een dev-afhankelijkheid

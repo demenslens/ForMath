@@ -400,9 +400,16 @@ scenario's uit `scenarios.json` af en schrijft `fixtures.json` opnieuw. Eén
 commando, 21 regels, herhaalbaar na elke wijziging. Met de hand kan nog steeds, via
 `__dumpOffsets('naam')` in de console.
 
+Vanuit `studenttool/`, zonder browser (spookscan + offline breuktoets):
+
 ```
-npm test              # spookscan + offline breuktoets, geen browser nodig
-npm run opnemen       # de volle browsermeting (~40 s)
+npm test
+```
+
+De volle browsermeting (~40 s):
+
+```
+npm run opnemen
 ```
 
 ### Wat die eerste geautomatiseerde ronde blootlegde
@@ -491,12 +498,22 @@ functie-index van de wrappers is niet apart opgenomen omdat ze niets doen.
 
 ## 11. Diagnose
 
-Buiten de browser:
+Vanuit `studenttool/`. Spookscan (namen zonder declaratie) + de 21 breuk-fixtures:
 
 ```
-npm test              # spookscan (namen zonder declaratie) + de 21 breuk-fixtures
-npm run opnemen       # volledige browsermeting: opnames + geometrie + kaders
-npm run opnemen -- 015 --zichtbaar     # één opgave, zichtbaar venster
+npm test
+```
+
+Volledige browsermeting — opnames, geometrie en kaders:
+
+```
+npm run opnemen
+```
+
+Eén opgave, met zichtbaar venster:
+
+```
+npm run opnemen -- 015 --zichtbaar
 ```
 
 In de console:
