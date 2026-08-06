@@ -699,7 +699,14 @@
     st('ld','Opgave laden...');
     fetch(OPGAVEN_BASE + opg.bestand)
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
-      .then(function(data){ currentOpgave = data; renderOpgave(data); st('ok', TT('status.loaded')); })
+      .then(function(data){
+        currentOpgave = data;
+        // Nieuwe opgave = nieuwe sessie. Hier en niet in renderOpgave: die draait
+        // óók opnieuw zodra MathLive klaar is, en zou de teller dan resetten.
+        sessieStart((data.metadata && data.metadata.id) || opg.id || '');
+        renderOpgave(data);
+        st('ok', TT('status.loaded'));
+      })
       .catch(function(err){ st('er', TT('status.load_failed', {msg: err.message})); });
   }
 
@@ -1019,7 +1026,128 @@
   // ══════════════════════════════════════
   // MARGIN MARK — show ✓ or ✗ in the left margin
   // ══════════════════════════════════════
+  // ══════════════════════════════════════════════════════════════════════════
+  // SESSIE-OVERZICHT — wat er in de rechterkolom komt te staan
+  // ══════════════════════════════════════════════════════════════════════════
+  // Houdt van de LOPENDE sessie bij: wanneer hij begon, hoeveel hints er per stap
+  // zijn opgevraagd (uitgesplitst naar Hint I/II/III), hoeveel fouten er per stap
+  // zijn gemaakt, en of de opgave is afgerond. Bewust NIET opgeslagen: bij een
+  // nieuwe opgave begint de telling opnieuw en na herladen is de sessie weg.
+  //
+  // Drie meetpunten, elk op de plek waar de gebeurtenis ontstaat en nergens
+  // anders — anders telt hetzelfde feit twee keer mee:
+  //   sessieHint  ← kiesHint, alleen als een hint AANgaat (het is een toggle)
+  //   sessieFout  ← addMarginMark(regel, false), de enige plek waar een foute LF
+  //                 een kruisje in de kantlijn zet
+  //   sessieAf    ← waar opgaveVoltooid op true gaat
+  var _sessie = null;      // { opgave, begin, eind, af, stappen: {n: {I,II,III,fout}} }
+  var _sessieTimer = 0;
+
+  function sessieStart(opgaveId){
+    if (_sessieTimer) clearInterval(_sessieTimer);
+    _sessie = { opgave: opgaveId || '', begin: new Date(), eind: null, af: false, stappen: {} };
+    _sessieTimer = setInterval(function(){
+      // Alleen de duur verversen zolang de opgave loopt; na afronding staat de
+      // eindtijd vast en hoeft er niets meer te tikken.
+      if (!_sessie || _sessie.af) { clearInterval(_sessieTimer); _sessieTimer = 0; return; }
+      var el = document.getElementById('res-duur');
+      if (el) el.textContent = _sessieDuur();
+    }, 1000);
+    toonSessie();
+  }
+  function _sessieStap(n){
+    if (!_sessie) return null;
+    if (!_sessie.stappen[n]) _sessie.stappen[n] = { I: 0, II: 0, III: 0, fout: 0 };
+    return _sessie.stappen[n];
+  }
+  function sessieHint(soort){
+    var s = _sessieStap(currentStep);
+    if (s && s[soort] != null){ s[soort]++; toonSessie(); }
+  }
+  function sessieFout(){
+    var s = _sessieStap(currentStep);
+    if (s){ s.fout++; toonSessie(); }
+  }
+  function sessieAf(){
+    if (!_sessie || _sessie.af) return;
+    _sessie.af = true;
+    _sessie.eind = new Date();
+    toonSessie();
+  }
+  function _sessieDuur(){
+    if (!_sessie) return '';
+    var ms = (_sessie.eind || new Date()) - _sessie.begin;
+    var sec = Math.max(0, Math.floor(ms / 1000));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  // Opmaak: één tabel, cijfers rechts uitgelijnd en in tabelcijfers (zie
+  // .res-tabel in werkblad.css), zodat de kolommen onder elkaar blijven staan
+  // ongeacht welke cijfers er staan.
+  function toonSessie(){
+    var paneel = document.getElementById('resultaat-side');
+    if (!paneel) return;
+    var leeg = paneel.querySelector('.side-empty');
+    var body = paneel.querySelector('.res-body');
+    if (!body){
+      body = document.createElement('div');
+      body.className = 'res-body';
+      paneel.appendChild(body);
+    }
+    if (!_sessie){ body.innerHTML = ''; if (leeg) leeg.hidden = false; return; }
+    if (leeg) leeg.hidden = true;
+
+    var taal = (window.I18N && window.I18N.getLang) ? window.I18N.getLang() : 'en';
+    var datum = _sessie.begin.toLocaleDateString(taal, { day: 'numeric', month: 'long', year: 'numeric' });
+    var tijd  = _sessie.begin.toLocaleTimeString(taal, { hour: '2-digit', minute: '2-digit' });
+
+    // Rijen tot en met de stap waar de leerling nu staat, zodat de tabel de
+    // voortgang toont en niet alleen de stappen waar toevallig iets misging.
+    var hoogste = currentStep;
+    Object.keys(_sessie.stappen).forEach(function(k){ hoogste = Math.max(hoogste, Number(k)); });
+
+    var tot = { I: 0, II: 0, III: 0, fout: 0 }, rijen = '';
+    for (var n = 1; n <= hoogste; n++){
+      var s = _sessie.stappen[n] || { I: 0, II: 0, III: 0, fout: 0 };
+      ['I','II','III','fout'].forEach(function(k){ tot[k] += s[k]; });
+      rijen += '<tr' + (n === currentStep && !_sessie.af ? ' class="nu"' : '') + '>' +
+                 '<td class="lbl">' + n + '</td>' +
+                 '<td>' + s.I + '</td><td>' + s.II + '</td><td>' + s.III + '</td>' +
+                 '<td class="fout">' + s.fout + '</td></tr>';
+    }
+
+    body.innerHTML =
+      '<div class="res-kop">' +
+        '<div class="res-opgave">' + esc(String(_sessie.opgave).replace(/^opgave_/, '')) + '</div>' +
+        '<div class="res-tijd">' + esc(datum) + ' · ' + esc(tijd) + '</div>' +
+        '<div class="res-tijd">' + esc(TT('result.duration')) + ' <span id="res-duur">' +
+          _sessieDuur() + '</span></div>' +
+      '</div>' +
+      '<table class="res-tabel">' +
+        '<thead><tr>' +
+          '<th class="lbl">' + esc(TT('result.step')) + '</th>' +
+          '<th>I</th><th>II</th><th>III</th>' +
+          '<th class="fout">' + esc(TT('result.errors')) + '</th>' +
+        '</tr></thead>' +
+        '<tbody>' + rijen + '</tbody>' +
+        '<tfoot><tr>' +
+          '<td class="lbl">' + esc(TT('result.total')) + '</td>' +
+          '<td>' + tot.I + '</td><td>' + tot.II + '</td><td>' + tot.III + '</td>' +
+          '<td class="fout">' + tot.fout + '</td>' +
+        '</tr></tfoot>' +
+      '</table>' +
+      '<div class="res-legenda">' + esc(TT('result.hints_legend')) + '</div>' +
+      '<div class="res-eind' + (_sessie.af ? ' af' : '') + '">' +
+        esc(TT('result.finished')) + ': <strong>' +
+        esc(TT(_sessie.af ? 'result.yes' : 'result.no')) + '</strong>' +
+        (_sessie.af ? ' · ' + esc(_sessie.eind.toLocaleTimeString(taal, { hour: '2-digit', minute: '2-digit' })) : '') +
+      '</div>';
+  }
+  window.__sessie = function(){ return _sessie; };
+
   function addMarginMark(line, correct){
+    if (!correct) sessieFout();
     // Remove existing mark
     var old = line.querySelector('.margin-mark');
     if(old) old.remove();
@@ -2131,7 +2259,7 @@
         st('ok', TT('status.correct_step', {n: currentStep}));
         dbg('[stepTracking] Advanced to step', currentStep);
       } else {
-        opgaveVoltooid = true;
+        opgaveVoltooid = true; sessieAf();
         st('ok', TT('status.exercise_done'));
         dbg('[stepTracking] All steps completed!');
       }
@@ -4043,7 +4171,7 @@
         return;
       }
       addMarginMark(currentLine, true);
-      opgaveVoltooid = true;
+      opgaveVoltooid = true; sessieAf();
       var _sMsg = TT('fork.s_correct', { answer: _sres.oplossing });
       var _klaarS = document.createElement('span');
       _klaarS.className = 'klaar-badge';
@@ -5988,6 +6116,9 @@
       if (which === 'hoog') hintKadersHoog = true;
       else if (which === 'laag') hintKadersLaag = true;
       else hintKadersOptioneel = true;
+      // Alleen tellen als de hint AANgaat. Dit is een toggle: nog een klik zet
+      // 'm weer uit, en dat is geen nieuwe hint-aanvraag.
+      sessieHint(which === 'hoog' ? 'I' : which === 'laag' ? 'II' : 'III');
     }
     tekenHintKaders();
   }

@@ -1107,3 +1107,91 @@ math-field, .editor { font-size: 17px; }
   .side { width: 200px; }
   .bar-btn { padding: 6px 9px; font-size: 11.5px; }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   SESSIE-OVERZICHT — de rechterkolom (#resultaat-side)
+   ══════════════════════════════════════════════════════════════════════════
+   Toont van de lopende sessie: begintijd, duur, en per stap de opgevraagde
+   hints (I/II/III) en gemaakte fouten, met een totaalregel.
+
+   De uitlijning komt van drie dingen samen, niet van vaste breedtes:
+     table-layout:fixed  → de kolommen blijven staan waar ze staan, ook als er
+                           een getal bij komt;
+     tabular-nums        → elk cijfer even breed, dus 1 en 8 schuiven niet;
+     text-align:right    → getallen lijnen op hun laatste cijfer uit.
+   Daardoor blijft de tabel rustig terwijl de tellers oplopen. */
+.res-body { padding: 14px 16px 18px; }
+
+.res-kop { margin-bottom: 12px; }
+.res-opgave {
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: .01em;
+}
+.res-tijd {
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
+.res-tijd #res-duur { font-variant-numeric: tabular-nums; }
+
+.res-tabel {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.res-tabel th,
+.res-tabel td {
+  padding: 4px 2px;
+  text-align: right;
+  color: var(--ink);
+}
+/* De stap-kolom draagt tekst ('Stap', 'Totaal'), de rest getallen. */
+.res-tabel th.lbl,
+.res-tabel td.lbl { text-align: left; width: 34%; }
+.res-tabel thead th {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-dim);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 5px;
+}
+.res-tabel tbody td { border-bottom: 1px solid var(--bg-sunken); }
+.res-tabel tbody tr:last-child td { border-bottom: none; }
+/* De stap waar de leerling nú aan werkt. */
+.res-tabel tbody tr.nu td {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.res-tabel tbody tr.nu td:first-child { border-radius: 3px 0 0 3px; }
+.res-tabel tbody tr.nu td:last-child  { border-radius: 0 3px 3px 0; }
+/* Een fout blijft in de foutkleur, ook op 0 — dan gedempt, zodat de kolom
+   herkenbaar is zonder de aandacht te trekken als er niets mis is. */
+.res-tabel td.fout { color: var(--err); }
+.res-tabel td.fout:not(.lbl) { font-weight: 500; }
+.res-tabel tfoot td {
+  border-top: 1px solid var(--rule-strong);
+  padding-top: 6px;
+  font-weight: 600;
+}
+
+.res-legenda {
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ink-dim);
+}
+
+.res-eind {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--rule);
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.res-eind strong { color: var(--ink); font-weight: 600; }
+.res-eind.af strong { color: var(--ok); }

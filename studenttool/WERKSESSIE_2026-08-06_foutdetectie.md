@@ -278,6 +278,55 @@ caller kan opsplitsen zonder de structuurbepaling over te doen.
 
 ---
 
+## 8b. Sessie-overzicht in de rechterkolom
+
+Aan het eind van de sessie kwam er een functionele wens bij: houd per opgave-sessie
+bij wat de leerling heeft gedaan, in de rechterkolom.
+
+Drie keuzes lagen open en zijn met een meerkeuze vastgesteld:
+
+| vraag | gekozen |
+|---|---|
+| bewaren | alleen de lopende sessie — geen opslag, bij een nieuwe opgave begint de telling opnieuw |
+| eindoordeel | "Afgerond: ja/nog niet", ongeacht fouten; de fouten staan al in de kolom ernaast |
+| hints | uitgesplitst naar Hint I / II / III per stap |
+
+De kolom `#resultaat-side` bestond al, met niets erin dan een "Empty"-placeholder.
+
+### Drie meetpunten, elk op één plek
+
+- `sessieHint` in `kiesHint` — en alléén als een hint **aan**gaat. Het is een
+  toggle, dus een tweede klik zet hem uit en is geen nieuwe aanvraag. Een knop met
+  nul beschikbare hints doet niets en telt dus ook niets.
+- `sessieFout` in `addMarginMark(regel, false)` — de enige plek waar een foute LF
+  een kruisje in de kantlijn zet. Alle vier de foutbranches in `doLF` komen daar
+  langs, en ze sluiten elkaar uit.
+- `sessieAf` waar `opgaveVoltooid` op `true` gaat (twee plekken: de gewone
+  step-afronding en de abc-fork).
+
+De sessie start in `selectOpgave`, niet in `renderOpgave` — die laatste draait óók
+opnieuw zodra MathLive klaar is en zou de tellers dan resetten.
+
+### Eén meetval die geen bug was
+
+Drie foute antwoorden achter elkaar leverden maar één fout op. Dat leek een
+teller-bug, maar bleek mijn testmethode: `mf.setValue()` vuurt geen `input`-event,
+dus `lfBlocked` bleef staan en `doLF` keerde meteen om met "First correct the
+marked errors". Met echte toetsaanslagen via Playwright telt hij netjes 1, 2, 3.
+
+**Les voor het harnas:** `setValue` is prima om een regel neer te zetten en de
+offsets te meten, maar niet om gedrag te toetsen dat van de bewerk-cyclus afhangt.
+Daar zijn echte toetsaanslagen voor nodig.
+
+### Uitlijning
+
+De kolommen blijven staan door drie dingen samen, niet door vaste breedtes:
+`table-layout: fixed`, `tabular-nums` (elk cijfer even breed, dus een 1 en een 8
+schuiven niet) en rechts uitgelijnde getallen. Daardoor blijft de tabel rustig
+terwijl de tellers oplopen. Negen nieuwe i18n-sleutels, in alle zes de talen.
+
+---
+
 ## 9. Wat de meldingen letterlijk zeggen
 
 De harmonica werd volledig opengeklikt en opgenomen. Dat leverde drie
