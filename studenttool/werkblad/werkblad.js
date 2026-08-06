@@ -2049,10 +2049,7 @@
   // Gebruik: JSON.stringify(window.__anchorDiag(), null, 2)
   window.__anchorDiag = function(){
     var V = window.VERANKERING;
-    var mf = document.querySelector('.rl.active .editor')
-          || document.querySelector('.rl.active math-field')
-          || (typeof mfRef !== 'undefined' ? mfRef : null)
-          || document.querySelector('math-field');
+    var mf = _activeMf();
     if(!V || !mf) return { fout: 'geen VERANKERING of actief veld' };
     var ast = (currentTree && Array.isArray(nodeMap))
         ? { tree: currentTree, node_map: nodeMap }
@@ -2575,9 +2572,7 @@
         var res = M.checkStep(currentOpgave, step, tekst);
         if(!res || res.error){ console.warn('[meetFoutBox] checkStep:', res && res.error); return null; }
 
-        var mf = document.querySelector('.rl.active .editor')
-              || document.querySelector('.rl.active math-field')
-              || mfRef || document.querySelector('math-field');
+        var mf = _activeMf();
         if(!mf){ console.warn('[meetFoutBox] geen invoerveld'); return null; }
 
         var tokens  = V.genStudentTokens(res.studentTree, res.resultaten);
@@ -2664,9 +2659,7 @@
         var tekst = (duoText != null) ? duoText : latexToDuo(getEditorLatex());
         var res = M.checkStep(currentOpgave, step, tekst);
         if(!res || res.error){ console.warn('[meetStructuur] checkStep:', res && res.error); return null; }
-        var mf = document.querySelector('.rl.active .editor')
-              || document.querySelector('.rl.active math-field')
-              || mfRef || document.querySelector('math-field');
+        var mf = _activeMf();
         if(!mf){ console.warn('[meetStructuur] geen invoerveld'); return null; }
 
         function rectOf(el){ var r = el.getBoundingClientRect(); return {x:Math.round(r.x),y:Math.round(r.y),w:Math.round(r.width),h:Math.round(r.height)}; }
@@ -4467,10 +4460,7 @@
     // Pak GEGARANDEERD de actieve invoer-mathfield, niet een zijbalk-preview.
     // Het werkblad heeft veel math-fields in de DOM (één per opgave-preview);
     // querySelector('math-field') zou de eerste preview pakken.
-    var mf = document.querySelector('.rl.active .editor')
-          || document.querySelector('.rl.active math-field')
-          || mfRef
-          || document.querySelector('math-field');
+    var mf = _activeMf();
     if (!mf) { if (!countOnly) st('er', TT('status.no_input')); return countOnly ? 0 : {reden:'geen invoerveld actief'}; }
 
     // Verankering op de GEËVOLUEERDE boom (genLatexTokens). Na elke correcte
@@ -4663,10 +4653,7 @@
     var V = window.VERANKERING;
     if (!V || !V.COLORS || !V.COLORS.OPTIONEEL) return 0;
     if (!skipClear && !countOnly) V.clearBoxes();
-    var mf = document.querySelector('.rl.active .editor')
-          || document.querySelector('.rl.active math-field')
-          || (typeof mfRef !== 'undefined' ? mfRef : null)
-          || document.querySelector('math-field');
+    var mf = _activeMf();
     if (!mf) return 0;
     var offsets = V.collectOffsets(mf);
     if (!offsets || !offsets.length) return 0;
@@ -4754,10 +4741,7 @@
     var V = window.VERANKERING;
     if (!V || !V.COLORS || !V.COLORS.HOOG) return 0;
     if (!skipClear && !countOnly) V.clearBoxes();
-    var mf = document.querySelector('.rl.active .editor')
-          || document.querySelector('.rl.active math-field')
-          || (typeof mfRef !== 'undefined' ? mfRef : null)
-          || document.querySelector('math-field');
+    var mf = _activeMf();
     if (!mf) return 0;
     var offs = V.collectOffsets(mf);
     if (!offs || offs.length < 3) return 0;
@@ -4903,6 +4887,30 @@
   // Live bij te stellen via window.__setFoutMarge(3) (alle kanten) of
   // window.__setFoutMarge({boven:1, onder:5, rechts:5}).
   var FOUT_MARGE = { links: 3, rechts: 5, boven: 1, onder: 5 };
+  // Kader ZONDER opvulling — alleen een rand. De situaties 2 t/m 6 zetten dit om
+  // het geheel en een GEVULD kader om het foute deel; zou het buitenste ook
+  // gevuld zijn, dan zou het binnenste erin verdwijnen.
+  var FOUT_RAND = { bg: 'transparent', border: 'rgba(152,48,24,0.95)' };
+  // De twee marges hieronder zijn NIET met de hand gekozen maar teruggerekend uit
+  // een browser-meting (test_harnas/browser/opnemen.js, sectie 4). drawBox zet de
+  // box neer volgens
+  //     marge_links = fudge/2 + nominaal × fontschaal − delta.x
+  //     marge_rechts = fudge/2 + nominaal × fontschaal + delta.x
+  // (verticaal idem met delta.y). Gemeten op opgave 026: fontschaal 0,61 en een
+  // nudge van delta x −1, y 0. Die nudge is een vast aantal pixels en schaalt NIET
+  // mee — vandaar dat links en rechts verschillende nominale waarden nodig hebben
+  // om er op het scherm even breed uit te komen.
+  //
+  // IJKPUNT is FOUT_MARGE hierboven: dat is de enige marge die al door het oog is
+  // goedgekeurd. Op het scherm levert die l2,83 r2,05 b0,61 o3,05. De twee marges
+  // hieronder mikken op diezelfde verhouding — het omhullende kader met 2px extra
+  // lucht rondom, zodat het zichtbaar losstaat van het gevulde kader erbinnen.
+  var FOUT_RAND_MARGE = { links: 6, rechts: 8, boven: 4, onder: 8 };
+  // Gevuld deelkader om precies één teller of noemer. Hier krijgt drawBox wél een
+  // diepte mee, dus de per-diepte fudge (DEPTH_SIZE_CORR) komt er bovenop: op
+  // diepte 1 is dat dw 2, dh 6 — ruim 3px verticaal. Daarom is `boven` negatief:
+  // zonder die correctie duwt de fudge de box te hoog en te ruim.
+  var FOUT_TELLER_MARGE = { links: 2, rechts: 4, boven: -2, onder: 2 };
   function clearFoutKaders(){
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
     _lastFoutRes = null;   // toestand vergeten: er staan geen fout-kaders meer
@@ -4919,10 +4927,7 @@
     if (!fout.length) return 0;
 
     // Dezelfde actieve invoer-mathfield als de hint-flow gebruikt.
-    var mf = document.querySelector('.rl.active .editor')
-          || document.querySelector('.rl.active math-field')
-          || mfRef
-          || document.querySelector('math-field');
+    var mf = _activeMf();
     if (!mf) { dbg('[fout] geen invoerveld actief'); return 0; }
 
     var tokens  = V.genStudentTokens(matcherRes.studentTree, matcherRes.resultaten);
@@ -5073,7 +5078,7 @@
   //   __dumpOffsets('026 fout')  → met een naam erbij
   window.__dumpOffsets = function(naam){
     if (!window.VERANKERING) return console.warn('[dump] VERANKERING niet geladen');
-    var mf = _actiefVeld();
+    var mf = _activeMf();
     if (!mf) return console.warn('[dump] geen actief invoerveld');
     var offsets = (window.VERANKERING.collectOffsets(mf) || []).map(function(o){
       return {
@@ -5109,7 +5114,7 @@
   // Tekent niets. Aanroepen: __breukDiag()
   window.__breukDiag = function(){
     if (!window.VERANKERING) return console.warn('[breukdiag] VERANKERING niet geladen');
-    var mf = _actiefVeld();
+    var mf = _activeMf();
     if (!mf) return console.warn('[breukdiag] geen actief invoerveld');
     var offsets = window.VERANKERING.collectOffsets(mf) || [];
     var ruw = offsets.filter(function(o){
@@ -5153,6 +5158,34 @@
     });
   };
 
+  // DE DETECTIE — meet de huidige regel en velt een oordeel. Tekent niets; dat
+  // doet tekenGelijknamigFout op basis van wat hier terugkomt. doLF roept deze
+  // functie aan vóór de matcher, want een diagnose over het gelijknamig maken is
+  // specifieker dan wat de matcher over het mathblock kan zeggen (de bewerking
+  // zelf is dan immers nog niet uitgevoerd).
+  //
+  // Welk mathblock: het eerste NOG NIET OPGELOSTE blok met gelijknamig_maken.nodig.
+  // Opgeloste blokken overslaan is wezenlijk — anders blijft een al afgehandelde
+  // breuk-optelling in een opgave met meerdere mathblocks eeuwig meepraten.
+  // Zwijgen (null) is de norm zodra er geen betrouwbare koppeling is; dan komt de
+  // matcher aan de beurt.
+  function detecteerGelijknamigFout(){
+    if (!window.VERANKERING || !currentOpgave || !currentOpgave.mathblocks) return null;
+    var mf = _activeMf();
+    if (!mf) return null;
+    var offsets = window.VERANKERING.collectOffsets(mf);
+    if (!offsets || !offsets.length) return null;
+    for (var i = 0; i < currentOpgave.mathblocks.length; i++){
+      var mb = currentOpgave.mathblocks[i];
+      var gm = mb.gelijknamig_maken;
+      if (!gm || !gm.nodig) continue;
+      if (resolvedBlocks.indexOf(mb.id) !== -1) continue;
+      var det = _beoordeelBreuken(mb, offsets) || _beoordeelSamengevoegd(mb, offsets);
+      if (det) return det;
+    }
+    return null;
+  }
+
   // Kaders per situatie. Situatie 1 krijgt één GEVULD kader om de hele bewerking
   // (er valt niets zinnigs aan te wijzen). De situaties 2 t/m 5 krijgen een kader
   // ZONDER opvulling om de hele bewerking, plus een GEVULD kader om precies dat
@@ -5162,7 +5195,7 @@
   function tekenGelijknamigFout(det){
     if (!det || !window.VERANKERING) return 0;
     var V = window.VERANKERING;
-    var mf = _actiefVeld();
+    var mf = _activeMf();
     if (!mf) return 0;
     var offsets = V.collectOffsets(mf);            // opnieuw meten: layout staat nu vast
     if (!offsets || !offsets.length) return 0;
@@ -5214,7 +5247,11 @@
         var b = zicht[f.index];
         if (!b) return;
         if (k.deel === 'breuk'){
-          if (teken(b.off.bounds, FOUT_KLEUR, null, FOUT_RAND_MARGE)) n++;
+          // GEVULD om een hele breuk = precies waar FOUT_MARGE voor bedoeld is
+          // ("de fout-box bij soort 'breuk', losse breuk én groep"). Niet
+          // FOUT_RAND_MARGE: dat is de ruimere marge van het kader eromheen, en
+          // met dezelfde marge vallen binnenste en buitenste kader samen.
+          if (teken(b.off.bounds, FOUT_KLEUR, null, FOUT_MARGE)) n++;
         } else if (tekenDeel(b.off, k.deel)) n++;
       });
     }
@@ -5795,6 +5832,14 @@
   // Zo bewegen de kaders VLOEIEND mee i.p.v. te verspringen (debounce sprong pas
   // aan het eind, wat het hinderlijke spronggedrag gaf).
   var _redrawRAF = 0, _kaderMfRect = null, _lastKaderCount = 0;
+  // ÉÉN BRON voor "welk invoerveld is actief". Gebruikt door de hint-route, de
+  // fout-route, het herteken-mechaniek én de console-diagnose; function-declaratie,
+  // dus gehesen en overal in deze IIFE aanroepbaar. Niet dupliceren: de keten stond
+  // eerder acht keer uitgeschreven, en een negende variant (`_actiefVeld`) werd wél
+  // aangeroepen maar nooit gedefinieerd — waardoor tekenGelijknamigFout, __dumpOffsets
+  // en __breukDiag stilletjes een ReferenceError gooiden.
+  // Het werkblad heeft veel math-fields in de DOM (één per opgave-preview); een kale
+  // querySelector('math-field') zou de eerste preview pakken, vandaar de volgorde.
   function _activeMf(){
     return document.querySelector('.rl.active .editor')
         || document.querySelector('.rl.active math-field')
