@@ -31,31 +31,39 @@ rijen), en daarna elke fixture. Exitcode 1 bij een afwijking.
 
 ## Een regel opnemen
 
+**Normaal gesproken hoef je dit niet met de hand te doen.** Zet het scenario in
+[`../browser/scenarios.json`](../browser/scenarios.json) en draai:
+
+```
+npm run opnemen
+```
+
+Dat start de tool in een echte Chrome, speelt elk scenario af en schrijft
+`fixtures.json` opnieuw — inclusief `verwacht`, uit het scenario. Zie
+[`../browser/README.md`](../browser/README.md).
+
+Met de hand kan nog steeds, bijvoorbeeld om een regel vast te leggen die je in een
+andere browser of op een ander scherm tegenkomt:
+
 1. Start de studenttool en typ de regel die je wilt vastleggen.
-2. Draai in de console:
+2. Draai in de console `__dumpOffsets('026 teller fout')` — de JSON verschijnt in
+   de console én gaat naar het klembord.
+3. Plak het object in de array in `fixtures.json` en vul `verwacht` in: de
+   foutcode uit de catalogus (`'BR-04'`), of `null` als er niets mis is.
 
-   ```js
-   __dumpOffsets('026 teller fout')
-   ```
-
-   De JSON verschijnt in de console én gaat naar het klembord.
-3. Plak het object in de array in `fixtures.json`.
-4. Vul `verwacht` in: de foutcode uit de catalogus (`'BR-04'`), of `null` als er
-   niets mis is met die regel.
-
-Neem vooral de gevallen op waar de tool het mis had of waar je twijfelt. Nuttige
-vormen om te dekken:
+De 21 opnames die er nu staan, dekken alle zes situaties plus de gevallen die
+géén fout mogen opleveren:
 
 | Vorm | Waarom |
 |---|---|
-| `2/6 + 1/3` | korte MathLive-vorm `\frac26` |
-| `5/30 + 4/30` | correct gelijknamig — moet `null` geven |
-| `1/6 + 2/15` | onaangeroerd — moet `null` geven |
-| `15/90 + 12/90` | productnoemer — geldig alternatief, moet `null` geven |
-| `(31−12)/32` | bewerking in de teller (situatie 6) |
+| `2/6 + 1/3` | korte MathLive-vorm `\frac26` → BR-04 |
+| `3/6 + 2/6`, `1/2 + 1/3` | correct resp. onaangeroerd — moeten `null` geven |
+| `15/90 + 12/90` | productnoemer — geldig alternatief, `null` |
+| `(3+1)/6` | bewerking in de teller (situatie 6) |
 | `4/9 + (2−1)/4` | breuk naast een samengevoegde breuk — celgrenzen |
 | `31/32 − 12/8` | aftrekking, minteken buiten de breuk |
-| `(1/2)^2` of een wortel | geneste verkleining (`minFontScale = 0.8`) |
+| `16/36 + 17/36 − 9/36` | manifold van drie termen |
+| `(1/2)^2 − …`, `√(1/64)` | geneste verkleining (`minFontScale = 0.8`) |
 
 ## Wat het harnas dekt
 
@@ -63,6 +71,7 @@ Alles in `breukdetectie.js`: het lezen van de breuk-LaTeX, de teller/noemer-
 splitsing, de celgrenzen, de vlaggen en de situatiebepaling — dus de hele weg van
 offsets naar foutcode.
 
-**Niet** gedekt: het tekenen van de kaders (dat vraagt echte bounds op het scherm)
-en de plaatsing/marges daarvan. Daarvoor blijft
+**Niet** gedekt: het tekenen van de kaders — dat vraagt echte bounds op het scherm.
+Dat doet [`../browser/`](../browser/) wel, met een echte Chrome. Voor de kleur en
+de leesbaarheid van de kaders blijft
 [`../../TESTRONDE_foutflow.md`](../../TESTRONDE_foutflow.md) de leidraad.

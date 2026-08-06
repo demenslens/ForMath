@@ -1,13 +1,3729 @@
 [
   {
-    "naam": "026 teller fout (2/6 + 1/3)",
+    "naam": "026 korte vorm, teller fout",
     "opgave": "20260511_026",
     "latex": "\\frac26+\\frac13",
     "verwacht": "BR-04",
-    "herkomst": "ECHT — gemeten met __breukDiag() in Safari, 2026-08-06. Bevat alleen de twee composite \\frac-offsets (dat is wat __breukDiag afdrukt); genoeg voor de situaties 1 t/m 5, die alleen naar de breuk-offsets kijken. Voor situatie 6 en voor de teller/noemer-splitsing is een volledige __dumpOffsets()-opname nodig, inclusief de cijfer-offsets.",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). de korte MathLive-vorm \\frac26 + situatie 4 (één teller fout)",
     "offsets": [
-      { "offset": 0, "depth": 0, "latex": "\\frac26", "bounds": { "x": 738, "y": 369, "width": 12, "height": 31 } },
-      { "offset": 1, "depth": 0, "latex": "\\frac13", "bounds": { "x": 771, "y": 369, "width": 12, "height": 31 } }
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac26",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac13",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 correct gelijknamig",
+    "opgave": "20260511_026",
+    "latex": "\\frac36+\\frac26",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). goede tussenvorm — mag geen kader opleveren",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac36",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac26",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 onaangeroerd",
+    "opgave": "20260511_026",
+    "latex": "\\frac12+\\frac13",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). nog niets gedaan — waarde-ok, geen fout",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac12",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac13",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 één noemer fout",
+    "opgave": "20260511_026",
+    "latex": "\\frac36+\\frac25",
+    "verwacht": "BR-05",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 5 — de scherpste toets voor de teller/noemer-scheiding",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac36",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "5",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac25",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 beide tellers fout",
+    "opgave": "20260511_026",
+    "latex": "\\frac46+\\frac36",
+    "verwacht": "BR-03",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 3 — noemers goed, beide tellers verkeerd omgezet",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac46",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac36",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 één breuk helemaal fout",
+    "opgave": "20260511_026",
+    "latex": "\\frac45+\\frac26",
+    "verwacht": "BR-02",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 2 — één breuk heel fout, de andere waarde-ok",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "5",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac45",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac26",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 alles fout",
+    "opgave": "20260511_026",
+    "latex": "\\frac45+\\frac37",
+    "verwacht": "BR-01",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 1 — geen bruikbare deeldiagnose",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "5",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac45",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "7",
+        "bounds": {
+          "x": 663.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 0,
+        "latex": "\\frac37",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 samengevoegd, teller fout",
+    "opgave": "20260511_026",
+    "latex": "\\frac{3+1}{6}",
+    "verwacht": "BR-06",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 6 — bewerking in de teller, fout getal",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "+",
+        "bounds": {
+          "x": 642.03,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 659.17,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 644.39,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 644.39,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{3+1}{6}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 41.11,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "026 samengevoegd, correct",
+    "opgave": "20260511_026",
+    "latex": "\\frac{3+2}{6}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 6 mag niet afgaan op een correcte samenvoeging",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "+",
+        "bounds": {
+          "x": 642.03,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 659.17,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 644.39,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 644.39,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{3+2}{6}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 41.11,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "014 productnoemer",
+    "opgave": "20260511_014",
+    "latex": "\\frac{15}{90}+\\frac{12}{90}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). geldig alternatief voor het KGV (90 i.p.v. 30) — geen fout",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "5",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "9",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "0",
+        "bounds": {
+          "x": 638.13,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{15}{90}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 652.56,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 671.73,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 680.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 1,
+        "latex": "9",
+        "bounds": {
+          "x": 671.73,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 1,
+        "latex": "0",
+        "bounds": {
+          "x": 680.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 15,
+        "depth": 0,
+        "latex": "\\frac{12}{90}",
+        "bounds": {
+          "x": 669.7,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "016 aftrekking, noemer fout",
+    "opgave": "20260511_016",
+    "latex": "\\frac{31}{32}-\\frac{12}{8}",
+    "verwacht": "BR-05",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). minteken staat op het scherm BUITEN de breuk — vergelijken op absolute teller",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 638.13,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{31}{32}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "-",
+        "bounds": {
+          "x": 652.56,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 671.73,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 680.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 675.98,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 1,
+        "latex": "8",
+        "bounds": {
+          "x": 675.98,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 0,
+        "latex": "\\frac{12}{8}",
+        "bounds": {
+          "x": 669.7,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "016 aftrekking, correct",
+    "opgave": "20260511_016",
+    "latex": "\\frac{31}{32}-\\frac{12}{32}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). dezelfde aftrekking goed omgezet — mag niet afgaan",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 638.13,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{31}{32}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "-",
+        "bounds": {
+          "x": 652.56,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 671.73,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 680.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 671.73,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 680.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 15,
+        "depth": 0,
+        "latex": "\\frac{12}{32}",
+        "bounds": {
+          "x": 669.7,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "014 samengevoegd, correct",
+    "opgave": "20260511_014",
+    "latex": "\\frac{5+4}{30}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). correcte samenvoeging op het KGV — mag niet afgaan",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "5",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "+",
+        "bounds": {
+          "x": 642.03,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 659.17,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 640.14,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 640.14,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "0",
+        "bounds": {
+          "x": 648.64,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "\\frac{5+4}{30}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 41.11,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "014 samengevoegd, teller fout",
+    "opgave": "20260511_014",
+    "latex": "\\frac{5+3}{30}",
+    "verwacht": "BR-06",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 6 op een andere opgave dan 026",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "5",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "+",
+        "bounds": {
+          "x": 642.03,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 659.17,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 640.14,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 640.14,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "0",
+        "bounds": {
+          "x": 648.64,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "\\frac{5+3}{30}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 41.11,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "015 manifold gelijknamig correct",
+    "opgave": "20260511_015",
+    "latex": "\\frac{16}{36}+\\frac{18}{36}-\\frac{9}{36}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). DRIE breuken — de beslissingstabel claimt te generaliseren naar manifolds",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 638.13,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{16}{36}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 652.56,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 671.73,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "8",
+        "bounds": {
+          "x": 680.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 671.73,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 680.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 15,
+        "depth": 0,
+        "latex": "\\frac{18}{36}",
+        "bounds": {
+          "x": 669.7,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 16,
+        "depth": 0,
+        "latex": "-",
+        "bounds": {
+          "x": 694.67,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 17,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 718.09,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 18,
+        "depth": 1,
+        "latex": "9",
+        "bounds": {
+          "x": 718.09,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 19,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 713.84,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 20,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 713.84,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 21,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 722.34,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 22,
+        "depth": 0,
+        "latex": "\\frac{9}{36}",
+        "bounds": {
+          "x": 711.81,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "015 manifold, één teller fout",
+    "opgave": "20260511_015",
+    "latex": "\\frac{16}{36}+\\frac{17}{36}-\\frac{9}{36}",
+    "verwacht": "BR-04",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 4 op een manifold van drie termen",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 638.13,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 0,
+        "latex": "\\frac{16}{36}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 652.56,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 671.73,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "7",
+        "bounds": {
+          "x": 680.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 671.73,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 671.73,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 680.23,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 15,
+        "depth": 0,
+        "latex": "\\frac{17}{36}",
+        "bounds": {
+          "x": 669.7,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 16,
+        "depth": 0,
+        "latex": "-",
+        "bounds": {
+          "x": 694.67,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 17,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 718.09,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 18,
+        "depth": 1,
+        "latex": "9",
+        "bounds": {
+          "x": 718.09,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 19,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 713.84,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 20,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 713.84,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 21,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 722.34,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 22,
+        "depth": 0,
+        "latex": "\\frac{9}{36}",
+        "bounds": {
+          "x": 711.81,
+          "y": 446.11,
+          "width": 20.06,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "015 manifold samengevoegd correct",
+    "opgave": "20260511_015",
+    "latex": "\\frac{16+18-9}{36}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). twee bewerkingen in één teller — voer voor vindGetalBewerkingen",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "+",
+        "bounds": {
+          "x": 650.53,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 667.67,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "8",
+        "bounds": {
+          "x": 676.17,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "-",
+        "bounds": {
+          "x": 688.58,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "9",
+        "bounds": {
+          "x": 705.72,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.42,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 663.42,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 671.92,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 0,
+        "latex": "\\frac{16+18-9}{36}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 87.66,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "015 manifold samengevoegd fout",
+    "opgave": "20260511_015",
+    "latex": "\\frac{16+18-8}{36}",
+    "verwacht": "BR-06",
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). situatie 6 met drie termen, de laatste fout",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 638.13,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "+",
+        "bounds": {
+          "x": 650.53,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 667.67,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 1,
+        "latex": "8",
+        "bounds": {
+          "x": 676.17,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "-",
+        "bounds": {
+          "x": 688.58,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "8",
+        "bounds": {
+          "x": 705.72,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.42,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 663.42,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "6",
+        "bounds": {
+          "x": 671.92,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 0,
+        "latex": "\\frac{16+18-8}{36}",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 87.66,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "015 breuk naast samengevoegde",
+    "opgave": "20260511_015",
+    "latex": "\\frac49+\\frac{2-1}{4}",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). celgrenzen: de 9 van de noemer staat in de offsetreeks vlak vóór de +",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 448.66,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 629.63,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 629.63,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 1,
+        "latex": "9",
+        "bounds": {
+          "x": 629.63,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 0,
+        "latex": "\\frac49",
+        "bounds": {
+          "x": 627.59,
+          "y": 446.11,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 0,
+        "latex": "+",
+        "bounds": {
+          "x": 644.06,
+          "y": 450.66,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 663.23,
+          "y": 440.16,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 663.23,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 1,
+        "latex": "-",
+        "bounds": {
+          "x": 675.64,
+          "y": 442.16,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "1",
+        "bounds": {
+          "x": 692.78,
+          "y": 442.16,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 678,
+          "y": 460.39,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 678,
+          "y": 462.39,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 0,
+        "latex": "\\frac{2-1}{4}",
+        "bounds": {
+          "x": 661.2,
+          "y": 446.11,
+          "width": 41.11,
+          "height": 31.27
+        }
+      }
+    ]
+  },
+  {
+    "naam": "020 genest met machten",
+    "opgave": "20260511_020",
+    "latex": "\\left({\\frac12}\\right)^2-\\left(\\left(-\\frac18+-\\frac{5}{8}\\right)^2\\right)",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). openingsregel (1/2)^2-((-1/8+-5/8)^2) — minFontScale verkleint de tekens",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 463.3,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 637.75,
+          "y": 463.3,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 2,
+        "latex": "",
+        "bounds": {
+          "x": 637.75,
+          "y": 463.3,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 639.78,
+          "y": 454.8,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 3,
+        "latex": "1",
+        "bounds": {
+          "x": 639.78,
+          "y": 456.8,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 639.78,
+          "y": 475.03,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 3,
+        "latex": "2",
+        "bounds": {
+          "x": 639.78,
+          "y": 477.03,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 2,
+        "latex": "\\frac12",
+        "bounds": {
+          "x": 637.75,
+          "y": 460.75,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 1,
+        "latex": "{\\frac12}",
+        "bounds": {
+          "x": 637.75,
+          "y": 460.75,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 0,
+        "latex": "\\left({\\frac12}\\right)",
+        "bounds": {
+          "x": 627.59,
+          "y": 457.3,
+          "width": 31.88,
+          "height": 38
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 660.47,
+          "y": 452.03,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 660.47,
+          "y": 454.03,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 0,
+        "latex": "^2",
+        "bounds": null
+      },
+      {
+        "offset": 13,
+        "depth": 0,
+        "latex": "-",
+        "bounds": {
+          "x": 672.03,
+          "y": 465.3,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 701.69,
+          "y": 463.3,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 15,
+        "depth": 2,
+        "latex": "",
+        "bounds": {
+          "x": 711.84,
+          "y": 463.3,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 16,
+        "depth": 2,
+        "latex": "-",
+        "bounds": {
+          "x": 711.84,
+          "y": 465.3,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 17,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 729.98,
+          "y": 454.8,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 18,
+        "depth": 3,
+        "latex": "1",
+        "bounds": {
+          "x": 729.98,
+          "y": 456.8,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 19,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 729.98,
+          "y": 475.03,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 20,
+        "depth": 3,
+        "latex": "8",
+        "bounds": {
+          "x": 729.98,
+          "y": 477.03,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 21,
+        "depth": 2,
+        "latex": "\\frac18",
+        "bounds": {
+          "x": 727.95,
+          "y": 460.75,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 22,
+        "depth": 2,
+        "latex": "+",
+        "bounds": {
+          "x": 744.42,
+          "y": 465.3,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 23,
+        "depth": 2,
+        "latex": "-",
+        "bounds": {
+          "x": 761.56,
+          "y": 465.3,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 24,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 779.7,
+          "y": 454.8,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 25,
+        "depth": 3,
+        "latex": "5",
+        "bounds": {
+          "x": 779.7,
+          "y": 456.8,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 26,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 779.7,
+          "y": 475.03,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 27,
+        "depth": 3,
+        "latex": "8",
+        "bounds": {
+          "x": 779.7,
+          "y": 477.03,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 28,
+        "depth": 2,
+        "latex": "\\frac{5}{8}",
+        "bounds": {
+          "x": 777.67,
+          "y": 460.75,
+          "width": 11.56,
+          "height": 31.27
+        }
+      },
+      {
+        "offset": 29,
+        "depth": 1,
+        "latex": "\\left(-\\frac18+-\\frac{5}{8}\\right)",
+        "bounds": {
+          "x": 701.69,
+          "y": 457.3,
+          "width": 97.7,
+          "height": 38
+        }
+      },
+      {
+        "offset": 30,
+        "depth": 2,
+        "latex": "",
+        "bounds": {
+          "x": 800.39,
+          "y": 452.03,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 31,
+        "depth": 2,
+        "latex": "2",
+        "bounds": {
+          "x": 800.39,
+          "y": 454.03,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 32,
+        "depth": 1,
+        "latex": "^2",
+        "bounds": null
+      },
+      {
+        "offset": 33,
+        "depth": 0,
+        "latex": "\\left(\\left(-\\frac18+-\\frac{5}{8}\\right)^2\\right)",
+        "bounds": {
+          "x": 689.17,
+          "y": 455.3,
+          "width": 130.39,
+          "height": 41
+        }
+      }
+    ]
+  },
+  {
+    "naam": "023 wortel over een breuk",
+    "opgave": "20260511_023",
+    "latex": "\\left(\\frac{\\frac{7}{6}-\\frac{3}{4}}{2-\\sqrt{\\frac{1}{64}}}\\right)\\times3^2-\\frac34",
+    "verwacht": null,
+    "herkomst": "AUTOMATISCH opgenomen door test_harnas/browser/opnemen.js in Chrome (1440x900). openingsregel met sqrt(1/64) — diepste nesting van alle testopgaven",
+    "offsets": [
+      {
+        "offset": 0,
+        "depth": 0,
+        "latex": "",
+        "bounds": {
+          "x": 627.59,
+          "y": 495.59,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 1,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 642.47,
+          "y": 495.59,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 2,
+        "depth": 2,
+        "latex": "",
+        "bounds": {
+          "x": 655.22,
+          "y": 483.34,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 3,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 657.25,
+          "y": 479.89,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 4,
+        "depth": 3,
+        "latex": "7",
+        "bounds": {
+          "x": 657.25,
+          "y": 481.89,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 5,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 657.25,
+          "y": 492.3,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 6,
+        "depth": 3,
+        "latex": "6",
+        "bounds": {
+          "x": 657.25,
+          "y": 494.3,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 7,
+        "depth": 2,
+        "latex": "\\frac{7}{6}",
+        "bounds": {
+          "x": 655.22,
+          "y": 484.34,
+          "width": 9.88,
+          "height": 21.94
+        }
+      },
+      {
+        "offset": 8,
+        "depth": 2,
+        "latex": "-",
+        "bounds": {
+          "x": 670,
+          "y": 485.34,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 9,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 689.17,
+          "y": 479.89,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 10,
+        "depth": 3,
+        "latex": "3",
+        "bounds": {
+          "x": 689.17,
+          "y": 481.89,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 11,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 689.17,
+          "y": 492.3,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 12,
+        "depth": 3,
+        "latex": "4",
+        "bounds": {
+          "x": 689.17,
+          "y": 494.3,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 13,
+        "depth": 2,
+        "latex": "\\frac{3}{4}",
+        "bounds": {
+          "x": 687.14,
+          "y": 484.34,
+          "width": 9.88,
+          "height": 21.94
+        }
+      },
+      {
+        "offset": 14,
+        "depth": 2,
+        "latex": "",
+        "bounds": {
+          "x": 644.5,
+          "y": 513.95,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 15,
+        "depth": 2,
+        "latex": "2",
+        "bounds": {
+          "x": 644.5,
+          "y": 515.95,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 16,
+        "depth": 2,
+        "latex": "-",
+        "bounds": {
+          "x": 656.91,
+          "y": 515.95,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 17,
+        "depth": 3,
+        "latex": "",
+        "bounds": {
+          "x": 691.05,
+          "y": 513.95,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 18,
+        "depth": 4,
+        "latex": "",
+        "bounds": {
+          "x": 696.48,
+          "y": 510.5,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 19,
+        "depth": 4,
+        "latex": "1",
+        "bounds": {
+          "x": 696.48,
+          "y": 512.5,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 20,
+        "depth": 4,
+        "latex": "",
+        "bounds": {
+          "x": 693.08,
+          "y": 522.91,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 21,
+        "depth": 4,
+        "latex": "6",
+        "bounds": {
+          "x": 693.08,
+          "y": 524.91,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 22,
+        "depth": 4,
+        "latex": "4",
+        "bounds": {
+          "x": 699.89,
+          "y": 524.91,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 23,
+        "depth": 3,
+        "latex": "\\frac{1}{64}",
+        "bounds": {
+          "x": 691.05,
+          "y": 514.95,
+          "width": 16.69,
+          "height": 21.94
+        }
+      },
+      {
+        "offset": 24,
+        "depth": 2,
+        "latex": "\\sqrt{\\frac{1}{64}}",
+        "bounds": {
+          "x": 674.05,
+          "y": 510.73,
+          "width": 33.69,
+          "height": 30.77
+        }
+      },
+      {
+        "offset": 25,
+        "depth": 1,
+        "latex": "\\frac{\\frac{7}{6}-\\frac{3}{4}}{2-\\sqrt{\\frac{1}{64}}}",
+        "bounds": {
+          "x": 642.47,
+          "y": 484.72,
+          "width": 67.3,
+          "height": 56.77
+        }
+      },
+      {
+        "offset": 26,
+        "depth": 0,
+        "latex": "\\left(\\frac{\\frac{7}{6}-\\frac{3}{4}}{2-\\sqrt{\\frac{1}{64}}}\\right)",
+        "bounds": {
+          "x": 627.59,
+          "y": 477.92,
+          "width": 97.05,
+          "height": 63.56
+        }
+      },
+      {
+        "offset": 27,
+        "depth": 0,
+        "latex": "\\times",
+        "bounds": {
+          "x": 729.55,
+          "y": 497.59,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 28,
+        "depth": 0,
+        "latex": "3",
+        "bounds": {
+          "x": 746.69,
+          "y": 497.59,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 29,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 755.19,
+          "y": 491.63,
+          "width": -1,
+          "height": 18
+        }
+      },
+      {
+        "offset": 30,
+        "depth": 1,
+        "latex": "2",
+        "bounds": {
+          "x": 755.19,
+          "y": 493.63,
+          "width": 5.81,
+          "height": 16
+        }
+      },
+      {
+        "offset": 31,
+        "depth": 0,
+        "latex": "^2",
+        "bounds": null
+      },
+      {
+        "offset": 32,
+        "depth": 0,
+        "latex": "-",
+        "bounds": {
+          "x": 766.75,
+          "y": 497.59,
+          "width": 12.23,
+          "height": 20
+        }
+      },
+      {
+        "offset": 33,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 785.92,
+          "y": 487.09,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 34,
+        "depth": 1,
+        "latex": "3",
+        "bounds": {
+          "x": 785.92,
+          "y": 489.09,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 35,
+        "depth": 1,
+        "latex": "",
+        "bounds": {
+          "x": 785.92,
+          "y": 507.33,
+          "width": -1,
+          "height": 22
+        }
+      },
+      {
+        "offset": 36,
+        "depth": 1,
+        "latex": "4",
+        "bounds": {
+          "x": 785.92,
+          "y": 509.33,
+          "width": 7.5,
+          "height": 20
+        }
+      },
+      {
+        "offset": 37,
+        "depth": 0,
+        "latex": "\\frac34",
+        "bounds": {
+          "x": 783.89,
+          "y": 493.05,
+          "width": 11.56,
+          "height": 31.27
+        }
+      }
     ]
   }
 ]
