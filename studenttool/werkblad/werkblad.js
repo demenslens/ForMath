@@ -958,6 +958,7 @@
     clearErrorOverlay();
     // Ook de structurele fout-kaders opruimen: de student herwerkt de regel.
     clearFoutKaders();
+    clearFoutRegel();
     // Deblokkeer LF zodra de student de regel bewerkt. Zonder dit bleef
     // lfBlocked hangen tot de HELE regel klopt (dat gebeurt pas in de eval
     // hieronder bij isCorrect): na het herstellen van ÉÉN van meerdere fouten
@@ -1007,7 +1008,13 @@
       }
     }, 400);
   }
-  function updateLineInfo(){ document.getElementById('line-info').textContent=activeLineIndex>=0?'Regel '+(activeLineIndex+1):'—'; }
+  // Het regelnummer in de statusbalk is vervallen (de foutboodschap staat nu op
+  // de regel zelf). De functie blijft bestaan omdat ze op veel plekken wordt
+  // aangeroepen; ze doet alleen nog iets als het element er tóch is.
+  function updateLineInfo(){
+    var el = document.getElementById('line-info');
+    if(el) el.textContent = activeLineIndex >= 0 ? String(activeLineIndex + 1) : '—';
+  }
 
   // ══════════════════════════════════════
   // MARGIN MARK — show ✓ or ✗ in the left margin
@@ -4070,11 +4077,32 @@
     dbg('[doLF] pinResult:', pinResult ? ('type=' + pinResult.type + ' errors=' + (pinResult.errors?pinResult.errors.length:0) + ' resolved=' + (pinResult.resolved?pinResult.resolved.length:0)) : 'null');
 
     if(!isCorrect){
+      // TUSSENVORM-LAAG EERST. Is de leerling bezig met gelijknamig maken en zit
+      // daar de fout? Die diagnose is specifieker dan wat de matcher over het
+      // mathblock kan zeggen — de bewerking zelf is immers nog niet uitgevoerd,
+      // dus de matcher kan hooguit melden dat de regelwaarde afwijkt.
+      var _gn = detecteerGelijknamigFout();
+      if(_gn){
+        var _spec = foutVoorSituatie(_gn.situatie);
+        addMarginMark(currentLine, false);
+        clearFoutKaders();
+        toonFoutRegel(null, _gelijknamigLadder(_gn), _spec && _spec.code);
+        st('er', '');
+        tekenGelijknamigFout(_gn);
+        lfBlocked = true;
+        dbg('[doLF] ' + (_spec ? _spec.code : '?') + ' in ' + _gn.mb.id + ' — matcher overgeslagen');
+        return;
+      }
       if(pinResult && pinResult.type === 1){
         // Type 1: identifiable errors
         addMarginMark(currentLine, false);
         var errMsgs = pinResult.errors.map(function(e){ return e.description; });
-        st('er', TT('status.calc_error', {errors: errMsgs.join(' | ')}));
+        // De boodschap staat op de regel ónder de foute regel (harmonica), niet
+        // meer in de statusbalk — daar blijft alleen de rode stip over. Eerst de
+        // regel neerzetten, dán de kaders meten: zo staat de layout vast vóór
+        // collectOffsets de posities opneemt.
+        toonFoutRegel(pinResult.errors, null, 'MB-01');
+        st('er', '');
         // Structurele fout-markering (rode box op de foute subexpressie) via de
         // matcher-boom; valt terug op de oudere tekst-markering als er niets te
         // verankeren is (bv. pattern-pinpoint zonder matcher-resultaat).
@@ -4085,12 +4113,12 @@
         return;
       } else if(pinResult && pinResult.type === 2){
         addMarginMark(currentLine, false);
-        st('er', TT('status.not_reducible'));
+        st('er', _metCode('AL-01', TT('status.not_reducible')));
         showType2Popup();
         return;
       }
       addMarginMark(currentLine, false);
-      st('er', TT('status.answer_mismatch', {now: (currentResult !== null ? ' (=' + math.format(currentResult,{fraction:'ratio'}) + ')' : '')}));
+      st('er', _metCode('AL-02', TT('status.answer_mismatch', {now: (currentResult !== null ? ' (=' + math.format(currentResult,{fraction:'ratio'}) + ')' : '')})));
       return;
     }
 
@@ -4098,6 +4126,7 @@
     lfBlocked = false;
     clearErrorOverlay();
     clearFoutKaders();
+    clearFoutRegel();
 
     // Add resolved blocks from pattern detection and update nodeMap
     if(pinResult && pinResult.resolved){
@@ -4626,6 +4655,10 @@
   // duo.optioneel), maar wordt hier direct uit de zichtbare breuk afgeleid.
   // NB: alleen \frac (breuk) — een ':' (deling) is structureel iets anders.
   function _ggdInt(a, b){ a = Math.abs(a); b = Math.abs(b); while (b){ var t = b; b = a % b; a = t; } return a; }
+
+  // Breuk-lezers: zie werkblad/breukdetectie.js (accepteert ook de korte
+  // MathLive-vorm `\frac26` zonder accolades).
+  function _leesFracGetallen(l){ return _BD().leesFracGetallen(l); }
   function toonOptioneleKaders(skipClear, countOnly){
     var V = window.VERANKERING;
     if (!V || !V.COLORS || !V.COLORS.OPTIONEEL) return 0;
@@ -4641,11 +4674,12 @@
     var n = 0;
     offsets.forEach(function(fo){
       if (!(fo.bounds && fo.bounds.width > 0)) return;
-      // Precies één \frac{t}{n} (verankerd), zodat een samengestelde offset zoals
-      // "\left(2-\frac{3}{5}-\frac{33}{15}\right)" NIET als geheel wordt omkaderd.
-      var m = /^\s*\\frac\s*\{\s*(-?\d+)\s*\}\s*\{\s*(-?\d+)\s*\}\s*$/.exec(fo.latex || '');
-      if (!m) return;
-      var t = Math.abs(parseInt(m[1], 10)), d = Math.abs(parseInt(m[2], 10));
+      // Precies één breuk met gehele teller/noemer (verankerd), zodat een
+      // samengestelde offset zoals "\left(2-\frac35-\frac{33}{15}\right)" NIET als
+      // geheel wordt omkaderd. Accepteert ook de korte vorm `\frac26`.
+      var fr = _leesFracGetallen(fo.latex);
+      if (!fr) return;
+      var t = Math.abs(fr.t), d = Math.abs(fr.n);
       if (!d || d === 1) return;          // noemer 1 → geheel getal
       if (t % d === 0) return;            // deelt op → geheel getal
       var g = _ggdInt(t, d);
@@ -4702,6 +4736,20 @@
            s === '\\cdot' || s === '·' || s === '\\times' || s === '×' ||
            s === '\\div' || s === '÷';
   }
+  // ── ÉÉN BRON VOOR "WAT IS DE BEWERKING HIER" ───────────────────────────────
+  // Lokaliseert elke openstaande getal-bewerking op het scherm en levert per stuk
+  // de operator, de twee operanden mét waarde en bounds, en de omhullende span.
+  // GEDEELD door twee lagen die anders uiteen zouden lopen:
+  //   - Hint I  (toonBewerkingKaders) → groen kader: "voer deze bewerking uit";
+  //   - de fout-detectie (situatie 6) → rood kader: "deze bewerking klopt niet".
+  // Doordat beide dezelfde lokalisatie gebruiken, wijzen het groene en het rode
+  // kader per constructie naar exact dezelfde tekens. Dat is geen toeval maar een
+  // eigenschap van de code — precies de "één gezaghebbende bron"-regel uit
+  // CLAUDE.md, hier toegepast op de vraag wát de bewerking is.
+  // Lokalisatie van de bewerkingen: zie werkblad/breukdetectie.js. GEDEELD met
+  // de foutdetectie, zodat het groene hint-kader en het rode foutkader per
+  // constructie naar dezelfde tekens wijzen.
+  function vindGetalBewerkingen(offs){ return _BD().vindGetalBewerkingen(offs); }
   function toonBewerkingKaders(skipClear, countOnly){
     var V = window.VERANKERING;
     if (!V || !V.COLORS || !V.COLORS.HOOG) return 0;
@@ -4715,34 +4763,21 @@
     if (!offs || offs.length < 3) return 0;
     var delta = V.computeDelta(mf, offs);
     var n = 0;
-    for (var i = 1; i < offs.length - 1; i++){
-      if (!_isOperatorOffset(offs[i])) continue;
-      if (!_isDigitOffset(offs[i - 1]) || !_isDigitOffset(offs[i + 1])) continue;
-      // Strek naar links/rechts over aaneengesloten cijfers (meercijferige getallen).
-      var L = i - 1; while (L > 0 && _isDigitOffset(offs[L - 1])) L--;
-      var R = i + 1; while (R < offs.length - 1 && _isDigitOffset(offs[R + 1])) R++;
-      var bounds = [], depths = [];
-      for (var k = L; k <= R; k++){
-        if (offs[k].bounds && offs[k].bounds.width > 0){ bounds.push(offs[k].bounds); depths.push(offs[k].depth); }
+    vindGetalBewerkingen(offs).forEach(function(b){
+      var span = V.spanBounds(b.bounds);
+      if (!span) return;
+      if (countOnly){ n++; return; }
+      var depth = b.depths.length ? Math.min.apply(null, b.depths) : null;
+      var box = V.drawBox(mf, span, V.COLORS.HOOG, delta, depth, V.HINT_MARGE);
+      if (box){
+        box.style.pointerEvents = 'auto';
+        box.style.cursor = 'help';
+        box.setAttribute('data-bewerking', '1');
+        box.setAttribute('title', 'Voer deze bewerking nu uit.');
+        box.addEventListener('click', _hintKlikDismiss);
+        n++;
       }
-      var span = V.spanBounds(bounds);
-      if (span){
-        if (countOnly){ n++; }
-        else {
-          var depth = depths.length ? Math.min.apply(null, depths) : null;
-          var box = V.drawBox(mf, span, V.COLORS.HOOG, delta, depth, V.HINT_MARGE);
-          if (box){
-            box.style.pointerEvents = 'auto';
-            box.style.cursor = 'help';
-            box.setAttribute('data-bewerking', '1');
-            box.setAttribute('title', 'Voer deze bewerking nu uit.');
-            box.addEventListener('click', _hintKlikDismiss);
-            n++;
-          }
-        }
-      }
-      i = R;   // door naar ná deze bewerking
-    }
+    });
     return n;
   }
   window.__toonBewerking = toonBewerkingKaders;
@@ -4853,12 +4888,21 @@
   // mustard hint-omkadering). De boxen krijgen een eigen klasse (__foutbox)
   // zodat ze los van de hint-boxen op te ruimen zijn.
   var FOUT_KLEUR = { bg: 'rgba(152,48,24,0.28)', border: 'rgba(152,48,24,0.95)' };
-  // Symmetrische ademruimte-marge (px per kant) voor de fout-box bij soort
-  // 'breuk' (losse breuk én groep). Vervangt de te krappe ±1px en is de ENIGE
-  // marge-bron voor die soort — NIET combineren met HINT_MARGE (-2, krimpt; zie
-  // box_categorie_A_symmetrische_marge.md). Live bij te stellen in de browser via
-  // window.__setFoutMarge(px).
-  var FOUT_MARGE = 3;
+  // Ademruimte-marge (px per kant) voor de fout-box bij soort 'breuk' (losse
+  // breuk én groep). Vervangt de te krappe ±1px en is de ENIGE marge-bron voor
+  // die soort — NIET combineren met HINT_MARGE (-2, krimpt; zie
+  // box_categorie_A_symmetrische_marge.md).
+  //
+  // Was symmetrisch 3 rondom; browser-meting op 511_014 (`3/21`) gaf twee
+  // correcties (rubriek A3/A4 van TESTRONDE_foutflow.md):
+  //   - rechts +2  → de rechtermarge oogde krapper dan de linker;
+  //   - 2px omlaag → boven 3→1 en onder 3→5. drawBox rekent
+  //     `screenY = y - boven` en `height = h + boven + onder`, dus boven
+  //     verkleinen én onder even veel vergroten schuift de box omlaag zónder
+  //     de hoogte te veranderen.
+  // Live bij te stellen via window.__setFoutMarge(3) (alle kanten) of
+  // window.__setFoutMarge({boven:1, onder:5, rechts:5}).
+  var FOUT_MARGE = { links: 3, rechts: 5, boven: 1, onder: 5 };
   function clearFoutKaders(){
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
     _lastFoutRes = null;   // toestand vergeten: er staan geen fout-kaders meer
@@ -4905,7 +4949,7 @@
       var span = mbB.rect;
       if (span){
         var marge, dArg;
-        if (mbB.soort === 'breuk')          { marge = {links:FOUT_MARGE, rechts:FOUT_MARGE, boven:FOUT_MARGE, onder:FOUT_MARGE}; dArg = null; }
+        if (mbB.soort === 'breuk')          { marge = FOUT_MARGE; dArg = null; }
         else if (mbB.soort === 'structuur') { marge = V.HINT_MARGE; dArg = null; }
         else                                { marge = V.HINT_MARGE; dArg = (depths.length ? Math.min.apply(null, depths) : 0); }
         var box = V.drawBox(mf, span, FOUT_KLEUR, delta, dArg, marge);
@@ -4929,9 +4973,404 @@
     return getekend;
   }
   window.__wisFout = clearFoutKaders;
-  // Tuning-knop voor de ademruimte rond de breuk-foutbox (px/kant). Stel in de
-  // browser bij: __setFoutMarge(4), forceer daarna opnieuw een fout om te zien.
-  window.__setFoutMarge = function(px){ var n = Number(px); FOUT_MARGE = isNaN(n) ? FOUT_MARGE : n; return FOUT_MARGE; };
+  // Tuning-knoppen voor de ademruimte rond de fout-kaders (px/kant). Werkt in
+  // place, dus een getal zet alle vier de kanten, een object alleen de genoemde:
+  //   __setFoutMarge(4)                    → gewone fout-box, alle kanten 4
+  //   __setFoutMarge({boven:1, onder:5})   → alleen die kanten, rest blijft
+  //   __setRandMarge({boven:5, onder:5})   → buitenste kader (rand om de breuk)
+  //   __setTellerMarge({boven:-4,onder:-4})→ binnenste kader (gevuld, om de teller)
+  // Forceer daarna opnieuw een fout om het resultaat te zien.
+  function _stelMargeIn(marge, v){
+    var kanten = ['links','rechts','boven','onder'];
+    if (v != null && typeof v === 'object'){
+      kanten.forEach(function(k){
+        if (v[k] != null && !isNaN(Number(v[k]))) marge[k] = Number(v[k]);
+      });
+    } else {
+      var n = Number(v);
+      if (!isNaN(n)) kanten.forEach(function(k){ marge[k] = n; });
+    }
+    return marge;
+  }
+  window.__setFoutMarge   = function(v){ return _stelMargeIn(FOUT_MARGE, v); };
+  window.__setRandMarge   = function(v){ return _stelMargeIn(FOUT_RAND_MARGE, v); };
+  window.__setTellerMarge = function(v){ return _stelMargeIn(FOUT_TELLER_MARGE, v); };
+
+  // ── GELIJKNAMIG-CONTROLE (tussenvorm-laag) ──────────────────────────────
+  // Derde lid van de waarde-/positie-gebaseerde familie (naast
+  // toonOptioneleKaders en toonBewerkingKaders). Controleert het GELIJKNAMIG
+  // MAKEN van breuken: een waarde-behoudende herschrijving die géén step en dus
+  // géén mathblock is. De matcher kan er per definitie niets over zeggen — die
+  // ziet alleen dat de regelwaarde afwijkt.
+  //
+  // Werkwijze, net als bij Hint III: offsets van het actieve veld → elke
+  // zichtbare simpele \frac{t}{n} herkennen aan de latex van de offset zelf →
+  // de blad-offsets bínnen die bounds verzamelen. Geen AST, geen anchoring.
+  //
+  // VOLGORDE-ONAFHANKELIJK: we eisen NIET dat de leerling het KGV uit de JSON
+  // kiest. Een productnoemer is ook goed, en bij een manifold mag hij
+  // paarsgewijs in een slimme volgorde werken (waardoor de tussentijdse noemers
+  // kléiner zijn dan het globale KGV). We toetsen alleen waarde-consistentie.
+  //
+  // OP POSITIE, niet op waarde alleen: bij `1/6 + 2/15` → `4/30 + 2/15` is 4/30
+  // gelijk aan 2/15, dus waarde-gelijk aan een origineel — maar aan het VERKEERDE
+  // origineel. De i-de zichtbare breuk hoort bij de i-de term uit
+  // breuken_origineel. Daarom vuurt de controle alleen als het aantal zichtbare
+  // breuken gelijk is aan het aantal termen; bij een grotere expressie met
+  // breuken buiten dit mathblock zwijgt hij (dan is er geen betrouwbare koppeling).
+  // Breukdetectie (pure logica, offline testbaar): werkblad/breukdetectie.js.
+  function _zichtbareBreuken(o){ return _BD().zichtbareBreuken(o); }
+  function _breukDelen(o,fo){ return _BD().breukDelen(o,fo); }
+  function _samengevoegdeBreuken(o){ return _BD().samengevoegdeBreuken(o); }
+  function _beoordeelBreuken(mb,o){ return _BD().beoordeelBreuken(mb,o); }
+  function _beoordeelSamengevoegd(mb,o){ return _BD().beoordeelSamengevoegd(mb,o); }
+
+  // Foutcatalogus: zie werkblad/breukdetectie.js (FOUTEN). Dat register is de
+  // gezaghebbende bron — de tekencode en de boodschap lezen het, en hebben geen
+  // eigen switch.
+  function foutVoorSituatie(n){ return _BD().foutVoorSituatie(n); }
+  // Zelftest van de beslissingstabel — alle zestien rijen. Aanroepen: __testBreukTabel()
+  window.__testBreukTabel = function(){
+    var mis = _BD().zelftestBreukTabel();
+    if (mis.length) console.warn('[breuktabel] AFWIJKINGEN:\n  ' + mis.join('\n  '));
+    else console.log('[breuktabel] alle 16 rijen kloppen');
+    return mis;
+  };
+  // Catalogus als tabel in de console — dezelfde bron als de code gebruikt, dus
+  // documentatie en gedrag kunnen niet uit elkaar lopen. Aanroepen: __foutCatalogus()
+  window.__foutCatalogus = function(){
+    var FOUTEN = _BD().FOUTEN;
+    console.log('%cFOUTCATALOGUS — ' + FOUTEN.length + ' fouttypen', 'font-weight:bold');
+    FOUTEN.forEach(function(f){
+      console.log('%c' + f.code + '  ' + f.naam + (f.situatie ? '  (situatie ' + f.situatie + ')' : ''),
+                  'font-weight:bold;color:#983018');
+      console.log('   wat      : ' + f.omschrijving);
+      console.log('   oorzaak  : ' + f.oorzaak);
+      console.log('   detectie : ' + f.detectie);
+      console.log('   kaders   : ' + (typeof f.kaders === 'string' ? f.kaders
+                    : f.kaders.omhullend + ' om de ' + f.kaders.bereik +
+                      (f.kaders.deel ? ' + gevuld om ' + f.kaders.deel + ' (' + f.kaders.selectie + ')' : '')));
+      console.log('   boodschap: ' + f.boodschap.map(function(k){
+                    return (window.I18N && window.I18N.t) ? window.I18N.t(k) : k; }).join('  |  '));
+    });
+    return FOUTEN;
+  };
+
+  // Toegang tot de breukdetectie-module. Als functie (niet als variabele) zodat de
+  // laadvolgorde van de scripts niet uitmaakt.
+  function _BD(){
+    if (!window.BREUKDETECTIE) throw new Error('breukdetectie.js niet geladen');
+    return window.BREUKDETECTIE;
+  }
+
+  // OPNAME-INSTRUMENT — legt de ECHTE offsets van de huidige regel vast als JSON,
+  // klaar om als fixture in test_harnas/breuk/fixtures.json te plakken. Dit is de
+  // enige manier om de detectie buiten de browser te toetsen: alles in
+  // breukdetectie.js werkt op deze offsets, en wat MathLive precies levert (zoals
+  // de korte vorm `\frac26` zonder accolades) is niet uit de code af te leiden.
+  //
+  //   __dumpOffsets()            → JSON in de console, ook naar het klembord
+  //   __dumpOffsets('026 fout')  → met een naam erbij
+  window.__dumpOffsets = function(naam){
+    if (!window.VERANKERING) return console.warn('[dump] VERANKERING niet geladen');
+    var mf = _actiefVeld();
+    if (!mf) return console.warn('[dump] geen actief invoerveld');
+    var offsets = (window.VERANKERING.collectOffsets(mf) || []).map(function(o){
+      return {
+        offset: o.offset, depth: o.depth, latex: o.latex,
+        bounds: o.bounds ? {
+          x: Math.round(o.bounds.x * 100) / 100, y: Math.round(o.bounds.y * 100) / 100,
+          width: Math.round(o.bounds.width * 100) / 100, height: Math.round(o.bounds.height * 100) / 100
+        } : null
+      };
+    });
+    var fixture = {
+      naam: naam || ('regel ' + (activeLineIndex + 1)),
+      opgave: currentOpgave ? (currentOpgave.metadata && currentOpgave.metadata.id) || '' : '',
+      latex: getEditorLatex(),
+      verwacht: null,          // vul in: null (geen fout) of 'BR-04' enz.
+      offsets: offsets
+    };
+    var json = JSON.stringify(fixture, null, 2);
+    console.log('%c[dump] ' + fixture.naam + ' — ' + offsets.length + ' offsets', 'font-weight:bold');
+    console.log(json);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(json);
+        console.log('%c   → ook naar het klembord gekopieerd', 'color:#2f6d3f');
+      }
+    } catch(e){}
+    return fixture;
+  };
+
+  // MEETINSTRUMENT — legt bloot waaróm de breuk-laag wel of niet oordeelt. Toont
+  // de ruwe \frac-offsets (vóór ontdubbelen), wat er na ontdubbelen overblijft, en
+  // per kandidaat-mathblock de doelwaarden, de vlaggen en de resulterende situatie.
+  // Tekent niets. Aanroepen: __breukDiag()
+  window.__breukDiag = function(){
+    if (!window.VERANKERING) return console.warn('[breukdiag] VERANKERING niet geladen');
+    var mf = _actiefVeld();
+    if (!mf) return console.warn('[breukdiag] geen actief invoerveld');
+    var offsets = window.VERANKERING.collectOffsets(mf) || [];
+    var ruw = offsets.filter(function(o){
+      return o.bounds && o.bounds.width > 0 && /\\frac/.test(o.latex || '');
+    });
+    console.log('%c[breukdiag] ' + ruw.length + ' ruwe \\frac-offsets:', 'font-weight:bold');
+    ruw.forEach(function(o){
+      console.log('   ', JSON.stringify(o.latex), '@ x=' + Math.round(o.bounds.x),
+                  'y=' + Math.round(o.bounds.y), 'b=' + Math.round(o.bounds.width) +
+                  'x' + Math.round(o.bounds.height), 'depth=' + o.depth);
+    });
+    var zicht = _zichtbareBreuken(offsets);
+    console.log('  na ontdubbelen — simpele breuken:',
+                zicht.map(function(z){ return z.t + '/' + z.n; }).join('  ') || '(geen)');
+    var samen = _samengevoegdeBreuken(offsets);
+    console.log('  na ontdubbelen — samengevoegd:',
+                samen.map(function(s){
+                  return '(' + s.termen.map(function(t){ return (t.neg ? '−' : '') + t.waarde; }).join(' ') + ')/' + s.noemer;
+                }).join('  ') || '(geen)');
+    if (!currentOpgave || !currentOpgave.mathblocks) return;
+    currentOpgave.mathblocks.forEach(function(mb){
+      var gm = mb.gelijknamig_maken;
+      if (!gm || !gm.nodig) return;
+      var opgelost = resolvedBlocks.indexOf(mb.id) !== -1;
+      console.log('  mathblock ' + mb.id + (opgelost ? ' (al opgelost — overgeslagen)' : '') +
+                  ' | origineel ' + JSON.stringify(gm.breuken_origineel) +
+                  ' → doel ' + JSON.stringify(gm.breuken_gelijknamig) + ' | kgv ' + gm.kgv);
+      if (opgelost) return;
+      var det = _beoordeelBreuken(mb, offsets);
+      if (det){
+        console.log('     vlaggen: ' + det.fracties.map(function(f){
+          return f.gevonden + ' [T' + (f.goedT ? 1 : 0) + ' N' + (f.goedN ? 1 : 0) + ']' +
+                 (f.waardeOk ? ' waarde-ok' : '');
+        }).join('  ') + '  → SITUATIE ' + det.situatie);
+      } else {
+        var s6 = _beoordeelSamengevoegd(mb, offsets);
+        if (s6) console.log('     → SITUATIE 6, verwacht ' + s6.verwacht);
+        else console.log('     → geen oordeel (aantal breuken wijkt af van aantal termen,' +
+                         ' of alles is waarde-correct)');
+      }
+    });
+  };
+
+  // Kaders per situatie. Situatie 1 krijgt één GEVULD kader om de hele bewerking
+  // (er valt niets zinnigs aan te wijzen). De situaties 2 t/m 5 krijgen een kader
+  // ZONDER opvulling om de hele bewerking, plus een GEVULD kader om precies dat
+  // wat fout is: de hele breuk (2), beide tellers (3), één teller (4) of één
+  // noemer (5). Alle kaders dragen .__foutbox, zodat clearFoutKaders ze opruimt
+  // en een hint-operatie ze met rust laat.
+  function tekenGelijknamigFout(det){
+    if (!det || !window.VERANKERING) return 0;
+    var V = window.VERANKERING;
+    var mf = _actiefVeld();
+    if (!mf) return 0;
+    var offsets = V.collectOffsets(mf);            // opnieuw meten: layout staat nu vast
+    if (!offsets || !offsets.length) return 0;
+    var delta = V.computeDelta(mf, offsets);
+
+    function teken(span, kleur, diepte, marge){
+      if (!span) return null;
+      var box = V.drawBox(mf, span, kleur, delta, diepte, marge);
+      if (box) box.classList.add('__foutbox');
+      return box;
+    }
+    // Gevuld kader om een deel van een breuk (teller of noemer). De span loopt van
+    // het eerste tot het laatste teken van dat deel — voor een teller-bewerking is
+    // dat exact dezelfde span als het GROENE kader van Hint I daar zou krijgen.
+    function tekenDeel(fracOffset, welk){
+      var groep = _breukDelen(offsets, fracOffset)[welk];
+      if (!groep || !groep.b.length) return null;
+      var diepte = groep.d.length ? Math.min.apply(null, groep.d) : 0;
+      return teken(V.spanBounds(groep.b), FOUT_KLEUR, diepte, FOUT_TELLER_MARGE);
+    }
+
+    var spec = foutVoorSituatie(det.situatie);
+    if (!spec || typeof spec.kaders === 'string') return 0;
+    var k = spec.kaders, n = 0;
+
+    // BEREIK 'breuk' — het omhullende kader gaat om de ene betrokken breuk, niet
+    // om de hele bewerking (situatie 6: de breuk als geheel is niet fout).
+    if (k.bereik === 'breuk'){
+      var s6 = _samengevoegdeBreuken(offsets);
+      if (!s6.length) return 0;
+      if (teken(s6[0].off.bounds, k.omhullend === 'gevuld' ? FOUT_KLEUR : FOUT_RAND,
+                null, FOUT_RAND_MARGE)) n++;
+      if (k.deel && tekenDeel(s6[0].off, k.deel)) n++;
+      dbg('[breukfout] ' + spec.code + ' — ' + n + ' kader(s) om de breuk');
+      return n;
+    }
+
+    var zicht = _zichtbareBreuken(offsets);
+    if (zicht.length !== det.fracties.length) return 0;
+    // Omhullende van de HELE bewerking: van de linkerrand van de eerste breuk tot
+    // de rechterrand van de laatste — het operatieteken ertussen valt daarbinnen.
+    if (k.omhullend){
+      var alles = V.spanBounds(zicht.map(function(z){ return z.off.bounds; }));
+      if (teken(alles, k.omhullend === 'gevuld' ? FOUT_KLEUR : FOUT_RAND, null, FOUT_RAND_MARGE)) n++;
+    }
+    // Deel-kaders: welke breuken (selectie) en wat daarvan (deel).
+    if (k.selectie && k.deel){
+      (det[k.selectie] || []).forEach(function(f){
+        var b = zicht[f.index];
+        if (!b) return;
+        if (k.deel === 'breuk'){
+          if (teken(b.off.bounds, FOUT_KLEUR, null, FOUT_RAND_MARGE)) n++;
+        } else if (tekenDeel(b.off, k.deel)) n++;
+      });
+    }
+    dbg('[breukfout] ' + spec.code + ' (situatie ' + det.situatie + ') — ' + n + ' kader(s)');
+    return n;
+  }
+  // De boodschap: de treden van de harmonica, uit de catalogus. De eerste trede is
+  // meteen de diagnose (geen generieke "Rekenfout"-kop).
+  function _gelijknamigLadder(det){
+    var spec = foutVoorSituatie(det.situatie);
+    if (!spec) return [ TT('fout.titel') ];
+    return spec.boodschap.map(function(sleutel){ return TT(sleutel); });
+  }
+
+  // ── FOUT-REGEL (harmonica) ──────────────────────────────────────────────
+  // De foutboodschap staat op de regel ÓNDER de foute regel (niet meer in de
+  // statusbalk). Zichtbaar is eerst alleen de kop ("Rekenfout"); het knopje
+  // rechts vouwt telkens één trede verder open, van algemeen naar volledig
+  // uitgewerkt. De leerling kiest zo zelf hoeveel hulp hij wil — hij krijgt niet
+  // meteen de hele uitwerking voorgeschoteld.
+  //
+  // De treden komen uit de opgave-JSON (hints.structureel.hoe, gelijknamig_maken)
+  // plus de matcher-melding. Treden die voor een bewerking niet bestaan (bv.
+  // gelijknamig maken bij een worteltrekking) worden overgeslagen — de ladder is
+  // dus per mathblock zo lang als er materiaal is.
+  //
+  // Plaatsing spiegelt zetHintRegelTekst: rules.children[activeLineIndex + 1].
+  function _ggdVan(a, b){
+    a = Math.abs(a|0); b = Math.abs(b|0);
+    while(b){ var t = b; b = a % b; a = t; }
+    return a || 1;
+  }
+  function _parseBreuk(s){
+    var m = /^\s*(-?\d+)\s*\/\s*(\d+)\s*$/.exec(String(s));
+    return m ? { t: parseInt(m[1], 10), n: parseInt(m[2], 10) } : null;
+  }
+  // ["5/30","4/30"] → { termen:"5/30 + 4/30", som:"9/30", somT:9, somN:30 }
+  // Een negatieve term wordt als aftrekking geschreven (`− 12/32`), conform de
+  // didactiek: het minteken hoort bij de optelling, niet bij de term eronder.
+  function _gelijknamigTrede(gm){
+    if(!gm || !gm.nodig) return null;
+    var lijst = gm.breuken_gelijknamig;
+    if(!Array.isArray(lijst) || lijst.length < 2) return null;
+    var delen = lijst.map(_parseBreuk);
+    if(delen.some(function(d){ return !d; })) return null;
+    var noemer = delen[0].n;
+    if(delen.some(function(d){ return d.n !== noemer; })) return null;
+    var somT = delen.reduce(function(a, d){ return a + d.t; }, 0);
+    var termen = delen.map(function(d, i){
+      if(i === 0) return d.t + '/' + d.n;
+      return (d.t < 0 ? ' − ' : ' + ') + Math.abs(d.t) + '/' + d.n;
+    }).join('');
+    return { termen: termen, somT: somT, somN: noemer, som: somT + '/' + noemer };
+  }
+  // Bouwt de treden op, van algemeen naar concreet.
+  function _bouwFoutLadder(errors){
+    var treden = [ TT('fout.titel') ];
+    var eerste = (errors && errors[0]) || null;
+    var mb = eerste ? findMathblock(eerste.mathblockId) : null;
+
+    // Trede 2 — de methode in woorden: wat moet je hier doen?
+    var hoe = (mb && mb.hints && mb.hints.structureel) ? _hintText(mb.hints.structureel.hoe) : '';
+    if(hoe) treden.push(hoe);
+
+    // Trede 3 — de correctie zelf (één per fout, als er meer zijn).
+    (errors || []).forEach(function(e){ if(e && e.description) treden.push(e.description); });
+
+    // Trede 4/5 — de uitwerking. Alleen bij een breuk-optelling die gelijknamig
+    // gemaakt moet worden; de vereenvoudig-trede alleen als er écht iets te
+    // vereenvoudigen valt. LET OP: hiervoor NIET mb.ggd gebruiken — dat is de
+    // GGD van de ruwe uitkomst via de PRODUCT-noemer (bij 1/6+2/15: 27/90 → 9),
+    // terwijl deze trede de KGV-route toont (9/30 → 3). Daarom hier zelf de GGD
+    // van teller en noemer van de KGV-som bepalen.
+    var gm = _gelijknamigTrede(mb && mb.gelijknamig_maken);
+    if(gm){
+      treden.push(gm.termen + ' = ' + gm.som);
+      if(_ggdVan(gm.somT, gm.somN) > 1 && mb.output){
+        treden.push(TT('fout.vereenvoudig', { breuk: gm.som, output: mb.output }));
+      }
+    }
+    return treden;
+  }
+
+  // TIJDELIJK DIAGNOSE-HULPMIDDEL: toont het foutnummer uit de catalogus vóór de
+  // eerste trede, zodat in één oogopslag zichtbaar is wélke laag de boodschap
+  // maakte — BR-xx = de breuk-detectie, MB-01 = de matcher, AL-xx = geen
+  // diagnose. Uitzetten met  window.__toonFoutCode = false.
+  window.__toonFoutCode = true;
+
+  var _foutRegelState = null;          // { treden:[], zichtbaar:n, code:'BR-04' }
+  function clearFoutRegel(){
+    var rules = document.getElementById('rules');
+    if(rules) rules.querySelectorAll('.fout-regel').forEach(function(e){ e.remove(); });
+    _foutRegelState = null;
+  }
+  function _vulFoutRegel(items, knop){
+    var s = _foutRegelState;
+    if(!s) return;
+    items.innerHTML = '';
+    for(var i = 0; i < s.zichtbaar; i++){
+      var d = document.createElement('div');
+      d.className = 'fout-item' + (i === 0 ? ' fout-titel' : '');
+      // Foutnummer als badge vóór de eerste trede (tijdelijk diagnose-hulpmiddel).
+      if(i === 0 && s.code && window.__toonFoutCode){
+        var badge = document.createElement('span');
+        badge.className = 'fout-code';
+        badge.textContent = s.code;
+        d.appendChild(badge);
+      }
+      d.appendChild(document.createTextNode(s.treden[i]));
+      items.appendChild(d);
+    }
+    var alles = s.zichtbaar >= s.treden.length;
+    knop.textContent = alles ? '▴' : '▾';
+    knop.title = TT(alles ? 'fout.inklappen' : 'fout.volgende');
+    knop.setAttribute('aria-label', knop.title);
+    // Eén trede = niets uit te klappen → geen knop tonen.
+    knop.style.visibility = (s.treden.length > 1) ? '' : 'hidden';
+  }
+  // ladderOverride: een kant-en-klare ladder (bv. van de gelijknamig-controle),
+  // die de generieke mathblock-ladder vervangt.
+  // code: het foutnummer uit de catalogus, als badge vóór de eerste trede.
+  function toonFoutRegel(errors, ladderOverride, code){
+    clearFoutRegel();
+    var treden = ladderOverride || _bouwFoutLadder(errors);
+    if(!treden || !treden.length) return 0;
+    var rules = document.getElementById('rules');
+    if(!rules) return 0;
+    var line = rules.children[activeLineIndex + 1];
+    if(!line){ line = mkLine(); rules.appendChild(line); }
+    _foutRegelState = { treden: treden, zichtbaar: 1, code: code || null };
+
+    var wrap = document.createElement('div');
+    wrap.className = 'fout-regel';
+    var items = document.createElement('div');
+    items.className = 'fout-items';
+    var knop = document.createElement('button');
+    knop.className = 'fout-meer';
+    // mousedown niet laten doorgaan: anders verliest het invoerveld de focus.
+    knop.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    knop.addEventListener('click', function(e){
+      e.stopPropagation();
+      var s = _foutRegelState;
+      if(!s) return;
+      // Voorbij de laatste trede klapt hij weer dicht tot alleen de kop.
+      s.zichtbaar = (s.zichtbaar >= s.treden.length) ? 1 : s.zichtbaar + 1;
+      _vulFoutRegel(items, knop);
+    });
+    wrap.appendChild(items);
+    wrap.appendChild(knop);
+    line.appendChild(wrap);
+    _vulFoutRegel(items, knop);
+    dbg('[foutregel] ' + treden.length + ' trede(n):', treden);
+    return treden.length;
+  }
+  window.__wisFoutRegel = clearFoutRegel;
 
   function addLFButton(line){
     var btn = document.createElement('button');
@@ -5619,6 +6058,11 @@
   // STATUS & UTILS
   // ══════════════════════════════════════
   function st(c,t){ document.getElementById('dot').className='dot '+c; document.getElementById('stxt').textContent=t; }
+  // Zet het foutnummer uit de catalogus vóór een statusbalk-melding, zolang het
+  // tijdelijke diagnose-hulpmiddel aan staat (window.__toonFoutCode).
+  function _metCode(code, tekst){
+    return (typeof window !== 'undefined' && window.__toonFoutCode) ? (code + ' · ' + tekst) : tekst;
+  }
 
   // i18n-helper voor JS-gerenderde (dynamische) strings. Valt terug op de key
   // zelf als de catalogus (nog) niet geladen is — bij runtime-teksten is I18N
