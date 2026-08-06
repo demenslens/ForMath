@@ -4884,9 +4884,14 @@
   //     `screenY = y - boven` en `height = h + boven + onder`, dus boven
   //     verkleinen én onder even veel vergroten schuift de box omlaag zónder
   //     de hoogte te veranderen.
+  // Rechts nogmaals met 2 schermpixels verruimd na visuele beoordeling (6 aug):
+  // 5 → 8,3, oftewel 2 ÷ 0,61 ≈ 3,28 nominale eenheden. Op het scherm r2,05 → r4,05.
+  // Dit kader wordt zonder diepte getekend, dus zonder fudge: de marge is hier
+  // nominaal × fontschaal ∓ delta.
+  //
   // Live bij te stellen via window.__setFoutMarge(3) (alle kanten) of
   // window.__setFoutMarge({boven:1, onder:5, rechts:5}).
-  var FOUT_MARGE = { links: 3, rechts: 5, boven: 1, onder: 5 };
+  var FOUT_MARGE = { links: 3, rechts: 8.3, boven: 1, onder: 5 };
   // Kader ZONDER opvulling — alleen een rand. De situaties 2 t/m 6 zetten dit om
   // het geheel en een GEVULD kader om het foute deel; zou het buitenste ook
   // gevuld zijn, dan zou het binnenste erin verdwijnen.
@@ -4901,10 +4906,11 @@
   // mee — vandaar dat links en rechts verschillende nominale waarden nodig hebben
   // om er op het scherm even breed uit te komen.
   //
-  // IJKPUNT is FOUT_MARGE hierboven: dat is de enige marge die al door het oog is
-  // goedgekeurd. Op het scherm levert die l2,83 r2,05 b0,61 o3,05. De twee marges
-  // hieronder mikken op diezelfde verhouding — het omhullende kader met 2px extra
-  // lucht rondom, zodat het zichtbaar losstaat van het gevulde kader erbinnen.
+  // IJKPUNT was FOUT_MARGE hierboven, die als enige al door het oog was gekeurd:
+  // op het scherm l2,83 r2,05 b0,61 o3,05. Beide marges hieronder zijn daaruit
+  // afgeleid, en daarna elk apart visueel bijgesteld — de verhouding is dus geen
+  // vaste formule meer maar een reeks beoordeelde stappen. Wat waar is gewijzigd
+  // staat per constante bij de regel zelf.
   //
   // Verticaal met 2px per kant VERRUIMD na visuele beoordeling (6 aug): boven
   // 4 → 7,3 en onder 8 → 11,3. Dit kader krijgt geen diepte mee, dus geen fudge —
@@ -4919,12 +4925,13 @@
   // Verticaal met 2px per kant verkleind na visuele beoordeling (6 aug). Omgerekend
   // is dat 2 ÷ 0,61 ≈ 3,28 nominale eenheden per kant: boven −2 → −5,3 en onder
   // 2 → −1,3. Op het scherm wordt dat b−1,4 o1,0 in plaats van b0,6 o3,0.
+  // Rechts in dezelfde ronde 2px verruimd: 4 → 7,3, op het scherm r2,0 → r4,0.
   //
   // Dat de bovenmarge nu NEGATIEF is t.o.v. de gemeten bounds, is geen fout: de
   // bounds die MathLive per teken teruggeeft dragen regelhoogte-speling boven en
   // onder de eigenlijke inkt. De box mag daar een stukje in bijten en sluit dan
   // juist strakker om de cijfers.
-  var FOUT_TELLER_MARGE = { links: 2, rechts: 4, boven: -5.3, onder: -1.3 };
+  var FOUT_TELLER_MARGE = { links: 2, rechts: 7.3, boven: -5.3, onder: -1.3 };
   function clearFoutKaders(){
     document.querySelectorAll('.__foutbox').forEach(function(n){ n.remove(); });
     _lastFoutRes = null;   // toestand vergeten: er staan geen fout-kaders meer
