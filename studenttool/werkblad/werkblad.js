@@ -4905,7 +4905,12 @@
   // goedgekeurd. Op het scherm levert die l2,83 r2,05 b0,61 o3,05. De twee marges
   // hieronder mikken op diezelfde verhouding — het omhullende kader met 2px extra
   // lucht rondom, zodat het zichtbaar losstaat van het gevulde kader erbinnen.
-  var FOUT_RAND_MARGE = { links: 6, rechts: 8, boven: 4, onder: 8 };
+  //
+  // Verticaal met 2px per kant VERRUIMD na visuele beoordeling (6 aug): boven
+  // 4 → 7,3 en onder 8 → 11,3. Dit kader krijgt geen diepte mee, dus geen fudge —
+  // de marge is hier simpelweg nominaal × 0,61 (∓ delta). Op het scherm wordt dat
+  // b4,45 o6,89 in plaats van b2,44 o4,84; horizontaal blijft l4,65 r3,85.
+  var FOUT_RAND_MARGE = { links: 6, rechts: 8, boven: 7.3, onder: 11.3 };
   // Gevuld deelkader om precies één teller of noemer. Hier krijgt drawBox wél een
   // diepte mee, dus de per-diepte fudge (DEPTH_SIZE_CORR) komt er bovenop: op
   // diepte 1 is dat dw 2, dh 6 — ruim 3px verticaal. Daarom zijn boven en onder
