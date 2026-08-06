@@ -1,0 +1,13 @@
+[
+  {
+    "naam": "026 teller fout (2/6 + 1/3)",
+    "opgave": "20260511_026",
+    "latex": "\\frac26+\\frac13",
+    "verwacht": "BR-04",
+    "herkomst": "ECHT — gemeten met __breukDiag() in Safari, 2026-08-06. Bevat alleen de twee composite \\frac-offsets (dat is wat __breukDiag afdrukt); genoeg voor de situaties 1 t/m 5, die alleen naar de breuk-offsets kijken. Voor situatie 6 en voor de teller/noemer-splitsing is een volledige __dumpOffsets()-opname nodig, inclusief de cijfer-offsets.",
+    "offsets": [
+      { "offset": 0, "depth": 0, "latex": "\\frac26", "bounds": { "x": 738, "y": 369, "width": 12, "height": 31 } },
+      { "offset": 1, "depth": 0, "latex": "\\frac13", "bounds": { "x": 771, "y": 369, "width": 12, "height": 31 } }
+    ]
+  }
+]
