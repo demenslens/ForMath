@@ -174,13 +174,29 @@
            s === '\\div' || s === '÷';
   }
   // Twee tekens horen bij dezelfde "cel" (hetzelfde niveau van de expressie) als
-  // hun verticale middens samenvallen. Dit is de grens die de offsetreeks zélf
-  // niet kent: in `4/9 + (2−1)/4` staat de 9 van de noemer in die reeks direct
-  // vóór de +, en de 2 van de teller van de buurbreuk er direct ná. Puur op index
-  // gerekend geldt dat als "9 + 2" en loopt het kader dwars door de breuken heen.
+  // hun verticale middens samenvallen ÉN ze op dezelfde diepte zitten. Dit is de
+  // grens die de offsetreeks zélf niet kent: in `4/9 + (2−1)/4` staat de 9 van de
+  // noemer in die reeks direct vóór de +, en de 2 van de teller van de buurbreuk er
+  // direct ná. Puur op index gerekend geldt dat als "9 + 2" en loopt het kader
+  // dwars door de breuken heen.
+  //
+  // WAAROM DIEPTE ERBIJ. De hoogtetoets alleen is te grof, en dat is gemeten, niet
+  // beredeneerd: in de browser-opname (test_harnas/browser/) werden 23 burenparen
+  // ten onrechte samengenomen, telkens hetzelfde patroon — de `+` tússen twee
+  // breuken (diepte 0) naast een tellercijfer (diepte 1), op 0,43 × de tekenhoogte
+  // en dus nét binnen de halve-hoogte-drempel. Dat leverde nog geen verkeerde
+  // bewerking op omdat de composite-offset van de breuk er toevallig tussen staat,
+  // maar dat is geluk, geen ontwerp. Diepte scheidt die gevallen hard: in dezelfde
+  // opname zaten alle negen correct gelezen bewerkingen op precies één diepte, dus
+  // de extra eis kost geen enkele terechte samenname.
+  //
+  // Wat diepte NIET oplost: twee breuken naast elkaar hebben tellers op gelijke
+  // hoogte én gelijke diepte. Die scheidt alleen de offsetreeks, doordat de
+  // composite-offset van de breuk ertussen valt.
   function zelfdeCel(a, b) {
     if (!a || !b || !a.bounds || !b.bounds) return false;
     if (!(a.bounds.height > 0) || !(b.bounds.height > 0)) return false;
+    if (a.depth != null && b.depth != null && a.depth !== b.depth) return false;
     var ca = a.bounds.y + a.bounds.height / 2;
     var cb = b.bounds.y + b.bounds.height / 2;
     return Math.abs(ca - cb) <= 0.5 * Math.min(a.bounds.height, b.bounds.height);
