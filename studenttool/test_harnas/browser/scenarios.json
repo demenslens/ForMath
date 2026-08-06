@@ -1,0 +1,85 @@
+[
+  { "naam": "026 korte vorm, teller fout", "opgave": "opgave_20260511_026",
+    "latex": "\\frac26+\\frac13", "verwacht": "BR-04",
+    "dekt": "de korte MathLive-vorm \\frac26 + situatie 4 (één teller fout)" },
+
+  { "naam": "026 correct gelijknamig", "opgave": "opgave_20260511_026",
+    "latex": "\\frac36+\\frac26", "verwacht": null,
+    "dekt": "goede tussenvorm — mag geen kader opleveren" },
+
+  { "naam": "026 onaangeroerd", "opgave": "opgave_20260511_026",
+    "latex": "\\frac12+\\frac13", "verwacht": null,
+    "dekt": "nog niets gedaan — waarde-ok, geen fout" },
+
+  { "naam": "026 één noemer fout", "opgave": "opgave_20260511_026",
+    "latex": "\\frac36+\\frac25", "verwacht": "BR-05",
+    "dekt": "situatie 5 — de scherpste toets voor de teller/noemer-scheiding" },
+
+  { "naam": "026 beide tellers fout", "opgave": "opgave_20260511_026",
+    "latex": "\\frac46+\\frac36", "verwacht": "BR-03",
+    "dekt": "situatie 3 — noemers goed, beide tellers verkeerd omgezet" },
+
+  { "naam": "026 één breuk helemaal fout", "opgave": "opgave_20260511_026",
+    "latex": "\\frac45+\\frac26", "verwacht": "BR-02",
+    "dekt": "situatie 2 — één breuk heel fout, de andere waarde-ok" },
+
+  { "naam": "026 alles fout", "opgave": "opgave_20260511_026",
+    "latex": "\\frac45+\\frac37", "verwacht": "BR-01",
+    "dekt": "situatie 1 — geen bruikbare deeldiagnose" },
+
+  { "naam": "026 samengevoegd, teller fout", "opgave": "opgave_20260511_026",
+    "latex": "\\frac{3+1}{6}", "verwacht": "BR-06",
+    "dekt": "situatie 6 — bewerking in de teller, fout getal" },
+
+  { "naam": "026 samengevoegd, correct", "opgave": "opgave_20260511_026",
+    "latex": "\\frac{3+2}{6}", "verwacht": null,
+    "dekt": "situatie 6 mag niet afgaan op een correcte samenvoeging" },
+
+  { "naam": "014 productnoemer", "opgave": "opgave_20260511_014",
+    "latex": "\\frac{15}{90}+\\frac{12}{90}", "verwacht": null,
+    "dekt": "geldig alternatief voor het KGV (90 i.p.v. 30) — geen fout" },
+
+  { "naam": "016 aftrekking, noemer fout", "opgave": "opgave_20260511_016",
+    "latex": "\\frac{31}{32}-\\frac{12}{8}", "verwacht": "BR-05",
+    "dekt": "minteken staat op het scherm BUITEN de breuk — vergelijken op absolute teller" },
+
+  { "naam": "016 aftrekking, correct", "opgave": "opgave_20260511_016",
+    "latex": "\\frac{31}{32}-\\frac{12}{32}", "verwacht": null,
+    "dekt": "dezelfde aftrekking goed omgezet — mag niet afgaan" },
+
+  { "naam": "014 samengevoegd, correct", "opgave": "opgave_20260511_014",
+    "latex": "\\frac{5+4}{30}", "verwacht": null,
+    "dekt": "correcte samenvoeging op het KGV — mag niet afgaan" },
+
+  { "naam": "014 samengevoegd, teller fout", "opgave": "opgave_20260511_014",
+    "latex": "\\frac{5+3}{30}", "verwacht": "BR-06",
+    "dekt": "situatie 6 op een andere opgave dan 026" },
+
+  { "naam": "015 manifold gelijknamig correct", "opgave": "opgave_20260511_015",
+    "latex": "\\frac{16}{36}+\\frac{18}{36}-\\frac{9}{36}", "verwacht": null,
+    "dekt": "DRIE breuken — de beslissingstabel claimt te generaliseren naar manifolds" },
+
+  { "naam": "015 manifold, één teller fout", "opgave": "opgave_20260511_015",
+    "latex": "\\frac{16}{36}+\\frac{17}{36}-\\frac{9}{36}", "verwacht": "BR-04",
+    "dekt": "situatie 4 op een manifold van drie termen" },
+
+  { "naam": "015 manifold samengevoegd correct", "opgave": "opgave_20260511_015",
+    "latex": "\\frac{16+18-9}{36}", "verwacht": null,
+    "dekt": "twee bewerkingen in één teller — voer voor vindGetalBewerkingen" },
+
+  { "naam": "015 manifold samengevoegd fout", "opgave": "opgave_20260511_015",
+    "latex": "\\frac{16+18-8}{36}", "verwacht": "BR-06",
+    "dekt": "situatie 6 met drie termen, de laatste fout" },
+
+  { "naam": "015 breuk naast samengevoegde", "opgave": "opgave_20260511_015",
+    "latex": "\\frac49+\\frac{2-1}{4}", "verwacht": null,
+    "dekt": "celgrenzen: de 9 van de noemer staat in de offsetreeks vlak vóór de +" },
+
+  { "naam": "020 genest met machten", "opgave": "opgave_20260511_020",
+    "latex": null, "verwacht": null,
+    "dekt": "openingsregel (1/2)^2-((-1/8+-5/8)^2) — minFontScale verkleint de tekens" },
+
+  { "naam": "023 wortel over een breuk", "opgave": "opgave_20260511_023",
+    "latex": null, "verwacht": null,
+    "dekt": "openingsregel met sqrt(1/64) — diepste nesting van alle testopgaven" }
+]

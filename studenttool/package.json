@@ -4,7 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run spoken && npm run breuk",
+    "spoken": "node test_harnas/browser/spookscan.js",
+    "breuk": "node test_harnas/breuk/run.js",
+    "opnemen": "node test_harnas/browser/opnemen.js"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +15,10 @@
   "type": "commonjs",
   "dependencies": {
     "mathjs": "^12.4.1"
+  },
+  "devDependencies": {
+    "acorn": "^8.18.0",
+    "acorn-globals": "^7.0.1",
+    "playwright-core": "^1.62.1"
   }
 }

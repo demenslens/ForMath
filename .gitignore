@@ -11,3 +11,8 @@ __pycache__/
 **/gebruikers.local.json
 **/login_log.json
 **/login_log.json.tmp
+
+# Meetgegevens van het browser-harnas: afgeleid, wordt bij elke opname opnieuw
+# geschreven. De fixtures (test_harnas/breuk/fixtures.json) horen WEL in git —
+# dat is de invoer van de offline-toets.
+studenttool/test_harnas/browser/meting.json
