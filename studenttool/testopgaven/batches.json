@@ -8,6 +8,15 @@
       "bron_expressie": "31/32-3/8",
       "aantal": 10,
       "datum": "2026-08-07"
+    },
+    {
+      "nummer": 2,
+      "map": "batch_02",
+      "naam": "Batch 02",
+      "bron": "opgave_20260511_024.json",
+      "bron_expressie": "(1/3+1/5):50",
+      "aantal": 4,
+      "datum": "2026-08-07"
     }
   ]
 }

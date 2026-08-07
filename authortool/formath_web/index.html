@@ -654,6 +654,23 @@
             line-height: 1.35;
             margin-bottom: 6px;
         }
+        /* Aantal-veld in de batch-balk; sluit aan op .zuster-bar hierboven. */
+        .batch-aantal {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-right: 8px;
+            font-size: 11px;
+            color: #6a4807;
+        }
+        .batch-aantal input {
+            width: 52px;
+            padding: 3px 5px;
+            border: 1px solid #eadcae;
+            border-radius: 3px;
+            font: inherit;
+            text-align: right;
+        }
         .hints-field {
             margin-bottom: 8px;
         }
@@ -1463,6 +1480,21 @@
                     <button class="btn btn-primary btn-small" id="btn-genereer-zuster"
                             onclick="genereerZuster()" type="button" data-i18n="btn.gen_zuster">
                         Generate −root sister + relation
+                    </button>
+                </div>
+
+                <!-- Batch: reeks gelijksoortige opgaven uit de geladen opgave -->
+                <div class="zuster-bar" id="batch-bar" hidden>
+                    <div class="zuster-desc" data-i18n="batch.desc">
+                        Generate a set of similar exercises: same form, different numbers.
+                    </div>
+                    <label class="batch-aantal">
+                        <span data-i18n="batch.count">How many</span>
+                        <input type="number" id="batch-aantal" min="1" max="50" value="10">
+                    </label>
+                    <button class="btn btn-primary btn-small" id="btn-genereer-batch"
+                            onclick="genereerBatch()" type="button" data-i18n="btn.gen_batch">
+                        Generate batch
                     </button>
                 </div>
 

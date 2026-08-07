@@ -56,7 +56,19 @@ def _laad_pijplijn():
     heeft een __main__-guard, dus importeren start niets.
     """
     with contextlib.redirect_stdout(io.StringIO()):
-        import server
+        # server.py kan al geladen zijn — als dit script vanuit het endpoint
+        # draait, staat hij onder 'server' óf onder '__main__' (want dan is hij
+        # met `python3 server.py` gestart). Een blinde `import server` zou in dat
+        # tweede geval een tweede kopie inladen en het hele bestand opnieuw
+        # uitvoeren. Daarom eerst kijken wat er al is.
+        server = None
+        for naam in ('server', '__main__'):
+            kandidaat = sys.modules.get(naam)
+            if kandidaat is not None and hasattr(kandidaat, 'ast_to_latex_display'):
+                server = kandidaat
+                break
+        if server is None:
+            import server                                    # noqa: F811
         from expression_parser import parse_expression
         from ast_normalizer import normalize_ast
         from manifold_detector import detect_manifolds
@@ -237,7 +249,7 @@ def varianten(bron_expr, aantal, rng, pogingen_per_vondst=120):
     """
     bron_opgave, _ = bouw(bron_expr)
     if bron_opgave is None:
-        raise SystemExit('De bron-expressie zelf komt niet door de pijplijn: %s' % bron_expr)
+        raise ValueError('De bron-expressie zelf komt niet door de pijplijn: %s' % bron_expr)
     doel = signatuur(bron_opgave)
 
     origineel = getallen(bron_expr)
@@ -308,7 +320,7 @@ def zoek_bron(opgave_id):
     for wortel, _dirs, bestanden in os.walk(TESTOPGAVEN):
         if naam in bestanden:
             return os.path.join(wortel, naam)
-    raise SystemExit('Opgave niet gevonden: %s' % naam)
+    raise FileNotFoundError('Opgave niet gevonden: %s' % naam)
 
 
 def volgend_batchnummer():
@@ -390,6 +402,45 @@ def schrijf_batch(nummer, bron_id, bron_expr, gevonden, bron_md):
 
 
 # ══════════════════════════════════════════════════════════════════════════
+def genereer(opgave_id, aantal=10, batchnummer=None, seed=None, droog=False):
+    """De motor. Geeft een verslag terug als dict.
+
+    Zowel de opdrachtregel als het endpoint /api/genereer_batch draaien dit —
+    één gezaghebbende bron, zodat de knop en het script niet uit elkaar lopen.
+    """
+    bron_pad = zoek_bron(opgave_id)
+    with open(bron_pad, encoding='utf-8') as f:
+        bron = json.load(f)
+    bron_expr = ((bron.get('metadata') or {}).get('expressie') or {}).get('tekst', '')
+    if not bron_expr:
+        raise ValueError('Bron-opgave heeft geen metadata.expressie.tekst')
+
+    rng = random.Random(seed)
+    gevonden, _doel, pogingen, afkeur = varianten(bron_expr, aantal, rng)
+
+    verslag = {
+        'bron': os.path.basename(bron_pad),
+        'bron_expressie': bron_expr,
+        'skelet': skelet(bron_expr),
+        'gevraagd': aantal,
+        'gevonden': len(gevonden),
+        'pogingen': pogingen,
+        'expressies': [v['expressie'] for v in gevonden],
+        'afkeur': afkeur,
+        'batch': None,
+        'map': None,
+    }
+    if droog or not gevonden:
+        return verslag
+
+    nummer = batchnummer or volgend_batchnummer()
+    pad = schrijf_batch(nummer, os.path.basename(bron_pad), bron_expr, gevonden,
+                        bron.get('metadata') or {})
+    verslag['batch'] = nummer
+    verslag['map'] = os.path.basename(pad)
+    return verslag
+
+
 def main():
     ap = argparse.ArgumentParser(description='Maak een batch gelijksoortige opgaven.')
     ap.add_argument('opgave', help='opgavenummer, bv. 20260511_016')
@@ -399,42 +450,32 @@ def main():
     ap.add_argument('--droog', action='store_true', help='alleen tonen, niets wegschrijven')
     args = ap.parse_args()
 
-    bron_pad = zoek_bron(args.opgave)
-    with open(bron_pad, encoding='utf-8') as f:
-        bron = json.load(f)
-    bron_expr = ((bron.get('metadata') or {}).get('expressie') or {}).get('tekst', '')
-    if not bron_expr:
-        raise SystemExit('Bron-opgave heeft geen metadata.expressie.tekst')
+    try:
+        v = genereer(args.opgave, args.aantal, args.batch, args.seed, args.droog)
+    except (ValueError, FileNotFoundError) as e:
+        raise SystemExit(str(e))
 
-    print('Bron : %s' % os.path.basename(bron_pad))
-    print('Vorm : %s   (skelet %s)' % (bron_expr, skelet(bron_expr)))
-
-    rng = random.Random(args.seed)
-    gevonden, doel, pogingen, afkeur = varianten(bron_expr, args.aantal, rng)
-
-    print('\n%d van %d gevraagd, in %d pogingen' % (len(gevonden), args.aantal, pogingen))
-    for i, v in enumerate(gevonden, start=1):
-        print('  %2d  %s' % (i, v['expressie']))
-    if afkeur:
+    print('Bron : %s' % v['bron'])
+    print('Vorm : %s   (skelet %s)' % (v['bron_expressie'], v['skelet']))
+    print('\n%d van %d gevraagd, in %d pogingen' % (v['gevonden'], v['gevraagd'], v['pogingen']))
+    for i, e in enumerate(v['expressies'], start=1):
+        print('  %2d  %s' % (i, e))
+    if v['afkeur']:
         print('\nAfgekeurd:')
-        for reden, n in sorted(afkeur.items(), key=lambda x: -x[1]):
+        for reden, n in sorted(v['afkeur'].items(), key=lambda x: -x[1]):
             print('  %4d× %s' % (n, reden))
-    if len(gevonden) < args.aantal:
+    if v['gevonden'] < v['gevraagd']:
         print('\nMinder gevonden dan gevraagd. Bij een strak omlijnde vorm (een deling'
               '\ndie heel moet uitkomen, een wortel die een kwadraat moet blijven) is de'
-              '\nkans per trekking klein; verhoog --aantal-pogingen of neem genoegen'
-              '\nmet minder.')
-
-    if args.droog:
-        print('\n(droog — niets weggeschreven)')
-        return
-    if not gevonden:
+              '\nkans per trekking klein; vraag er minder of draai nog eens met een'
+              '\nandere --seed.')
+    if v['map']:
+        print('\nGeschreven: %s  (%d opgaven + index.json)'
+              % (os.path.join(TESTOPGAVEN, v['map']), v['gevonden']))
+    elif not v['gevonden']:
         raise SystemExit('Niets te schrijven.')
-
-    nummer = args.batch or volgend_batchnummer()
-    pad = schrijf_batch(nummer, os.path.basename(bron_pad), bron_expr, gevonden,
-                        bron.get('metadata') or {})
-    print('\nGeschreven: %s  (%d opgaven + index.json)' % (pad, len(gevonden)))
+    else:
+        print('\n(droog — niets weggeschreven)')
 
 
 if __name__ == '__main__':

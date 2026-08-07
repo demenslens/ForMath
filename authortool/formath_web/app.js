@@ -1776,6 +1776,10 @@ function _updateZusterBar() {
     if (!zusterBar) return;
     const heeftFork = Object.values(inspectorState.wortels).some(v => Number(v) === 2);
     zusterBar.hidden = !(heeftFork && selectedOpgaveId);
+    // De batch-balk hangt niet aan de ±-fork maar aan "er is een opgave geladen":
+    // uit elke opgave valt een reeks gelijksoortige te maken.
+    const batchBar = document.getElementById('batch-bar');
+    if (batchBar) batchBar.hidden = !selectedOpgaveId;
 }
 
 /**
@@ -1813,6 +1817,43 @@ async function genereerZuster() {
         setStatus(i18nt('status.generate_failed', { detail: escapeHtml(String(e)) }), 'error');
     } finally {
         if (btn) { btn.disabled = false; btn.textContent = i18nt('btn.gen_zuster'); }
+    }
+}
+
+/**
+ * Maakt een batch gelijksoortige opgaven uit de geladen opgave: zelfde vorm,
+ * andere getallen. Het endpoint draait tools/genereer_batch.py — dezelfde motor
+ * als de opdrachtregel. Het zoeken kan een minuut duren, want elke kandidaat
+ * gaat door de volledige pijplijn; vandaar de knop op "bezig".
+ */
+async function genereerBatch() {
+    if (!selectedOpgaveId) {
+        setStatus(i18nt('status.no_exercise_loaded'), 'error');
+        return;
+    }
+    const btn = document.getElementById('btn-genereer-batch');
+    const veld = document.getElementById('batch-aantal');
+    const aantal = Math.max(1, Math.min(50, parseInt(veld && veld.value, 10) || 10));
+    if (btn) { btn.disabled = true; btn.textContent = i18nt('btn.busy'); }
+    try {
+        const r = await fetch('/api/genereer_batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: selectedOpgaveId, aantal: aantal }),
+        });
+        const data = await r.json();
+        if (data.success && data.map) {
+            setStatus(i18nt('status.batch_created', {
+                batch: String(data.batch), n: String(data.gevonden), map: escapeHtml(data.map)
+            }) + (data.waarschuwing ? ' ' + escapeHtml(data.waarschuwing) : ''),
+                data.waarschuwing ? 'warn' : 'success');
+        } else {
+            setStatus(escapeHtml(data.error || data.waarschuwing || 'Genereren mislukt.'), 'error');
+        }
+    } catch (e) {
+        setStatus(i18nt('status.generate_failed', { detail: escapeHtml(String(e)) }), 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = i18nt('btn.gen_batch'); }
     }
 }
 

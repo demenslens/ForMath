@@ -667,6 +667,8 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             self._handle_save_hints()
         elif self.path == '/api/genereer_zuster':
             self._handle_genereer_zuster()
+        elif self.path == '/api/genereer_batch':
+            self._handle_genereer_batch()
         elif self.path == '/api/settings':
             self._handle_set_settings()
         # Folder-operaties (sub-ronde C)
@@ -1237,6 +1239,46 @@ class ForMathHandler(http.server.SimpleHTTPRequestHandler):
             })
         except Exception as e:
             print(f"[FOUT] ±-preview: {e}")
+            traceback.print_exc()
+            self._send_json({'success': False, 'error': str(e)})
+
+    # ── /api/genereer_batch ───────────────────────────────────────────────────
+    def _handle_genereer_batch(self):
+        """Maak een batch gelijksoortige opgaven uit de geselecteerde opgave.
+
+        Dit endpoint is een SCHIL om tools/genereer_batch.py — dezelfde motor die
+        ook vanaf de opdrachtregel draait, zodat de knop en het script niet uit
+        elkaar kunnen lopen. Het zoeken duurt seconden tot ruim een minuut: elke
+        kandidaat gaat door de volledige pijplijn.
+        """
+        try:
+            lengte = int(self.headers.get('Content-Length', 0))
+            verzoek = json.loads(self.rfile.read(lengte).decode('utf-8')) if lengte else {}
+            opgave_id = (verzoek.get('id') or '').strip()
+            aantal = int(verzoek.get('aantal') or 10)
+            if not opgave_id:
+                self._send_json({'success': False, 'error': 'Geen opgave opgegeven'})
+                return
+            if not (1 <= aantal <= 50):
+                self._send_json({'success': False, 'error': 'Aantal moet tussen 1 en 50 liggen'})
+                return
+
+            tools_dir = os.path.join(os.path.dirname(BASE_DIR), 'tools')
+            if tools_dir not in sys.path:
+                sys.path.insert(0, tools_dir)
+            import genereer_batch
+
+            verslag = genereer_batch.genereer(opgave_id, aantal=aantal)
+            verslag['success'] = True
+            if verslag['gevonden'] < verslag['gevraagd']:
+                verslag['waarschuwing'] = (
+                    'Er zijn er %d van de %d gevonden. Bij een strak omlijnde vorm is de '
+                    'kans per trekking klein.' % (verslag['gevonden'], verslag['gevraagd']))
+            self._send_json(verslag)
+        except (ValueError, FileNotFoundError) as e:
+            self._send_json({'success': False, 'error': str(e)})
+        except Exception as e:
+            print(f"[FOUT] genereer_batch: {e}")
             traceback.print_exc()
             self._send_json({'success': False, 'error': str(e)})
 
