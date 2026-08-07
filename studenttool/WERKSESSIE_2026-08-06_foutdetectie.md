@@ -1,8 +1,8 @@
-# Werksessie — foutdetectie en pinpointing betrouwbaar maken
+# Werksessie — foutdetectie, pinpointing en batches
 
 | | |
 |---|---|
-| **Datum** | 2026-08-06 (middag) |
+| **Datum** | 2026-08-06 (middag) en 2026-08-07 |
 | **Opdracht** | "Ik wil de foutdetectie en pinpointing helemaal betrouwbaar hebben." |
 | **Uitkomst** | Vier dode namen gevonden en gerepareerd, een geautomatiseerd browser-harnas gebouwd, vier nooit-gemeten aannames gemeten, en de pinpointing verfijnd tot teller/noemer-niveau |
 | **Commits** | 11 (`40b223d` … `44c7840`) |
