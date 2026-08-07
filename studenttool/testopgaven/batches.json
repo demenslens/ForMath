@@ -1,0 +1,13 @@
+{
+  "batches": [
+    {
+      "nummer": 1,
+      "map": "batch_01",
+      "naam": "Batch 01",
+      "bron": "opgave_20260511_016.json",
+      "bron_expressie": "31/32-3/8",
+      "aantal": 10,
+      "datum": "2026-08-07"
+    }
+  ]
+}

@@ -200,6 +200,22 @@
       "zh": "习题集",
       "it": "Serie di esercizi"
     },
+    "batch.all": {
+      "en": "All exercises",
+      "nl": "Alle opgaven",
+      "de": "Alle Aufgaben",
+      "fr": "Tous les exercices",
+      "zh": "全部习题",
+      "it": "Tutti gli esercizi"
+    },
+    "batch.none": {
+      "en": "No batches yet",
+      "nl": "Nog geen batches",
+      "de": "Noch keine Sätze",
+      "fr": "Aucun lot",
+      "zh": "暂无题组",
+      "it": "Nessun gruppo"
+    },
     "sidebar.exercises": {
       "en": "Exercises",
       "nl": "Opgaven",

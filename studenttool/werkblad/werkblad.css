@@ -1195,3 +1195,19 @@ math-field, .editor { font-size: 17px; }
 }
 .res-eind strong { color: var(--ink); font-weight: 600; }
 .res-eind.af strong { color: var(--ok); }
+
+/* Onderregel in een batch-item: de bron-expressie en het aantal opgaven. */
+.batch-sub {
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ink-dim);
+}
+.batch-item.active .batch-sub { color: var(--accent-ink); }
+.batch-leeg {
+  padding: 4px 2px;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-dim);
+}

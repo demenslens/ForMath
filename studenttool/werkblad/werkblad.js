@@ -552,6 +552,69 @@
   // Key: index in opgavenIndex, waarde: { latex, ready }.
   var previewCache = {};
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // BATCHES — de linkerkolom
+  // ══════════════════════════════════════════════════════════════════════════
+  // Een batch is een map met gelijksoortige opgaven, gemaakt uit één bron-opgave
+  // door de authortool (tools/genereer_batch.py). Elke batch heeft een eigen
+  // index.json; batches.json in de wortel somt ze op.
+  //
+  // Een batch kiezen verlegt alleen wáár de opgaven vandaan komen — de
+  // middenkolom en de rest van de tool merken er verder niets van. Vandaar dat
+  // OPGAVEN_BASE en INDEX_URL variabelen zijn en geen constanten.
+  var BATCHES_URL = '../testopgaven/batches.json';
+  var actieveBatch = null;                 // null = de losse opgaven in de wortel
+  var _batches = [];
+
+  function laadBatches(){
+    fetch(BATCHES_URL)
+      .then(function(r){ return r.ok ? r.json() : { batches: [] }; })
+      .catch(function(){ return { batches: [] }; })   // géén batches is geen fout
+      .then(function(data){
+        _batches = (data && data.batches) || [];
+        renderBatches();
+      });
+  }
+
+  function renderBatches(){
+    var el = document.querySelector('.batch-list');
+    if (!el) return;
+    el.innerHTML = '';
+
+    function item(batch, titel, onder){
+      var d = document.createElement('div');
+      var map = batch ? batch.map : null;
+      d.className = 'batch-item' + (actieveBatch === map ? ' active' : '');
+      d.innerHTML = '<div>' + esc(titel) + '</div>' +
+                    (onder ? '<div class="batch-sub">' + esc(onder) + '</div>' : '');
+      d.addEventListener('click', function(){ kiesBatch(batch); });
+      return d;
+    }
+
+    el.appendChild(item(null, TT('batch.all'), ''));
+    _batches.forEach(function(b){
+      el.appendChild(item(b, b.naam || ('Batch ' + b.nummer),
+                          (b.bron_expressie || '') + '  ·  ' + (b.aantal || 0)));
+    });
+    if (!_batches.length){
+      var leeg = document.createElement('div');
+      leeg.className = 'batch-leeg';
+      leeg.textContent = TT('batch.none');
+      el.appendChild(leeg);
+    }
+  }
+
+  function kiesBatch(batch){
+    actieveBatch = batch ? batch.map : null;
+    OPGAVEN_BASE = '../testopgaven/' + (actieveBatch ? actieveBatch + '/' : '');
+    INDEX_URL = OPGAVEN_BASE + 'index.json';
+    previewCache = {};                     // previews horen bij de vórige lijst
+    renderBatches();
+    var lijst = document.getElementById('opg-list');
+    if (lijst) lijst.innerHTML = '<div class="side-loading">' + esc(TT('sidebar.loading')) + '</div>';
+    loadIndex();
+  }
+
   function loadIndex(){
     fetch(INDEX_URL)
       .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
@@ -6450,12 +6513,23 @@
   // ══════════════════════════════════════
   // INIT
   // ══════════════════════════════════════
+  laadBatches();
   loadIndex();
   initColResizers();
+
+  // Herteken bij taalwissel én zodra de catalogus binnen is. Beide panelen
+  // bouwen hun tekst met TT() op het moment van tekenen, dus zonder deze haak
+  // blijven ze staan in de taal van dat moment — bij het opstarten is dat de
+  // sleutel zelf, want de catalogus wordt asynchroon opgehaald.
+  if (window.I18N && window.I18N.onChange) window.I18N.onChange(function(){
+    renderBatches();
+    toonSessie();
+  });
 
   // Refresh button: reload index.json and rebuild sidebar
   document.getElementById('refresh-btn').onclick = function(){
     st('ld', 'Opgavenlijst herladen...');
+    laadBatches();
     loadIndex();
   };
 
