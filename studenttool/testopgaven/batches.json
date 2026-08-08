@@ -17,6 +17,24 @@
       "bron_expressie": "(1/3+1/5):50",
       "aantal": 4,
       "datum": "2026-08-07"
+    },
+    {
+      "nummer": 3,
+      "map": "batch_03",
+      "naam": "Batch 03",
+      "bron": "opgave_20260510_002.json",
+      "bron_expressie": "2×(3+4×5)+-(6:2)+7",
+      "aantal": 10,
+      "datum": "2026-08-07"
+    },
+    {
+      "nummer": 4,
+      "map": "batch_04",
+      "naam": "Batch 04",
+      "bron": "opgave_20260510_002.json",
+      "bron_expressie": "2×(3+4×5)+-(6:2)+7",
+      "aantal": 10,
+      "datum": "2026-08-07"
     }
   ]
 }

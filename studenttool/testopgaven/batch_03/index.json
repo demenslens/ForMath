@@ -1,0 +1,74 @@
+{
+  "opgaven": [
+    {
+      "bestand": "opgave_b03_001.json",
+      "id": "opgave_b03_001",
+      "titel": "2\\times \\left(3+5\\times 4\\right)-\\left(6:3\\right)+6",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_002.json",
+      "id": "opgave_b03_002",
+      "titel": "3\\times \\left(4+3\\times 5\\right)-\\left(10:2\\right)+4",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_003.json",
+      "id": "opgave_b03_003",
+      "titel": "3\\times \\left(4+6\\times 7\\right)-\\left(8:2\\right)+13",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_004.json",
+      "id": "opgave_b03_004",
+      "titel": "2\\times \\left(3+6\\times 4\\right)-\\left(4:2\\right)+4",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_005.json",
+      "id": "opgave_b03_005",
+      "titel": "3\\times \\left(2+6\\times 4\\right)-\\left(6:3\\right)+6",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_006.json",
+      "id": "opgave_b03_006",
+      "titel": "2\\times \\left(4+6\\times 2\\right)-\\left(4:2\\right)+4",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_007.json",
+      "id": "opgave_b03_007",
+      "titel": "2\\times \\left(5+2\\times 3\\right)-\\left(6:3\\right)+6",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_008.json",
+      "id": "opgave_b03_008",
+      "titel": "3\\times \\left(5+5\\times 8\\right)-\\left(6:3\\right)+4",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_009.json",
+      "id": "opgave_b03_009",
+      "titel": "2\\times \\left(4+2\\times 2\\right)-\\left(10:2\\right)+9",
+      "niveau": "Hoog",
+      "stappen": 4
+    },
+    {
+      "bestand": "opgave_b03_010.json",
+      "id": "opgave_b03_010",
+      "titel": "2\\times \\left(4+4\\times 7\\right)-\\left(6:3\\right)+4",
+      "niveau": "Hoog",
+      "stappen": 4
+    }
+  ]
+}

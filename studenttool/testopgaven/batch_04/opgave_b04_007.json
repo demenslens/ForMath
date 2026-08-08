@@ -1,0 +1,549 @@
+{
+  "metadata": {
+    "id": "opgave_b04_007",
+    "auteur": "H.N.Lensing",
+    "expressie": {
+      "tekst": "2×(2+6×2)+-(9:3)+11",
+      "latex_display": "2\\times \\left(2+6\\times 2\\right)-\\left(9:3\\right)+11",
+      "mathml": "",
+      "ast": {
+        "tree": [
+          "Add",
+          [
+            "Multiply",
+            2,
+            [
+              "Add",
+              2,
+              [
+                "Multiply",
+                6,
+                2
+              ]
+            ]
+          ],
+          [
+            "Negate",
+            [
+              "Divide",
+              9,
+              3
+            ]
+          ],
+          11
+        ],
+        "node_map": [
+          {
+            "path": [
+              0,
+              0
+            ],
+            "mathblock_id": "A3",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              0,
+              1,
+              0
+            ],
+            "mathblock_id": "A2",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              0,
+              1,
+              1,
+              0
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "6"
+          },
+          {
+            "path": [
+              0,
+              1,
+              1,
+              1
+            ],
+            "mathblock_id": "A1",
+            "type": "input",
+            "waarde": "2"
+          },
+          {
+            "path": [
+              0,
+              1,
+              1
+            ],
+            "mathblock_id": "A1",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0,
+              1
+            ],
+            "mathblock_id": "A2",
+            "type": "operation"
+          },
+          {
+            "path": [
+              0
+            ],
+            "mathblock_id": "A3",
+            "type": "operation"
+          },
+          {
+            "path": [
+              1,
+              0,
+              0
+            ],
+            "mathblock_id": "B3",
+            "type": "input",
+            "waarde": "9"
+          },
+          {
+            "path": [
+              1,
+              0,
+              1
+            ],
+            "mathblock_id": "B3",
+            "type": "input",
+            "waarde": "3"
+          },
+          {
+            "path": [
+              1,
+              0
+            ],
+            "mathblock_id": "B3",
+            "type": "operation"
+          },
+          {
+            "path": [
+              2
+            ],
+            "mathblock_id": "A4",
+            "type": "input",
+            "waarde": "11"
+          },
+          {
+            "path": [],
+            "mathblock_id": "A4",
+            "type": "operation"
+          }
+        ]
+      }
+    },
+    "aantal_mathblocks": 5,
+    "bewerkingen": {
+      "optelling": 1,
+      "vermenigvuldiging": 2,
+      "deling": 1,
+      "machtsverheffen": 0,
+      "worteltrekken": 0,
+      "optel_manifold": 1,
+      "vermenigvuldig_manifold": 0,
+      "matroesjka_manifold": 0,
+      "vereenvoudigen": 0,
+      "gemengd_getal": 0
+    },
+    "aantal_steps": 4,
+    "niveau": "Hoog",
+    "randvoorwaarden": {
+      "vereenvoudig_uitkomst": false,
+      "antwoord_in_breuken": true,
+      "antwoord_in_decimalen": false,
+      "decimalen_afronden": 2,
+      "pi_decimalen": 2,
+      "uitkomst_als_gemengd_getal": true,
+      "hints_aan": true,
+      "feedback_aan": true
+    },
+    "soort_opgave": "rekenen_getallen",
+    "opdracht": "reken_uit",
+    "onderwijsniveau": "onderbouw",
+    "onderwijstype": "vmbo",
+    "productie": "enkelvoudig",
+    "herkomst": {
+      "batch": 4,
+      "bron": "opgave_20260510_002.json",
+      "bron_expressie": "2×(3+4×5)+-(6:2)+7",
+      "gegenereerd": "2026-08-07"
+    }
+  },
+  "mathblocks": [
+    {
+      "id": "A1",
+      "step": 1,
+      "operatie": {
+        "symbool": "×",
+        "beschrijving": "vermenigvuldiging"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "6"
+        },
+        {
+          "type": "extern",
+          "waarde": "2"
+        }
+      ],
+      "output": "12",
+      "hints": {
+        "structureel": {
+          "wat": {
+            "key": "binary.mul.wat"
+          },
+          "hoe": {
+            "key": "binary.mul.hoe.plain"
+          },
+          "let_op": []
+        },
+        "feedback": {
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A2",
+      "step": 2,
+      "operatie": {
+        "symbool": "+",
+        "beschrijving": "optelling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2"
+        },
+        {
+          "type": "mathblock",
+          "id": "A1"
+        }
+      ],
+      "output": "14",
+      "hints": {
+        "structureel": {
+          "wat": {
+            "key": "binary.add.wat"
+          },
+          "hoe": {
+            "key": "binary.add.hoe.plain"
+          },
+          "let_op": []
+        },
+        "feedback": {
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A3",
+      "step": 3,
+      "operatie": {
+        "symbool": "×",
+        "beschrijving": "vermenigvuldiging"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "2"
+        },
+        {
+          "type": "mathblock",
+          "id": "A2"
+        }
+      ],
+      "output": "28",
+      "hints": {
+        "structureel": {
+          "wat": {
+            "key": "binary.mul.wat"
+          },
+          "hoe": {
+            "key": "binary.mul.hoe.plain"
+          },
+          "let_op": []
+        },
+        "feedback": {
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "B3",
+      "step": 3,
+      "operatie": {
+        "symbool": "-(:)",
+        "beschrijving": "deling"
+      },
+      "input": [
+        {
+          "type": "extern",
+          "waarde": "9"
+        },
+        {
+          "type": "extern",
+          "waarde": "3"
+        }
+      ],
+      "output": "-3",
+      "is_negative": true,
+      "hints": {
+        "structureel": {
+          "wat": {
+            "key": "binary.div.wat"
+          },
+          "hoe": {
+            "key": "binary.div.hoe.plain"
+          },
+          "let_op": [
+            {
+              "key": "binary.letop.negative"
+            }
+          ]
+        },
+        "feedback": {
+          "bij_correct": {
+            "key": "feedback.correct.intermediate"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    },
+    {
+      "id": "A4",
+      "step": 4,
+      "operatie": {
+        "symbool": "M+(3)",
+        "beschrijving": "optel-manifold",
+        "aantal_operanden": 3
+      },
+      "input": [
+        {
+          "type": "mathblock",
+          "id": "A3"
+        },
+        {
+          "type": "mathblock",
+          "id": "B3",
+          "is_negative": true
+        },
+        {
+          "type": "extern",
+          "waarde": "11"
+        }
+      ],
+      "output": "36",
+      "hints": {
+        "structureel": {
+          "wat": {
+            "key": "manifold.add.wat",
+            "params": {
+              "n": 3
+            }
+          },
+          "hoe": {
+            "key": "manifold.add.hoe.plain"
+          },
+          "let_op": []
+        },
+        "feedback": {
+          "bij_correct": {
+            "key": "feedback.correct.root"
+          },
+          "bij_fout_algemeen": {
+            "key": "feedback.wrong.general"
+          },
+          "veelvoorkomende_fouten": []
+        },
+        "didactisch": {
+          "didactische_uitleg": "",
+          "voorbeeld": "",
+          "verwijzing_lesstof": ""
+        }
+      }
+    }
+  ],
+  "externe_inputs": [
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "A3"
+      ]
+    },
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "A2"
+      ]
+    },
+    {
+      "waarde": "6",
+      "mathblock_ids": [
+        "A1"
+      ]
+    },
+    {
+      "waarde": "2",
+      "mathblock_ids": [
+        "A1"
+      ]
+    },
+    {
+      "waarde": "9",
+      "mathblock_ids": [
+        "B3"
+      ]
+    },
+    {
+      "waarde": "3",
+      "mathblock_ids": [
+        "B3"
+      ]
+    },
+    {
+      "waarde": "11",
+      "mathblock_ids": [
+        "A4"
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "step": 1,
+      "mathblocks": [
+        "A1"
+      ]
+    },
+    {
+      "step": 2,
+      "mathblocks": [
+        "A2"
+      ]
+    },
+    {
+      "step": 3,
+      "mathblocks": [
+        "A3",
+        "B3"
+      ]
+    },
+    {
+      "step": 4,
+      "mathblocks": [
+        "A4"
+      ]
+    }
+  ],
+  "duo_verzameling": [
+    {
+      "step": 1,
+      "input_expressie": "(2×(2+(6×2)))-(9:3)+11",
+      "hoog": [
+        {
+          "mathblock": "A1",
+          "output_expressie": "(2×(2+12))-(9:3)+11"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "B3",
+          "output_expressie": "(2×(2+(6×2)))+-3+11"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "input_expressie": "(2×(2+12))-(9:3)+11",
+      "hoog": [
+        {
+          "mathblock": "A2",
+          "output_expressie": "(2×14)-(9:3)+11"
+        }
+      ],
+      "laag": [
+        {
+          "mathblock": "B3",
+          "output_expressie": "(2×(2+12))+-3+11"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "input_expressie": "(2×14)-(9:3)+11",
+      "hoog": [
+        {
+          "mathblock": "A3",
+          "output_expressie": "28-(9:3)+11"
+        },
+        {
+          "mathblock": "B3",
+          "output_expressie": "(2×14)+-3+11"
+        }
+      ],
+      "laag": []
+    },
+    {
+      "step": 4,
+      "input_expressie": "28+-3+11",
+      "hoog": [
+        {
+          "mathblock": "A4",
+          "output_expressie": "36"
+        }
+      ],
+      "laag": []
+    }
+  ]
+}
