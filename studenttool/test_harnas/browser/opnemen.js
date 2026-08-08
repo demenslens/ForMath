@@ -82,7 +82,27 @@ const IN_DE_BROWSER = async (arg) => {
                          width: Math.round(o.bounds.width * 100) / 100,
                          height: Math.round(o.bounds.height * 100) / 100 } : null
   });
-  const offsets = (V.collectOffsets(mf) || []).map(schoon);
+  // MEET TOT DE METING RUSTIG IS. Eén op de drie opnames leverde een los cijfer
+  // met de bounds van een veel groter element (breedte 58 in plaats van 7,5):
+  // getElementInfo geeft dan de omhullende afmetingen terug omdat MathLive nog
+  // niet klaar is met opmaken. Zo'n meting in een fixture vastleggen is erger dan
+  // geen fixture, want dan toetst het harnas voortaan tegen een verkeerd getal.
+  // Vandaar: cijfers horen onderling ongeveer even breed te zijn; is dat niet zo,
+  // dan even wachten en opnieuw meten.
+  const rustig = offs => {
+    const cijfers = offs.filter(o => o.bounds && o.bounds.width > 0 && /^\d$/.test((o.latex || '').trim()));
+    if (cijfers.length < 2) return true;
+    const breedtes = cijfers.map(o => o.bounds.width);
+    return Math.max(...breedtes) <= 2.5 * Math.min(...breedtes);
+  };
+  let offsets = (V.collectOffsets(mf) || []).map(schoon);
+  let metingen = 1;
+  while (!rustig(offsets) && metingen < 5) {
+    await wacht(250);
+    offsets = (V.collectOffsets(mf) || []).map(schoon);
+    metingen++;
+  }
+  const meetOnrust = rustig(offsets) ? 0 : metingen;
 
   // ── de echte breukstrepen uit de shadow-DOM ──
   // Dit is de GRONDWAARHEID voor teller-vs-noemer: MathLive tekent de streep als
@@ -135,7 +155,7 @@ const IN_DE_BROWSER = async (arg) => {
     } catch (e) { lfFout = String(e && e.message || e); }
   }
 
-  return { latexTerug: mf.getValue('latex'), offsets, offsetsNaLF, fracLijnen, kaders, status, foutRegel, foutLadder, lfFout, delta, fontSchaal };
+  return { meetOnrust, metingen, latexTerug: mf.getValue('latex'), offsets, offsetsNaLF, fracLijnen, kaders, status, foutRegel, foutLadder, lfFout, delta, fontSchaal };
 };
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -335,6 +355,8 @@ function verwachteKaders(det, offsets) {
                 (gemeld || 'geen melding') +
                 (klopt ? '' : R('   verwacht ' + (sc.verwacht || 'geen melding'))));
     if (paginaFouten.length) console.log('   ' + R('pagina-fout: ') + paginaFouten[0]);
+    if (r.metingen > 1) console.log('   ' + (r.meetOnrust ? R('meting bleef onrustig na ' + r.metingen + ' pogingen')
+                                                         : Y('meting pas rustig na ' + r.metingen + ' pogingen')));
     // De pure logica en het scherm horen hetzelfde te zeggen. Lopen ze uiteen, dan
     // is de detectie in orde maar de weg naar de leerling niet — of andersom.
     if (oordeel.code && oordeel.code !== gemeld) {
