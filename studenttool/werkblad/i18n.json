@@ -376,6 +376,46 @@
       "zh": "尚未",
       "it": "non ancora"
     },
+    "calc.title": {
+      "en": "Calculator",
+      "nl": "Rekenmachine",
+      "de": "Rechner",
+      "fr": "Calculatrice",
+      "zh": "计算器",
+      "it": "Calcolatrice"
+    },
+    "calc.not_exact": {
+      "en": "no exact root",
+      "nl": "geen exacte wortel",
+      "de": "keine exakte Wurzel",
+      "fr": "racine non exacte",
+      "zh": "无精确平方根",
+      "it": "radice non esatta"
+    },
+    "calc.neg_root": {
+      "en": "no root of a negative number",
+      "nl": "geen wortel uit een negatief getal",
+      "de": "keine Wurzel aus negativer Zahl",
+      "fr": "pas de racine d'un nombre négatif",
+      "zh": "负数无平方根",
+      "it": "nessuna radice di un numero negativo"
+    },
+    "calc.div_zero": {
+      "en": "cannot divide by zero",
+      "nl": "delen door nul kan niet",
+      "de": "Division durch null nicht möglich",
+      "fr": "division par zéro impossible",
+      "zh": "不能除以零",
+      "it": "impossibile dividere per zero"
+    },
+    "calc.invalid": {
+      "en": "incomplete number",
+      "nl": "getal nog niet af",
+      "de": "Zahl unvollständig",
+      "fr": "nombre incomplet",
+      "zh": "数字未完成",
+      "it": "numero incompleto"
+    },
     "footer.schema": {
       "en": "Diagram",
       "nl": "Schema",

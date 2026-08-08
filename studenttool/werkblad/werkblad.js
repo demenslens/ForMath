@@ -1156,7 +1156,10 @@
     if (!body){
       body = document.createElement('div');
       body.className = 'res-body';
-      paneel.appendChild(body);
+      // Vóór de rekenmachine invoegen: die staat onderaan de kolom vastgezet,
+      // dus een appendChild zou het sessie-overzicht eronder laten belanden.
+      var rm = paneel.querySelector('.rekenmachine');
+      if (rm) paneel.insertBefore(body, rm); else paneel.appendChild(body);
     }
     if (!_sessie){ body.innerHTML = ''; if (leeg) leeg.hidden = false; return; }
     if (leeg) leeg.hidden = true;
@@ -1208,6 +1211,176 @@
       '</div>';
   }
   window.__sessie = function(){ return _sessie; };
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // REKENMACHINE — onderaan de rechterkolom
+  // ══════════════════════════════════════════════════════════════════════════
+  // PUUR REKENKUNDIG, en dat is een didactische keuze: twee getallen per
+  // bewerking, geen expressieregel met haakjes. Een leerling kan er een
+  // tussenstap mee narekenen, maar de opgave niet in één keer laten uitrekenen.
+  //
+  // Alles gaat exact, via math.fraction — nooit drijvende komma. Dat sluit aan
+  // op de rest van de tool, die overal met exacte breuken werkt. De enige
+  // bewerking die niet exact hóéft uit te komen is de wortel; die weigert dan
+  // met een melding, in plaats van een benadering te tonen.
+  //
+  // `:` is de DELING en `a/b` maakt een BREUK. In dit project zijn dat
+  // structureel verschillende dingen (zie ../CLAUDE.md), dus ze hebben elk een
+  // eigen toets en worden niet samengevoegd.
+  var _rm = null;
+
+  function _rmLeeg(){
+    return {
+      cijfers: '0',        // wat er nu ingetikt wordt (teller, of het hele getal)
+      noemer: null,        // niet-null zodra a/b is ingedrukt
+      negatief: false,
+      opgeslagen: null,    // math.Fraction — het eerste getal
+      bewerking: null,     // '+', '-', '*', ':'
+      vers: true,          // het volgende cijfer begint een nieuw getal
+      melding: ''
+    };
+  }
+
+  // Wat er nu op het scherm staat, als exacte breuk. null = onbruikbaar.
+  function _rmHuidig(){
+    try {
+      var t = math.fraction(parseInt(_rm.cijfers || '0', 10));
+      if (_rm.noemer !== null && _rm.noemer !== ''){
+        var n = parseInt(_rm.noemer, 10);
+        if (!n) return null;                       // een noemer 0 bestaat niet
+        t = math.divide(t, math.fraction(n));
+      }
+      return _rm.negatief ? math.unaryMinus(t) : t;
+    } catch(e){ return null; }
+  }
+
+  // Een uitkomst terugzetten in de invoer, zodat je ermee door kunt rekenen.
+  function _rmZetUit(fr){
+    _rm.negatief = math.smaller(fr, 0);
+    var abs = math.abs(fr);
+    _rm.cijfers = String(abs.n);
+    _rm.noemer = (Number(abs.d) === 1) ? null : String(abs.d);
+    _rm.vers = true;
+  }
+
+  function _rmReken(a, op, b){
+    try {
+      if (op === '+') return math.add(a, b);
+      if (op === '-') return math.subtract(a, b);
+      if (op === '*') return math.multiply(a, b);
+      if (op === ':') return math.equal(b, 0) ? null : math.divide(a, b);
+    } catch(e){ return null; }
+    return null;
+  }
+
+  function rekenmachineToets(k){
+    if (!_rm) return;
+    _rm.melding = '';
+
+    if (/^[0-9]$/.test(k)){
+      if (_rm.vers){ _rm.cijfers = ''; _rm.noemer = null; _rm.negatief = false; _rm.vers = false; }
+      if (_rm.noemer !== null) _rm.noemer = (_rm.noemer === '0' ? '' : _rm.noemer) + k;
+      else _rm.cijfers = (_rm.cijfers === '0' ? '' : _rm.cijfers) + k;
+
+    } else if (k === 'C'){
+      _rm = _rmLeeg();
+
+    } else if (k === 'back'){
+      // Eén stap per druk, ook bij de breukstreep: `3/8` → `3/_` → `3` → `0`.
+      // Het cijfer én de streep tegelijk wissen voelt als twee dingen in één druk.
+      _rm.vers = false;
+      if (_rm.noemer) _rm.noemer = _rm.noemer.slice(0, -1);
+      else if (_rm.noemer === '') _rm.noemer = null;
+      else _rm.cijfers = _rm.cijfers.slice(0, -1) || '0';
+
+    } else if (k === 'frac'){
+      if (_rm.noemer === null){ _rm.noemer = ''; _rm.vers = false; }
+
+    } else if (k === 'neg'){
+      _rm.negatief = !_rm.negatief; _rm.vers = false;
+
+    } else if (k === 'kwadraat'){
+      var q = _rmHuidig();
+      if (!q) _rm.melding = TT('calc.invalid');
+      else _rmZetUit(math.multiply(q, q));
+
+    } else if (k === 'sqrt'){
+      // EXACT OF NIETS. Een wortel is alleen een breuk als teller én noemer
+      // allebei een kwadraat zijn; anders zou hier een decimale benadering
+      // staan, en dat is precies wat deze tool niet doet.
+      var w = _rmHuidig();
+      if (!w) _rm.melding = TT('calc.invalid');
+      else if (math.smaller(w, 0)) _rm.melding = TT('calc.neg_root');
+      else {
+        var wt = Math.round(Math.sqrt(Number(w.n))), wn = Math.round(Math.sqrt(Number(w.d)));
+        if (wt * wt === Number(w.n) && wn * wn === Number(w.d)) _rmZetUit(math.fraction(wt, wn));
+        else _rm.melding = TT('calc.not_exact');
+      }
+
+    } else if (k === '+' || k === '-' || k === '*' || k === ':'){
+      var nu = _rmHuidig();
+      if (!nu) _rm.melding = TT('calc.invalid');
+      else {
+        // Ketenen: staat er al een bewerking klaar, reken die dan eerst af.
+        var basis = (_rm.opgeslagen !== null && _rm.bewerking && !_rm.vers)
+          ? _rmReken(_rm.opgeslagen, _rm.bewerking, nu) : nu;
+        if (basis === null){ _rm = _rmLeeg(); _rm.melding = TT('calc.div_zero'); }
+        else { _rm.opgeslagen = basis; _rm.bewerking = k; _rmZetUit(basis); }
+      }
+
+    } else if (k === '='){
+      var tweede = _rmHuidig();
+      if (_rm.opgeslagen === null || !_rm.bewerking || !tweede){ _rm.vers = true; }
+      else {
+        var uit = _rmReken(_rm.opgeslagen, _rm.bewerking, tweede);
+        if (uit === null){ _rm = _rmLeeg(); _rm.melding = TT('calc.div_zero'); }
+        else { _rmZetUit(uit); _rm.opgeslagen = null; _rm.bewerking = null; }
+      }
+    }
+    rekenmachineTeken();
+  }
+
+  var _RM_TEKEN = { '+': '+', '-': '−', '*': '×', ':': ':' };
+
+  function rekenmachineTeken(){
+    var scherm = document.getElementById('rm-scherm');
+    if (!scherm || !_rm) return;
+    var getal;
+    if (_rm.noemer !== null){
+      getal = '<span class="rm-breuk' + (_rm.noemer === '' ? ' rm-open' : '') + '">' +
+                '<span class="rm-n">' + esc(_rm.cijfers) + '</span>' +
+                '<span class="rm-d">' + esc(_rm.noemer) + '</span></span>';
+    } else {
+      getal = esc(_rm.cijfers);
+    }
+    var wacht = _rm.bewerking
+      ? '<span class="rm-wacht">' + _RM_TEKEN[_rm.bewerking] + '</span>' : '';
+    scherm.innerHTML = _rm.melding
+      ? '<span class="rm-melding">' + esc(_rm.melding) + '</span>'
+      : wacht + '<span>' + (_rm.negatief ? '−' : '') + getal + '</span>';
+
+    document.querySelectorAll('#rm-toetsen .rm-op').forEach(function(b){
+      b.classList.toggle('aan', b.getAttribute('data-k') === _rm.bewerking);
+    });
+  }
+
+  function rekenmachineStart(){
+    var paneel = document.getElementById('rm-toetsen');
+    if (!paneel) return;
+    _rm = _rmLeeg();
+    // De focus moet in het werkblad blijven: anders raakt de leerling zijn
+    // cursor in de invoerregel kwijt bij elke toets.
+    paneel.addEventListener('mousedown', function(e){ e.preventDefault(); });
+    paneel.addEventListener('click', function(e){
+      var knop = e.target && e.target.closest ? e.target.closest('.rm-t') : null;
+      if (!knop) return;
+      e.stopPropagation();
+      rekenmachineToets(knop.getAttribute('data-k'));
+    });
+    rekenmachineTeken();
+  }
+  window.__rm = function(){ return _rm; };
+  window.__rmToets = rekenmachineToets;
 
   function addMarginMark(line, correct){
     if (!correct) sessieFout();
@@ -6516,6 +6689,7 @@
   laadBatches();
   loadIndex();
   initColResizers();
+  rekenmachineStart();
 
   // Herteken bij taalwissel én zodra de catalogus binnen is. Beide panelen
   // bouwen hun tekst met TT() op het moment van tekenen, dus zonder deze haak

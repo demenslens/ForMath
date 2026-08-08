@@ -1211,3 +1211,104 @@ math-field, .editor { font-size: 17px; }
   font-style: italic;
   color: var(--ink-dim);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REKENMACHINE — onderaan de rechterkolom
+   ══════════════════════════════════════════════════════════════════════════
+   Puur rekenkundig: twee getallen per bewerking, exacte breuken, geen
+   expressieregel. `margin-top:auto` duwt hem naar de onderkant van de kolom
+   (.side is al een flex-kolom), zodat het sessie-overzicht erboven de ruimte
+   krijgt die het nodig heeft. */
+.rekenmachine {
+  margin-top: auto;
+  flex-shrink: 0;
+  border-top: 1px solid var(--rule);
+  background: var(--bg-panel);
+  padding: 10px 12px 12px;
+}
+.rm-kop {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* Het scherm groeit niet mee met de inhoud: een vaste hoogte houdt de
+   toetsen op hun plek, ook als er een gestapelde breuk in staat. */
+.rm-scherm {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 10px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  overflow: hidden;
+}
+.rm-scherm .rm-melding {
+  font-family: var(--font-ui);
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--err);
+}
+/* De wachtende bewerking, links van het getal — zo zie je waar je in zit. */
+.rm-scherm .rm-wacht { color: var(--accent-ink); font-size: 15px; }
+
+/* Gestapelde breuk in het scherm; dezelfde opbouw als op het werkblad, zodat
+   3/8 er hier hetzelfde uitziet als in de opgave. */
+.rm-breuk {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.05;
+  font-size: 14px;
+}
+.rm-breuk .rm-n { border-bottom: 1.5px solid currentColor; padding: 0 3px; }
+.rm-breuk .rm-d { padding: 0 3px; }
+/* Halfvoltooide breuk: teller ingetikt, noemer nog leeg. */
+.rm-breuk.rm-open .rm-d::after { content: '_'; opacity: .5; }
+
+.rm-toetsen {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-top: 8px;
+}
+.rm-t {
+  padding: 9px 0;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color .12s, background .12s, transform .06s;
+}
+.rm-t:hover { border-color: var(--rule-strong); }
+.rm-t:active { transform: translateY(1px); background: var(--bg-sunken); }
+.rm-t.rm-op { color: var(--accent-ink); font-weight: 600; }
+.rm-t.rm-fn { color: var(--ink-soft); font-size: 13px; }
+/* De actieve, wachtende bewerking blijft oplichten tot het tweede getal er is. */
+.rm-t.rm-op.aan { background: var(--accent-soft); border-color: var(--accent); }
+.rm-t.rm-is {
+  grid-column: 1 / -1;
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+/* Het a/b-teken op de toets: een minibreukje in plaats van een schuine streep,
+   want die betekent in dit project iets anders dan een deling. */
+.rm-ab { display: inline-flex; flex-direction: column; align-items: center; line-height: 1; font-size: 10px; }
+.rm-ab i { width: 11px; height: 1.5px; background: currentColor; margin: 1.5px 0; }
+
+@media (max-height: 760px) { .rm-toetsen { gap: 4px; } .rm-t { padding: 6px 0; } .rm-scherm { height: 44px; } }
